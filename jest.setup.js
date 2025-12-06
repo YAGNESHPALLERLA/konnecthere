@@ -65,6 +65,17 @@ if (typeof globalThis.Request === "undefined") {
     clone() {
       return new Response(this.body, { status: this.status, statusText: this.statusText, headers: this.headers })
     }
+    // Static method used by NextResponse.json()
+    static json(body, init = {}) {
+      const headers = new Headers(init.headers)
+      if (!headers.has("Content-Type")) {
+        headers.set("Content-Type", "application/json")
+      }
+      return new Response(JSON.stringify(body), {
+        ...init,
+        headers,
+      })
+    }
   }
 }
 

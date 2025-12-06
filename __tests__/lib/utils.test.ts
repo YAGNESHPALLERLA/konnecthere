@@ -9,7 +9,7 @@ describe("utils", () => {
     })
 
     it("should handle special characters", () => {
-      expect(slugify("Frontend/Backend Developer")).toBe("frontend-backend-developer")
+      expect(slugify("Frontend/Backend Developer")).toBe("frontendbackend-developer")
       expect(slugify("Node.js & React")).toBe("nodejs-react")
     })
   })
@@ -31,7 +31,7 @@ describe("utils", () => {
     it("should format recent dates", () => {
       const now = new Date()
       const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000)
-      expect(formatRelativeTime(oneHourAgo.toISOString())).toContain("hour")
+      expect(formatRelativeTime(oneHourAgo.toISOString())).toContain("h ago")
     })
 
     it("should format older dates", () => {

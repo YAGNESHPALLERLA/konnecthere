@@ -17,15 +17,6 @@ type RateLimitStore = Map<
   }
 >
 
-const stores = new Map<string, RateLimitStore>()
-
-function getStore(key: string): RateLimitStore {
-  if (!stores.has(key)) {
-    stores.set(key, new Map())
-  }
-  return stores.get(key)!
-}
-
 function cleanupExpiredEntries(store: RateLimitStore) {
   const now = Date.now()
   for (const [key, value] of store.entries()) {
@@ -36,8 +27,10 @@ function cleanupExpiredEntries(store: RateLimitStore) {
 }
 
 export function createRateLimiter(config: RateLimitConfig) {
+  // Each rate limiter instance has its own store
+  const store: RateLimitStore = new Map()
+  
   return (identifier: string): { allowed: boolean; remaining: number; resetAt: number } => {
-    const store = getStore(identifier)
     const now = Date.now()
 
     // Cleanup expired entries periodically
