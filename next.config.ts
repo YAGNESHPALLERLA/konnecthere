@@ -1,7 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  output: "standalone", // For Docker deployment
+  // Only use standalone output for Docker, not for Vercel
+  ...(process.env.VERCEL ? {} : { output: "standalone" }),
   experimental: {
     serverActions: {
       bodySizeLimit: "10mb",
