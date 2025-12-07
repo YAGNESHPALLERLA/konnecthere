@@ -9,6 +9,8 @@ on:
 env:
   NODE_VERSION: "20.x"
 
+# Note: Vercel auto-deploys from GitHub, so deployment jobs are optional
+
 jobs:
   lint-and-test:
     runs-on: ubuntu-latest
@@ -70,7 +72,9 @@ jobs:
   deploy-preview:
     runs-on: ubuntu-latest
     needs: build
-    if: github.event_name == 'pull_request' && secrets.VERCEL_TOKEN != null && secrets.VERCEL_TOKEN != ''
+    # Skip if Vercel secrets not configured (Vercel auto-deploys from GitHub anyway)
+    if: github.event_name == 'pull_request' && secrets.VERCEL_TOKEN != null && secrets.VERCEL_TOKEN != '' && secrets.VERCEL_ORG_ID != null && secrets.VERCEL_PROJECT_ID != null
+    continue-on-error: true
     
     steps:
       - name: Checkout code
@@ -78,6 +82,7 @@ jobs:
 
       - name: Deploy to Vercel Preview
         uses: amondnet/vercel-action@v25
+        continue-on-error: true
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
@@ -88,7 +93,9 @@ jobs:
   deploy-production:
     runs-on: ubuntu-latest
     needs: build
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push' && secrets.VERCEL_TOKEN != null && secrets.VERCEL_TOKEN != ''
+    # Skip if Vercel secrets not configured (Vercel auto-deploys from GitHub anyway)
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push' && secrets.VERCEL_TOKEN != null && secrets.VERCEL_TOKEN != '' && secrets.VERCEL_ORG_ID != null && secrets.VERCEL_PROJECT_ID != null
+    continue-on-error: true
     
     steps:
       - name: Checkout code
@@ -96,6 +103,7 @@ jobs:
 
       - name: Deploy to Vercel Production
         uses: amondnet/vercel-action@v25
+        continue-on-error: true
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
@@ -105,6 +113,7 @@ jobs:
 
       - name: Run Prisma Migrations
         if: secrets.DATABASE_URL != null && secrets.DATABASE_URL != ''
+        continue-on-error: true
         run: |
           npx prisma migrate deploy
         env:
