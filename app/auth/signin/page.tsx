@@ -40,19 +40,39 @@ function SignInContent() {
         // Don't redirect on error - show error message on sign-in page
         return
       } else if (result?.ok) {
-        // Successful login - determine redirect URL
-        let redirectUrl = "/"
-        
-        // Use callbackUrl if provided and valid
-        if (callbackUrl && callbackUrl !== "/" && !callbackUrl.startsWith("/auth")) {
-          redirectUrl = callbackUrl
-        } else {
-          // Default: redirect to home page, which will redirect based on role
-          redirectUrl = "/"
+        // Successful login - fetch session to get user role
+        try {
+          const sessionRes = await fetch("/api/auth/session")
+          const session = await sessionRes.json()
+          const userRole = session?.user?.role
+
+          // Determine redirect URL based on role
+          let redirectUrl = "/"
+          
+          // Use callbackUrl if provided and valid
+          if (callbackUrl && callbackUrl !== "/" && !callbackUrl.startsWith("/auth")) {
+            redirectUrl = callbackUrl
+          } else {
+            // Role-based redirect
+            if (userRole === "ADMIN") {
+              redirectUrl = "/dashboard/admin"
+            } else if (userRole === "HR") {
+              redirectUrl = "/dashboard/hr"
+            } else if (userRole === "USER") {
+              redirectUrl = "/dashboard/user"
+            } else {
+              // Fallback to home
+              redirectUrl = "/"
+            }
+          }
+          
+          // Use window.location for a full page reload to ensure session is loaded
+          window.location.href = redirectUrl
+        } catch (sessionError) {
+          console.error("[SIGNIN] Error fetching session after login:", sessionError)
+          // Fallback redirect
+          window.location.href = callbackUrl || "/"
         }
-        
-        // Use window.location for a full page reload to ensure session is loaded
-        window.location.href = redirectUrl
       } else {
         setError("An unexpected error occurred. Please try again.")
       }

@@ -19,45 +19,78 @@ providers.push(
       password: { label: "Password", type: "password" }
     },
     async authorize(credentials) {
-      try {
-        const email = credentials?.email as string | undefined
-        const password = credentials?.password as string | undefined
+      const email = credentials?.email as string | undefined
+      const password = credentials?.password as string | undefined
 
+      // Never log passwords - only email and reason
+      try {
+        // Validate input
         if (!email || !password) {
-          console.log("[AUTH] Missing email or password")
-          // Return null to trigger CredentialsSignin error
+          console.error("[AUTH] Credentials authorize: Missing email or password", {
+            hasEmail: !!email,
+            hasPassword: !!password,
+          })
           return null
         }
 
+        const normalizedEmail = email.toLowerCase().trim()
+        console.log("[AUTH] Credentials authorize: Attempting login", { email: normalizedEmail })
+
         // Find user in database
-        const user = await prisma.user.findUnique({
-          where: { email: email.toLowerCase().trim() }
-        })
+        let user
+        try {
+          user = await prisma.user.findUnique({
+            where: { email: normalizedEmail }
+          })
+        } catch (dbError: any) {
+          console.error("[AUTH] Credentials authorize: Database connection error", {
+            email: normalizedEmail,
+            error: dbError.message,
+            errorCode: dbError.code,
+          })
+          return null
+        }
 
         if (!user) {
-          console.log("[AUTH] User not found:", email)
-          // Return null to trigger CredentialsSignin error
+          console.error("[AUTH] Credentials authorize: User not found", { email: normalizedEmail })
           return null
         }
 
         if (!user.password) {
-          console.log("[AUTH] User has no password set:", email)
-          // Return null to trigger CredentialsSignin error
+          console.error("[AUTH] Credentials authorize: User has no password set", {
+            email: normalizedEmail,
+            userId: user.id,
+            role: user.role,
+          })
           return null
         }
 
         if (user.status !== "ACTIVE") {
-          console.log("[AUTH] User account is not active:", email, "Status:", user.status)
-          // Return null to trigger AccessDenied error
+          console.error("[AUTH] Credentials authorize: User account is not active", {
+            email: normalizedEmail,
+            userId: user.id,
+            status: user.status,
+          })
           return null
         }
 
         // Verify password using bcrypt
-        const isPasswordValid = await bcrypt.compare(password, user.password)
+        let isPasswordValid = false
+        try {
+          isPasswordValid = await bcrypt.compare(password, user.password)
+        } catch (bcryptError: any) {
+          console.error("[AUTH] Credentials authorize: Password comparison error", {
+            email: normalizedEmail,
+            error: bcryptError.message,
+          })
+          return null
+        }
 
         if (!isPasswordValid) {
-          console.log("[AUTH] Invalid password for user:", email)
-          // Return null to trigger CredentialsSignin error
+          console.error("[AUTH] Credentials authorize: Invalid password", {
+            email: normalizedEmail,
+            userId: user.id,
+          })
           return null
         }
 
@@ -74,7 +107,11 @@ providers.push(
           role = "HR"
         }
 
-        console.log("[AUTH] Successful authentication for:", email, "Role:", role)
+        console.log("[AUTH] Credentials authorize: Successful authentication", {
+          email: normalizedEmail,
+          userId: user.id,
+          role,
+        })
 
         // Return user object with role for JWT token
         return {
@@ -84,9 +121,12 @@ providers.push(
           image: user.image,
           role,
         }
-      } catch (error) {
-        console.error("[AUTH] Credentials authorize error:", error)
-        // Return null on any unexpected error to trigger CredentialsSignin
+      } catch (error: any) {
+        console.error("[AUTH] Credentials authorize: Unexpected error", {
+          email: email?.toLowerCase().trim(),
+          error: error.message,
+          stack: process.env.NODE_ENV === "development" ? error.stack : undefined,
+        })
         return null
       }
     }
@@ -138,9 +178,7 @@ export const authOptions: NextAuthConfig = {
       // CRITICAL: Never redirect to /api/auth/* routes - this causes infinite loops
       // Check both relative and absolute URLs
       if (url.includes("/api/auth") || url.includes("/api/auth/")) {
-        if (process.env.NODE_ENV === "development") {
-          console.log("[AUTH] Redirect callback blocked redirect to /api/auth/*:", url)
-        }
+        console.log("[AUTH] Redirect callback blocked redirect to /api/auth/*:", url)
         return baseUrl
       }
 
@@ -149,9 +187,7 @@ export const authOptions: NextAuthConfig = {
         const fullUrl = `${baseUrl}${url}`
         // Double-check the full URL doesn't contain /api/auth
         if (fullUrl.includes("/api/auth")) {
-          if (process.env.NODE_ENV === "development") {
-            console.log("[AUTH] Redirect callback blocked relative URL that resolves to /api/auth/*:", url)
-          }
+          console.log("[AUTH] Redirect callback blocked relative URL that resolves to /api/auth/*:", url)
           return baseUrl
         }
         return fullUrl
@@ -162,9 +198,7 @@ export const authOptions: NextAuthConfig = {
         const urlObj = new URL(url)
         // Block if it's an /api/auth route
         if (urlObj.pathname.startsWith("/api/auth")) {
-          if (process.env.NODE_ENV === "development") {
-            console.log("[AUTH] Redirect callback blocked absolute URL to /api/auth/*:", url)
-          }
+          console.log("[AUTH] Redirect callback blocked absolute URL to /api/auth/*:", url)
           return baseUrl
         }
         // Only allow same-origin URLs
@@ -172,15 +206,11 @@ export const authOptions: NextAuthConfig = {
           return url
         }
         // Different origin - return baseUrl to prevent redirect loops
-        if (process.env.NODE_ENV === "development") {
-          console.log("[AUTH] Redirect callback blocked cross-origin URL:", url)
-        }
+        console.log("[AUTH] Redirect callback blocked cross-origin URL:", url)
         return baseUrl
       } catch (error) {
         // Invalid URL - return baseUrl
-        if (process.env.NODE_ENV === "development") {
-          console.log("[AUTH] Redirect callback blocked invalid URL:", url, error)
-        }
+        console.log("[AUTH] Redirect callback blocked invalid URL:", url, error)
         return baseUrl
       }
     },
