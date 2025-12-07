@@ -49,7 +49,11 @@ export async function POST(
       return NextResponse.json({ error: "Forbidden" }, { status: 403 })
     }
 
-    const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000"
+    // Use AUTH_URL (Auth.js v5) or NEXTAUTH_URL (NextAuth v4) - both should be set to the same value
+    const baseUrl = process.env.AUTH_URL || process.env.NEXTAUTH_URL || (() => {
+      console.error("[LinkedIn Share] Missing AUTH_URL and NEXTAUTH_URL environment variables")
+      throw new Error("Missing AUTH_URL or NEXTAUTH_URL environment variable")
+    })()
     const jobUrl = `${baseUrl}/jobs/${job.slug}`
     const shareText = buildShareText(job, jobUrl)
 

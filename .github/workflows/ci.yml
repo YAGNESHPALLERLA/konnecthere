@@ -40,7 +40,13 @@ jobs:
       - name: Run tests
         run: npm test -- --passWithNoTests
         env:
+          # Use a dummy DATABASE_URL for tests that don't require a real DB
+          # Tests that need DB should be marked as integration tests and skipped in CI
           DATABASE_URL: ${{ secrets.DATABASE_URL || 'postgresql://test:test@localhost:5432/test' }}
+          NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET || 'test-secret-for-ci' }}
+          AUTH_SECRET: ${{ secrets.AUTH_SECRET || secrets.NEXTAUTH_SECRET || 'test-secret-for-ci' }}
+          NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL || 'http://localhost:3000' }}
+          AUTH_URL: ${{ secrets.AUTH_URL || secrets.NEXTAUTH_URL || 'http://localhost:3000' }}
 
   build:
     runs-on: ubuntu-latest
@@ -65,9 +71,12 @@ jobs:
       - name: Build Next.js app
         run: npm run build
         env:
+          # Use dummy values for build - actual values come from Vercel env vars in production
           DATABASE_URL: ${{ secrets.DATABASE_URL || 'postgresql://test:test@localhost:5432/test' }}
-          NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET || 'test-secret' }}
+          NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET || 'test-secret-for-build' }}
+          AUTH_SECRET: ${{ secrets.AUTH_SECRET || secrets.NEXTAUTH_SECRET || 'test-secret-for-build' }}
           NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL || 'http://localhost:3000' }}
+          AUTH_URL: ${{ secrets.AUTH_URL || secrets.NEXTAUTH_URL || 'http://localhost:3000' }}
 
   deploy-preview:
     runs-on: ubuntu-latest

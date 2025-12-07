@@ -1,200 +1,194 @@
-# Vercel Environment Variables - Complete Setup
+# Vercel Environment Variables - Your Configuration
 
-## 🔐 Generated Values
+## 🔴 CRITICAL - Add These First
 
-I've generated a secure `NEXTAUTH_SECRET` for you. Copy the values below to Vercel.
+Copy and paste these into Vercel Dashboard → Settings → Environment Variables:
 
----
+### 1. DATABASE_URL
+**Important:** For Vercel, use the **Connection Pooler** URL (port 6543), not direct connection (port 5432)
 
-## ✅ Required Environment Variables
+**To get the correct pooler URL:**
+1. Go to Supabase Dashboard → Settings → Database
+2. Scroll to "Connection Pooling"
+3. Copy the "Connection string" under "Session mode" or "Transaction mode"
+4. It should look like one of these formats:
 
-Copy and paste these into Vercel → Settings → Environment Variables:
-
-### 1. Database Configuration
-
-```bash
-DATABASE_URL=YOUR_PRODUCTION_DATABASE_URL_HERE
+**Format 1 (Session mode - Recommended):**
+```
+postgresql://postgres.vstltyehsgjtcvcxphoh:[YOUR-PASSWORD]@aws-0-us-east-1.pooler.supabase.com:6543/postgres
 ```
 
-**⚠️ YOU NEED TO PROVIDE THIS:**
-- Set up a PostgreSQL database (Supabase, Railway, Neon, or any PostgreSQL provider)
-- Get the connection string
-- Format: `postgresql://user:password@host:port/database?schema=public`
-
-**Quick Setup Options:**
-- **Supabase (Free):** https://supabase.com → Create Project → Settings → Database → Copy connection string
-- **Railway (Free):** https://railway.app → New Project → Add PostgreSQL → Copy connection string
-- **Neon (Free):** https://neon.tech → Create Project → Copy connection string
-
----
-
-### 2. NextAuth Configuration
-
-```bash
-NEXTAUTH_SECRET=GENERATED_SECRET_BELOW
-NEXTAUTH_URL=https://konnecthere.com
-AUTH_URL=https://konnecthere.com
-AUTH_TRUST_HOST=true
+**Format 2 (Transaction mode):**
+```
+postgresql://postgres.vstltyehsgjtcvcxphoh:[YOUR-PASSWORD]@aws-0-us-east-1.pooler.supabase.com:5432/postgres?pgbouncer=true
 ```
 
-**✅ NEXTAUTH_SECRET (Generated for you):**
-See the generated value below ⬇️
+**Replace `[YOUR-PASSWORD]` with:** `yagnesh_0504`
 
----
-
-### 3. AWS S3 Configuration (For Resume Uploads)
-
-```bash
-AWS_REGION=us-east-1
-AWS_ACCESS_KEY_ID=YOUR_AWS_ACCESS_KEY_ID
-AWS_SECRET_ACCESS_KEY=YOUR_AWS_SECRET_ACCESS_KEY
-AWS_S3_BUCKET_NAME=konnecthere-resumes
+**If you can't find the pooler URL, you can construct it:**
+```
+postgresql://postgres.vstltyehsgjtcvcxphoh:yagnesh_0504@aws-0-us-east-1.pooler.supabase.com:6543/postgres
 ```
 
-**⚠️ YOU NEED TO PROVIDE THESE:**
+**Note:** 
+- Use port `6543` for Session mode (recommended for Vercel)
+- Use port `5432` with `?pgbouncer=true` for Transaction mode
+- The pooler URL is different from the direct connection URL
 
-**Step 1: Create AWS Account**
-- Go to https://aws.amazon.com
-- Sign up for AWS account (free tier available)
-
-**Step 2: Create S3 Bucket**
-1. Go to AWS Console → S3
-2. Click "Create bucket"
-3. Bucket name: `konnecthere-resumes` (or your preferred name)
-4. Region: `us-east-1` (or your preferred region)
-5. Uncheck "Block all public access" (or configure CORS if needed)
-6. Click "Create bucket"
-
-**Step 3: Create IAM User for S3 Access**
-1. Go to AWS Console → IAM → Users
-2. Click "Add users"
-3. Username: `konnecthere-s3-user`
-4. Select "Programmatic access"
-5. Click "Next: Permissions"
-6. Click "Attach existing policies directly"
-7. Search and select: `AmazonS3FullAccess` (or create custom policy with only S3 permissions)
-8. Click "Next" → "Next" → "Create user"
-9. **IMPORTANT:** Copy the "Access key ID" and "Secret access key" immediately (you won't see it again!)
-
-**Step 4: Update Environment Variables**
-- `AWS_ACCESS_KEY_ID` = The Access key ID you copied
-- `AWS_SECRET_ACCESS_KEY` = The Secret access key you copied
-- `AWS_S3_BUCKET_NAME` = The bucket name you created (e.g., `konnecthere-resumes`)
-- `AWS_REGION` = The region where you created the bucket (e.g., `us-east-1`)
+**Environment:** Production, Preview, Development
 
 ---
 
-## 📋 Complete Environment Variables List
+### 2. NEXTAUTH_SECRET
+```
+I62bfzGD9SmEst8tIxhRCN04ISJNimRVTeHuZ1VJB6Y=
+```
 
-Copy this entire list and fill in the values marked with `YOUR_*`:
+**Environment:** Production, Preview, Development
 
-```bash
-# ============================================
-# CRITICAL - Must Have
-# ============================================
+---
 
-# Database (REQUIRED - You must provide this)
-DATABASE_URL=postgresql://user:password@host:port/database?schema=public
+### 3. NEXTAUTH_URL
+**Replace `your-app-name` with your actual Vercel app name:**
 
-# NextAuth (REQUIRED - Secret generated below)
-NEXTAUTH_SECRET=PASTE_GENERATED_SECRET_BELOW
-NEXTAUTH_URL=https://konnecthere.com
-AUTH_URL=https://konnecthere.com
-AUTH_TRUST_HOST=true
+```
+https://konnecthere-git-main-yagnesh-pallerlas-projects.vercel.app
+```
 
-# ============================================
-# AWS S3 - For Resume Uploads
-# ============================================
+**OR if you have a custom domain:**
+```
+https://your-custom-domain.com
+```
 
-AWS_REGION=us-east-1
-AWS_ACCESS_KEY_ID=YOUR_AWS_ACCESS_KEY_ID
-AWS_SECRET_ACCESS_KEY=YOUR_AWS_SECRET_ACCESS_KEY
-AWS_S3_BUCKET_NAME=konnecthere-resumes
+**Environment:** Production
 
-# ============================================
-# OPTIONAL - Can add later
-# ============================================
+**For Preview:**
+```
+https://konnecthere-[hash]-yagnesh-pallerlas-projects.vercel.app
+```
 
-# LinkedIn OAuth (Optional)
-LINKEDIN_CLIENT_ID=
-LINKEDIN_CLIENT_SECRET=
-
-# Google OAuth (Optional)
-GOOGLE_CLIENT_ID=
-GOOGLE_CLIENT_SECRET=
-
-# Email/SMTP (Optional)
-SMTP_HOST=smtp.sendgrid.net
-SMTP_PORT=587
-SMTP_USER=apikey
-SMTP_PASSWORD=
-SMTP_FROM=noreply@konnecthere.com
-
-# Algolia Search (Optional)
-ALGOLIA_APP_ID=
-ALGOLIA_API_KEY=
-ALGOLIA_INDEX_NAME=jobs
-
-# Resume Parser (Optional)
-RESUME_PARSER_URL=
+**For Development:**
+```
+http://localhost:3000
 ```
 
 ---
 
-## 🚀 How to Add in Vercel
+### 4. AUTH_URL
+**Same as NEXTAUTH_URL:**
+```
+https://konnecthere-git-main-yagnesh-pallerlas-projects.vercel.app
+```
 
-1. Go to your Vercel project dashboard
-2. Click **"Settings"** → **"Environment Variables"**
-3. For each variable:
-   - Click **"Add New"**
-   - Enter the **Key** (e.g., `DATABASE_URL`)
-   - Enter the **Value** (paste your value)
-   - Select environments: ✅ **Production**, ✅ **Preview**, ✅ **Development**
-   - Click **"Save"**
-4. Repeat for all variables
+**Environment:** Production, Preview, Development
 
 ---
 
-## ⚠️ Important Notes
+## 🟡 IMPORTANT - For Resume Uploads
 
-1. **Never commit these values to Git** - They're already in `.gitignore`
-2. **Use different secrets for production** - Don't reuse development secrets
-3. **Keep AWS credentials secure** - Don't share them publicly
-4. **Test after adding** - Deploy and test the application
+### 5. AWS S3 Configuration
 
----
+You still need to set up AWS S3 for resume uploads. See `VERCEL_SETUP_GUIDE.md` for detailed instructions.
 
-## ✅ Checklist
-
-Before deploying, make sure you have:
-
-- [ ] `DATABASE_URL` - Production PostgreSQL database connection string
-- [ ] `NEXTAUTH_SECRET` - Generated secret (see below)
-- [ ] `NEXTAUTH_URL` - Set to `https://konnecthere.com`
-- [ ] `AUTH_URL` - Set to `https://konnecthere.com`
-- [ ] `AUTH_TRUST_HOST` - Set to `true`
-- [ ] `AWS_REGION` - Set to your AWS region (e.g., `us-east-1`)
-- [ ] `AWS_ACCESS_KEY_ID` - Your AWS IAM user access key
-- [ ] `AWS_SECRET_ACCESS_KEY` - Your AWS IAM user secret key
-- [ ] `AWS_S3_BUCKET_NAME` - Your S3 bucket name
+**Required variables:**
+- `AWS_REGION` (e.g., `us-east-1`)
+- `AWS_ACCESS_KEY_ID`
+- `AWS_SECRET_ACCESS_KEY`
+- `AWS_S3_BUCKET_NAME`
 
 ---
 
-## 🔄 After Adding Variables
+## 📋 Quick Steps to Add in Vercel:
 
-1. **Redeploy** your Vercel project
-2. **Run database migrations:**
-   ```bash
-   export DATABASE_URL="your-production-database-url"
-   npx prisma migrate deploy
-   ```
-3. **Test the application** at https://konnecthere.com
+1. Go to: https://vercel.com/dashboard
+2. Select your **konnecthere** project
+3. Go to **Settings** → **Environment Variables**
+4. Click **Add New**
+5. Add each variable above (one by one)
+6. Make sure to select the correct **Environment** (Production/Preview/Development)
+7. Click **Save**
 
 ---
 
-## 📚 Need Help?
+## 🔄 After Adding Variables:
 
-- **Database Setup:** See `SUPABASE_SETUP.md` or `DEPLOYMENT.md`
-- **AWS Setup:** See `AWS_IAM_SETUP.md` or AWS documentation
-- **General Deployment:** See `DEPLOYMENT.md`
+1. **Redeploy your app** in Vercel dashboard
+2. **Run database migrations** (see below)
 
+---
+
+## 🗄️ Run Database Migrations
+
+After adding `DATABASE_URL`, run migrations:
+
+### Option 1: Using Vercel CLI (Recommended)
+
+```bash
+# Install Vercel CLI (if not installed)
+npm install -g vercel
+
+# Login to Vercel
+vercel login
+
+# Link your project
+vercel link
+
+# Pull environment variables
+vercel env pull .env.local
+
+# Run migrations
+npx prisma migrate deploy
+```
+
+### Option 2: Using Supabase SQL Editor
+
+1. Go to Supabase Dashboard → SQL Editor
+2. Copy the SQL from your Prisma migrations
+3. Run the SQL in the editor
+
+---
+
+## ✅ Verify Setup
+
+After adding variables and running migrations:
+
+1. Visit your Vercel app URL
+2. Try signing up with email/password
+3. Check if the database connection works
+
+---
+
+## 🔐 Security Note
+
+**Important:** The database password is visible in the connection string. Consider:
+1. Changing the database password in Supabase Dashboard → Settings → Database
+2. Using environment variables to store sensitive values
+3. Never commit connection strings to git
+
+---
+
+## 🆘 Troubleshooting
+
+### Connection Issues
+
+If you get connection errors:
+1. **Use Connection Pooler:** Make sure you're using port `6543` with `?pgbouncer=true`
+2. **Check Supabase Dashboard:** Go to Settings → Database → Connection Pooling
+3. **IPv4 Issue:** The direct connection (port 5432) may not work on Vercel. Always use the pooler.
+
+### Migration Errors
+
+If migrations fail:
+1. Check if `DATABASE_URL` is correct in Vercel
+2. Verify the connection string includes `?pgbouncer=true`
+3. Try running migrations locally with the connection string
+
+---
+
+## 📝 Next Steps
+
+1. ✅ Add all environment variables above
+2. ✅ Run database migrations
+3. ✅ Set up AWS S3 for resume uploads
+4. ✅ (Optional) Configure OAuth providers
+5. ✅ Test your application

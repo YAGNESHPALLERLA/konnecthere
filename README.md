@@ -31,31 +31,64 @@ npm install
 
 ### 2. Environment Variables
 
-Copy `.env.example` to `.env` and fill in your values:
+Create a `.env` file in the root directory with the following variables:
 
-```bash
-cp .env.example .env
-```
-
-Required variables:
+**Required:**
 - `DATABASE_URL`: PostgreSQL connection string
-- `NEXTAUTH_SECRET`: Generate with `openssl rand -base64 32`
-- `NEXTAUTH_URL`: Your app URL (e.g., `http://localhost:3000`)
-- `AWS_*`: S3 credentials and bucket name
-- `RESUME_PARSER_URL`: Base URL for the resume parsing service (e.g. http://localhost:8001)
-- `ALGOLIA_*`: App ID, API key, index (Week 2 search)
-- `LINKEDIN_ORGANIZATION_ID`: Optional if you want to post on behalf of a company page (otherwise sharing happens from the employer LinkedIn account you connect via OAuth).
+  - Local: `postgresql://user:password@localhost:5432/konnecthere?schema=public`
+  - Production: Your production database connection string (e.g., Supabase, Railway)
+- `AUTH_SECRET`: Generate with `openssl rand -base64 32` (preferred for Auth.js v5)
+- `NEXTAUTH_SECRET`: Same as AUTH_SECRET (for backward compatibility)
+- `AUTH_URL`: Your app URL
+  - Local: `http://localhost:3000`
+  - Production: `https://konnecthere.com` (or your custom domain)
+- `NEXTAUTH_URL`: Same as AUTH_URL (for backward compatibility)
+
+**Optional:**
+- `AWS_*`: S3 credentials and bucket name (for resume uploads)
+- `LINKEDIN_CLIENT_ID` / `LINKEDIN_CLIENT_SECRET`: LinkedIn OAuth
+- `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET`: Google OAuth
+- `ALGOLIA_*`: App ID, API key, index (for search)
+- `ALLOW_DEBUG`: Set to `"true"` to enable debug endpoints (development only)
 
 ### 3. Database Setup
+
+**For Local Development:**
 
 ```bash
 # Generate Prisma Client
 npm run db:generate
 
-# Run migrations
-npm run db:migrate
+# Run migrations (creates tables)
+npx prisma migrate dev
 
-# (Optional) Open Prisma Studio
+# Seed the database with test users
+npm run db:seed
+# OR
+npx prisma db seed
+```
+
+**For Production (Vercel/Deployment):**
+
+```bash
+# Run migrations against production database
+DATABASE_URL="your-production-db-url" npx prisma migrate deploy
+
+# Seed production database with test users
+DATABASE_URL="your-production-db-url" npm run db:seed
+# OR
+DATABASE_URL="your-production-db-url" npx prisma db seed
+```
+
+**Test Users Created by Seed:**
+- Admin: `admin@konnecthere.com` / `admin123`
+- HR: `hr@konnecthere.com` / `hr123`
+- User: `user@konnecthere.com` / `user123`
+
+⚠️ **Important**: Change these passwords in production!
+
+**Optional: Open Prisma Studio**
+```bash
 npm run db:studio
 ```
 

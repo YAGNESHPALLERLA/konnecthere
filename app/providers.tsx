@@ -20,7 +20,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
       refetchInterval={0} 
       refetchOnWindowFocus={false}
       refetchWhenOffline={false}
-      baseUrl={typeof window !== "undefined" ? window.location.origin : "http://localhost:3000"}
+      baseUrl={typeof window !== "undefined" ? window.location.origin : (process.env.NEXTAUTH_URL || process.env.AUTH_URL || "http://localhost:3000")}
     >
       {children}
     </SessionProvider>

@@ -345,7 +345,18 @@ export const authOptions: NextAuthConfig = {
       }
     },
   },
-  secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET,
+  // Auth.js v5 uses AUTH_SECRET, but we support NEXTAUTH_SECRET for backward compatibility
+  // Fail fast if neither is set
+  secret: (() => {
+    const secret = process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET
+    if (!secret) {
+      throw new Error(
+        "Missing AUTH_SECRET or NEXTAUTH_SECRET environment variable. " +
+        "Set one of these in your .env file (AUTH_SECRET is preferred for Auth.js v5)."
+      )
+    }
+    return secret
+  })(),
   trustHost: true,
   debug: process.env.NODE_ENV === "development",
   // Enable CSRF protection
