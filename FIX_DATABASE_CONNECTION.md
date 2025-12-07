@@ -1,71 +1,84 @@
-# Fix Database Connection Error
+# 🔴 CRITICAL: Database Connection Issue
 
-## 🔴 Problem
+## The Problem
 
-The error `FATAL: Tenant or user not found` means your `DATABASE_URL` in Vercel is incorrect.
-
-## ✅ Solution
-
-### Step 1: Update DATABASE_URL in Vercel
-
-Go to **Vercel Dashboard** → **Your Project** → **Settings** → **Environment Variables**
-
-Find `DATABASE_URL` and **UPDATE** it to use the **direct connection** (not pooler):
-
-**Current (WRONG - if using pooler):**
+The database connection is failing with:
 ```
-postgresql://postgres.vstltyehsgjtcvcxphoh:yagnesh_0504@aws-0-ap-south-1.pooler.supabase.com:6543/postgres
+Can't reach database server at `db.vstltyehsgjtcvcxphoh.supabase.co:5432`
 ```
 
-**Correct (USE THIS):**
+## Root Cause
+
+Supabase requires **SSL/TLS connection** for direct connections. The connection string needs `?sslmode=require` parameter.
+
+## The Fix
+
+### Update DATABASE_URL in Vercel
+
+Go to **Vercel Dashboard → konnecthere → Settings → Environment Variables**
+
+1. Click on `DATABASE_URL` to edit
+2. **Replace the value** with this (with SSL parameter):
+
 ```
-postgresql://postgres:yagnesh_0504@db.vstltyehsgjtcvcxphoh.supabase.co:5432/postgres
+postgresql://postgres:yagnesh_0504@db.vstltyehsgjtcvcxphoh.supabase.co:5432/postgres?sslmode=require
 ```
 
-**Key differences:**
-- Username: `postgres` (not `postgres.vstltyehsgjtcvcxphoh`)
-- Host: `db.vstltyehsgjtcvcxphoh.supabase.co` (not `aws-0-ap-south-1.pooler.supabase.com`)
-- Port: `5432` (not `6543`)
+**Key addition**: `?sslmode=require` at the end
 
-### Step 2: Verify All Environment Variables
+3. Make sure "All Environments" is selected
+4. Click **"Save"**
 
-Make sure you have ALL of these set correctly:
+### Alternative: Use Connection Pooler (If Direct Connection Doesn't Work)
 
-| Variable | Value | Environment |
-|----------|-------|-------------|
-| `DATABASE_URL` | `postgresql://postgres:yagnesh_0504@db.vstltyehsgjtcvcxphoh.supabase.co:5432/postgres` | Production, Preview, Development |
-| `NEXTAUTH_SECRET` | `I62bfzGD9SmEst8tIxhRCN04ISJNimRVTeHuZ1VJB6Y=` | Production, Preview, Development |
-| `NEXTAUTH_URL` | `https://www.konnecthere.com` | Production |
-| `AUTH_URL` | `https://www.konnecthere.com` | Production, Preview, Development |
+If the direct connection still doesn't work, Supabase might require using the connection pooler. In that case, use:
 
-### Step 3: Redeploy
+```
+postgresql://postgres.vstltyehsgjtcvcxphoh:yagnesh_0504@aws-0-ap-south-1.pooler.supabase.com:6543/postgres?sslmode=require
+```
 
-After updating `DATABASE_URL`:
-1. Go to **Vercel Dashboard** → **Deployments**
-2. Click **"..."** → **"Redeploy"**
-3. Wait for deployment to complete
+**But first try the direct connection with SSL!**
 
-### Step 4: Test
+## Steps to Fix
 
-1. Visit: `https://www.konnecthere.com/api/test-db`
-   - Should show: `{"success":true,"databaseConnected":true,...}`
-2. Try logging in:
-   - Email: `admin@konnecthere.com`
-   - Password: `admin123`
+1. **Update DATABASE_URL** in Vercel with `?sslmode=require` parameter
+2. **Redeploy** the application
+3. **Wait 2-3 minutes** for deployment
+4. **Check connection** at: `https://www.konnecthere.com/api/debug/auth`
+   - Should show: `"database": { "connected": true }`
+5. **Seed the database** (if users don't exist):
+   ```bash
+   DATABASE_URL="postgresql://postgres:yagnesh_0504@db.vstltyehsgjtcvcxphoh.supabase.co:5432/postgres?sslmode=require" npm run db:seed
+   ```
+6. **Test login** at: `https://www.konnecthere.com/auth/signin`
+
+## Verify Connection String Format
+
+Your DATABASE_URL should look like:
+```
+postgresql://[USERNAME]:[PASSWORD]@[HOST]:[PORT]/[DATABASE]?sslmode=require
+```
+
+For your Supabase:
+```
+postgresql://postgres:yagnesh_0504@db.vstltyehsgjtcvcxphoh.supabase.co:5432/postgres?sslmode=require
+```
+
+## Check Supabase Dashboard
+
+1. Go to your Supabase project dashboard
+2. Go to **Settings → Database**
+3. Check the **Connection string** section
+4. Make sure you're using the **"Direct connection"** (not pooler)
+5. Copy the connection string and add `?sslmode=require` if it's not there
+
+## After Fixing
+
+Once the connection works, you should see:
+- `"databaseConnected": true` in `/api/debug/auth`
+- Users can be queried in `/api/debug/users`
+- Login will work!
 
 ---
 
-## 🔍 Why This Happens
-
-Supabase has two connection methods:
-1. **Direct connection** (port 5432) - Works everywhere ✅
-2. **Connection pooler** (port 6543) - Requires specific format and may not work with all clients ❌
-
-For Vercel, use the **direct connection** which we've tested and confirmed works.
-
----
-
-## ✅ After Fix
-
-Once you update `DATABASE_URL` to the direct connection format, the login should work immediately!
-
+**The main issue is missing `?sslmode=require` in the DATABASE_URL!**
