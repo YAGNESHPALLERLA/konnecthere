@@ -1,120 +1,67 @@
-# Test Credentials
+# Test Credentials for KonnectHere
 
-## 🔐 Test User Accounts
+## 🎯 Test Users
 
-These test accounts have been created in your database. Use them to test different user roles and features.
+These users were created by the seed script and are available for testing:
 
----
+### 1. Admin User
+- **Email**: `admin@konnecthere.com`
+- **Password**: `admin123`
+- **Role**: `ADMIN`
+- **Dashboard**: `/dashboard/admin`
+- **Access**: Full access to all features, user management, job management
 
-## 👤 Admin Account
+### 2. HR User
+- **Email**: `hr@konnecthere.com`
+- **Password**: `hr123`
+- **Role**: `HR`
+- **Dashboard**: `/dashboard/hr`
+- **Access**: Manage companies, post jobs, review applications
 
-**Email:** `admin@konnecthere.com`  
-**Password:** `admin123`  
-**Role:** ADMIN  
-**Access:** Full admin access to all features
+### 3. Regular User
+- **Email**: `user@konnecthere.com`
+- **Password**: `user123`
+- **Role**: `USER`
+- **Dashboard**: `/dashboard/user`
+- **Access**: Browse jobs, apply for jobs, manage applications
 
-**Use for:**
-- Testing admin dashboard
-- Managing users
-- System administration
+## 🧪 Testing Checklist
 
----
+### Test Admin Login
+1. Go to: `https://www.konnecthere.com/auth/signin`
+2. Login with: `admin@konnecthere.com` / `admin123`
+3. Should redirect to: `/dashboard/admin`
+4. Verify: Can see all users, jobs, applications
 
-## 💼 HR / Employer Account
+### Test HR Login
+1. Go to: `https://www.konnecthere.com/auth/signin`
+2. Login with: `hr@konnecthere.com` / `hr123`
+3. Should redirect to: `/dashboard/hr`
+4. Verify: Can see HR dashboard, manage jobs
 
-**Email:** `hr@konnecthere.com`  
-**Password:** `hr123`  
-**Role:** HR  
-**Access:** Employer features - post jobs, manage applications
+### Test User Login
+1. Go to: `https://www.konnecthere.com/auth/signin`
+2. Login with: `user@konnecthere.com` / `user123`
+3. Should redirect to: `/dashboard/user`
+4. Verify: Can see user dashboard, browse jobs
 
-**Use for:**
-- Posting job listings
-- Managing job applications
-- Viewing candidate resumes
-- Employer dashboard
+## 🔐 Security Note
 
-**Company:** Sample Company (already created)
+⚠️ **These are test credentials with weak passwords!**
 
----
+**For production:**
+- Change all passwords to strong, unique passwords
+- Consider removing test users or restricting their access
+- Use proper password policies
 
-## 👨‍💼 Candidate / Job Seeker Account
+## 📋 Quick Reference
 
-**Email:** `user@konnecthere.com`  
-**Password:** `user123`  
-**Role:** USER (Candidate)  
-**Access:** Job seeker features - browse jobs, apply, upload resume
-
-**Use for:**
-- Browsing job listings
-- Applying to jobs
-- Uploading resumes
-- Candidate dashboard
-- Saving jobs
-
----
-
-## 📋 Quick Reference Table
-
-| Role | Email | Password | Purpose |
-|------|-------|----------|---------|
-| **Admin** | `admin@konnecthere.com` | `admin123` | Full system access |
-| **HR/Employer** | `hr@konnecthere.com` | `hr123` | Post jobs, manage applications |
-| **Candidate** | `user@konnecthere.com` | `user123` | Browse and apply to jobs |
-
----
-
-## 🧪 Testing Scenarios
-
-### Test Employer Flow:
-1. Login as `hr@konnecthere.com` / `hr123`
-2. Go to Employer Dashboard
-3. Create/Post a new job
-4. View applications for posted jobs
-
-### Test Candidate Flow:
-1. Login as `user@konnecthere.com` / `user123`
-2. Browse jobs
-3. Apply to a job
-4. Upload resume
-5. Save jobs for later
-
-### Test Admin Flow:
-1. Login as `admin@konnecthere.com` / `admin123`
-2. Access admin dashboard
-3. Manage users and companies
+| Role | Email | Password | Dashboard URL |
+|------|-------|----------|---------------|
+| ADMIN | `admin@konnecthere.com` | `admin123` | `/dashboard/admin` |
+| HR | `hr@konnecthere.com` | `hr123` | `/dashboard/hr` |
+| USER | `user@konnecthere.com` | `user123` | `/dashboard/user` |
 
 ---
 
-## ⚠️ Security Note
-
-**These are test credentials only!**
-
-- Change passwords in production
-- Do not use these credentials in production
-- These accounts are for development/testing only
-
----
-
-## 🔄 Re-seed Database
-
-To recreate test users (if deleted), run:
-
-```bash
-npm run db:seed
-```
-
-Or with custom DATABASE_URL:
-
-```bash
-DATABASE_URL="your-connection-string" npm run db:seed
-```
-
----
-
-## 📝 Create Additional Test Users
-
-You can also create new test users through the signup page:
-- Go to `/auth/signup`
-- Fill in the form
-- Choose role (CANDIDATE or EMPLOYER)
-
+**All test users are ready to use!** 🎉
