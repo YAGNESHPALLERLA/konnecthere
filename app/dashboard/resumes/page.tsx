@@ -119,8 +119,19 @@ export default function ResumesPage() {
 
       if (!uploadRes.ok) {
         const errorText = await uploadRes.text().catch(() => "Unknown error")
-        console.error("S3 upload error:", errorText)
-        throw new Error(`Failed to upload to S3: ${uploadRes.status} ${uploadRes.statusText}`)
+        console.error("S3 upload error:", {
+          status: uploadRes.status,
+          statusText: uploadRes.statusText,
+          headers: Object.fromEntries(uploadRes.headers.entries()),
+          body: errorText,
+          uploadUrl: uploadUrl.substring(0, 100) + "...", // Log first 100 chars of URL
+        })
+        
+        // Provide more specific error messages
+        if (uploadRes.status === 403) {
+          throw new Error(`S3 Access Denied (403). Check: 1) IAM permissions, 2) Bucket policy, 3) Content-Type header matches presigned URL. Error: ${errorText}`)
+        }
+        throw new Error(`Failed to upload to S3: ${uploadRes.status} ${uploadRes.statusText}. Details: ${errorText}`)
       }
 
       // Step 3: Create resume record in database
