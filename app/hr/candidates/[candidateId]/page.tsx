@@ -46,7 +46,7 @@ export default function CandidateProfilePage() {
   const params = useParams()
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { data: session, status } = useSession()
+  const { data: session, status: sessionStatus } = useSession()
   const candidateId = params.candidateId as string
   const applicationId = searchParams.get("applicationId")
   const jobId = searchParams.get("jobId")
@@ -55,15 +55,15 @@ export default function CandidateProfilePage() {
   const [application, setApplication] = useState<Application | null>(null)
   const [loading, setLoading] = useState(true)
   const [updatingStatus, setUpdatingStatus] = useState(false)
-  const [status, setStatus] = useState<string>("")
+  const [applicationStatus, setApplicationStatus] = useState<string>("")
 
   useEffect(() => {
-    if (status === "unauthenticated") {
+    if (sessionStatus === "unauthenticated") {
       router.push("/auth/signin")
       return
     }
 
-    if (status === "authenticated") {
+    if (sessionStatus === "authenticated") {
       const userRole = (session?.user as any)?.role
       if (userRole !== "HR" && userRole !== "ADMIN") {
         router.push("/dashboard")
