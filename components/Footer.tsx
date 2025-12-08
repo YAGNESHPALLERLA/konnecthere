@@ -14,15 +14,15 @@ const columns = [
     links: [
       { label: "Browse roles", href: "/jobs" },
       { label: "Create profile", href: "/auth/signup" },
-      { label: "Saved jobs", href: "/candidate/saved" },
+      { label: "Saved jobs", href: "/dashboard/saved" },
     ],
   },
   {
     title: "Employers",
     links: [
-      { label: "Post a role", href: "/employer/jobs/new" },
-      { label: "Dashboard", href: "/employer/dashboard" },
-      { label: "Company profiles", href: "/employer/companies/new" },
+      { label: "Post a role", href: "/hr/jobs/new" },
+      { label: "Dashboard", href: "/dashboard/hr" },
+      { label: "Company profiles", href: "/hr/jobs" },
     ],
   },
   {

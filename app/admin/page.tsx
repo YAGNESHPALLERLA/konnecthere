@@ -10,6 +10,10 @@ export const dynamic = "force-dynamic"
 
 export default async function AdminDashboard() {
   await requireRole("ADMIN")
+  
+  // Redirect to /dashboard/admin for consistency
+  const { redirect } = await import("next/navigation")
+  redirect("/dashboard/admin")
 
   const [users, jobs, applications, conversations] = await Promise.all([
     prisma.user.findMany({

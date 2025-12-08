@@ -158,6 +158,23 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
   )
 }
 
+// Get base URL from environment or infer from request
+function getBaseUrl(): string {
+  // In production, use NEXTAUTH_URL or AUTH_URL
+  if (process.env.NEXTAUTH_URL) {
+    return process.env.NEXTAUTH_URL
+  }
+  if (process.env.AUTH_URL) {
+    return process.env.AUTH_URL
+  }
+  // In development, default to localhost
+  if (process.env.NODE_ENV === "development") {
+    return "http://localhost:3000"
+  }
+  // Fallback (should not happen in production)
+  return "http://localhost:3000"
+}
+
 export const authOptions: NextAuthConfig = {
   adapter: PrismaAdapter(prisma) as any,
   providers,
@@ -175,20 +192,23 @@ export const authOptions: NextAuthConfig = {
     // This is called when NextAuth needs to redirect (e.g., after sign-in, sign-out)
     // CRITICAL: This callback must NEVER redirect to /api/auth/* routes
     redirect({ url, baseUrl }) {
+      // Use environment-based baseUrl if available, otherwise use the provided baseUrl
+      const effectiveBaseUrl = getBaseUrl()
+      
       // CRITICAL: Never redirect to /api/auth/* routes - this causes infinite loops
       // Check both relative and absolute URLs
       if (url.includes("/api/auth") || url.includes("/api/auth/")) {
         console.log("[AUTH] Redirect callback blocked redirect to /api/auth/*:", url)
-        return baseUrl
+        return effectiveBaseUrl
       }
 
       // If url is relative, make it absolute
       if (url.startsWith("/")) {
-        const fullUrl = `${baseUrl}${url}`
+        const fullUrl = `${effectiveBaseUrl}${url}`
         // Double-check the full URL doesn't contain /api/auth
         if (fullUrl.includes("/api/auth")) {
           console.log("[AUTH] Redirect callback blocked relative URL that resolves to /api/auth/*:", url)
-          return baseUrl
+          return effectiveBaseUrl
         }
         return fullUrl
       }
@@ -199,19 +219,20 @@ export const authOptions: NextAuthConfig = {
         // Block if it's an /api/auth route
         if (urlObj.pathname.startsWith("/api/auth")) {
           console.log("[AUTH] Redirect callback blocked absolute URL to /api/auth/*:", url)
-          return baseUrl
+          return effectiveBaseUrl
         }
-        // Only allow same-origin URLs
-        if (urlObj.origin === baseUrl) {
+        // Only allow same-origin URLs (compare with effectiveBaseUrl)
+        const baseUrlObj = new URL(effectiveBaseUrl)
+        if (urlObj.origin === baseUrlObj.origin) {
           return url
         }
-        // Different origin - return baseUrl to prevent redirect loops
+        // Different origin - return effectiveBaseUrl to prevent redirect loops
         console.log("[AUTH] Redirect callback blocked cross-origin URL:", url)
-        return baseUrl
+        return effectiveBaseUrl
       } catch (error) {
-        // Invalid URL - return baseUrl
+        // Invalid URL - return effectiveBaseUrl
         console.log("[AUTH] Redirect callback blocked invalid URL:", url, error)
-        return baseUrl
+        return effectiveBaseUrl
       }
     },
     async signIn({ user, account, profile }) {
