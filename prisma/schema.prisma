@@ -59,6 +59,31 @@ model User {
   password      String? // Hashed password for email auth
   role          UserRole      @default(USER)
   status        UserStatus    @default(ACTIVE)
+  
+  // Profile fields
+  phone         String?
+  bio           String?       @db.Text
+  location      String?
+  currentTitle  String?       // Current job title
+  website       String?       // Personal website/portfolio
+  linkedin      String?       // LinkedIn profile URL
+  github        String?       // GitHub profile URL
+  twitter       String?       // Twitter/X profile URL
+  
+  // Education
+  education     Json?         // Array of education entries: [{school, degree, field, startDate, endDate, description}]
+  
+  // Work Experience
+  experience    Json?         // Array of experience entries: [{company, title, startDate, endDate, description, current}]
+  
+  // Skills
+  skills        String[]      // Array of skills
+  
+  // Additional info
+  availability  String?       // e.g., "Available immediately", "2 weeks notice", etc.
+  salaryExpectation String?   // Salary expectation
+  preferredLocation String?   // Preferred work location
+  
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
 

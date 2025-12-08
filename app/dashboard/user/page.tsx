@@ -24,6 +24,20 @@ export default async function UserDashboard() {
       role: true,
       status: true,
       emailVerified: true,
+      phone: true,
+      bio: true,
+      location: true,
+      currentTitle: true,
+      website: true,
+      linkedin: true,
+      github: true,
+      twitter: true,
+      education: true,
+      experience: true,
+      skills: true,
+      availability: true,
+      salaryExpectation: true,
+      preferredLocation: true,
       createdAt: true,
       updatedAt: true,
     },
@@ -156,41 +170,167 @@ export default async function UserDashboard() {
               </Link>
             </div>
           </div>
-          <div className="mt-6 pt-6 border-t border-gray-200 grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-            <div>
-              <p className="text-gray-600">Member Since</p>
-              <p className="font-semibold">
-                {userDetails?.createdAt 
-                  ? new Date(userDetails.createdAt).toLocaleDateString("en-US", { 
-                      year: "numeric", 
-                      month: "long" 
-                    })
-                  : "N/A"}
-              </p>
+          <div className="mt-6 pt-6 border-t border-gray-200 space-y-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+              <div>
+                <p className="text-gray-600">Member Since</p>
+                <p className="font-semibold">
+                  {userDetails?.createdAt 
+                    ? new Date(userDetails.createdAt).toLocaleDateString("en-US", { 
+                        year: "numeric", 
+                        month: "long" 
+                      })
+                    : "N/A"}
+                </p>
+              </div>
+              <div>
+                <p className="text-gray-600">Last Updated</p>
+                <p className="font-semibold">
+                  {userDetails?.updatedAt 
+                    ? new Date(userDetails.updatedAt).toLocaleDateString("en-US", { 
+                        year: "numeric", 
+                        month: "long" 
+                      })
+                    : "N/A"}
+                </p>
+              </div>
+              <div>
+                <p className="text-gray-600">Account Status</p>
+                <p className="font-semibold capitalize">
+                  {userDetails?.status?.toLowerCase() || "Active"}
+                </p>
+              </div>
+              <div>
+                <p className="text-gray-600">Email Status</p>
+                <p className="font-semibold">
+                  {userDetails?.emailVerified ? "Verified" : "Unverified"}
+                </p>
+              </div>
             </div>
-            <div>
-              <p className="text-gray-600">Last Updated</p>
-              <p className="font-semibold">
-                {userDetails?.updatedAt 
-                  ? new Date(userDetails.updatedAt).toLocaleDateString("en-US", { 
-                      year: "numeric", 
-                      month: "long" 
-                    })
-                  : "N/A"}
-              </p>
-            </div>
-            <div>
-              <p className="text-gray-600">Account Status</p>
-              <p className="font-semibold capitalize">
-                {userDetails?.status?.toLowerCase() || "Active"}
-              </p>
-            </div>
-            <div>
-              <p className="text-gray-600">Email Status</p>
-              <p className="font-semibold">
-                {userDetails?.emailVerified ? "Verified" : "Unverified"}
-              </p>
-            </div>
+
+            {/* Additional Profile Info */}
+            {(userDetails?.phone || userDetails?.location || userDetails?.currentTitle) && (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm pt-4 border-t border-gray-200">
+                {userDetails.phone && (
+                  <div>
+                    <p className="text-gray-600">Phone</p>
+                    <p className="font-semibold">{userDetails.phone}</p>
+                  </div>
+                )}
+                {userDetails.location && (
+                  <div>
+                    <p className="text-gray-600">Location</p>
+                    <p className="font-semibold">{userDetails.location}</p>
+                  </div>
+                )}
+                {userDetails.currentTitle && (
+                  <div>
+                    <p className="text-gray-600">Current Title</p>
+                    <p className="font-semibold">{userDetails.currentTitle}</p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Bio */}
+            {userDetails?.bio && (
+              <div className="pt-4 border-t border-gray-200">
+                <p className="text-gray-600 text-sm mb-2">About</p>
+                <p className="text-gray-800">{userDetails.bio}</p>
+              </div>
+            )}
+
+            {/* Social Links */}
+            {(userDetails?.website || userDetails?.linkedin || userDetails?.github || userDetails?.twitter) && (
+              <div className="pt-4 border-t border-gray-200">
+                <p className="text-gray-600 text-sm mb-2">Links</p>
+                <div className="flex flex-wrap gap-3">
+                  {userDetails.website && (
+                    <a href={userDetails.website} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline text-sm">
+                      Website
+                    </a>
+                  )}
+                  {userDetails.linkedin && (
+                    <a href={userDetails.linkedin} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline text-sm">
+                      LinkedIn
+                    </a>
+                  )}
+                  {userDetails.github && (
+                    <a href={userDetails.github} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline text-sm">
+                      GitHub
+                    </a>
+                  )}
+                  {userDetails.twitter && (
+                    <a href={userDetails.twitter} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline text-sm">
+                      Twitter
+                    </a>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Skills */}
+            {userDetails?.skills && userDetails.skills.length > 0 && (
+              <div className="pt-4 border-t border-gray-200">
+                <p className="text-gray-600 text-sm mb-2">Skills</p>
+                <div className="flex flex-wrap gap-2">
+                  {userDetails.skills.map((skill) => (
+                    <span key={skill} className="px-3 py-1 bg-gray-100 rounded-full text-sm">
+                      {skill}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Education Summary */}
+            {userDetails?.education && Array.isArray(userDetails.education) && userDetails.education.length > 0 && (
+              <div className="pt-4 border-t border-gray-200">
+                <p className="text-gray-600 text-sm mb-2">Education</p>
+                <div className="space-y-2">
+                  {userDetails.education.slice(0, 2).map((edu: any, idx: number) => (
+                    <div key={idx} className="text-sm">
+                      <p className="font-semibold">{edu.school}</p>
+                      {edu.degree && <p className="text-gray-600">{edu.degree}{edu.field && ` in ${edu.field}`}</p>}
+                      {(edu.startDate || edu.endDate) && (
+                        <p className="text-gray-500 text-xs">
+                          {edu.startDate} - {edu.endDate || "Present"}
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                  {userDetails.education.length > 2 && (
+                    <Link href="/dashboard/profile" className="text-blue-600 hover:underline text-sm">
+                      View all {userDetails.education.length} education entries →
+                    </Link>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Experience Summary */}
+            {userDetails?.experience && Array.isArray(userDetails.experience) && userDetails.experience.length > 0 && (
+              <div className="pt-4 border-t border-gray-200">
+                <p className="text-gray-600 text-sm mb-2">Experience</p>
+                <div className="space-y-2">
+                  {userDetails.experience.slice(0, 2).map((exp: any, idx: number) => (
+                    <div key={idx} className="text-sm">
+                      <p className="font-semibold">{exp.title} at {exp.company}</p>
+                      {(exp.startDate || exp.endDate) && (
+                        <p className="text-gray-500 text-xs">
+                          {exp.startDate} - {exp.current ? "Present" : exp.endDate || "Present"}
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                  {userDetails.experience.length > 2 && (
+                    <Link href="/dashboard/profile" className="text-blue-600 hover:underline text-sm">
+                      View all {userDetails.experience.length} experience entries →
+                    </Link>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         </Card>
 
