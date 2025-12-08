@@ -38,6 +38,13 @@ export async function GET(req: NextRequest) {
         availability: true,
         salaryExpectation: true,
         preferredLocation: true,
+        experienceLevel: true,
+        yearsOfExperience: true,
+        dateOfBirth: true,
+        gender: true,
+        languages: true,
+        certifications: true,
+        portfolioUrl: true,
         image: true,
         emailVerified: true,
         status: true,
@@ -87,6 +94,13 @@ const updateProfileSchema = z.object({
   availability: z.string().max(255).optional().nullable(),
   salaryExpectation: z.string().max(255).optional().nullable(),
   preferredLocation: z.string().max(255).optional().nullable(),
+  experienceLevel: z.enum(["FRESHER", "EXPERIENCED"]).optional().nullable(),
+  yearsOfExperience: z.number().int().min(0).max(50).optional().nullable(),
+  dateOfBirth: z.string().optional().nullable(), // ISO date string
+  gender: z.enum(["MALE", "FEMALE", "OTHER", "PREFER_NOT_TO_SAY"]).optional().nullable(),
+  languages: z.array(z.string()).optional().nullable(),
+  certifications: z.array(z.string()).optional().nullable(),
+  portfolioUrl: z.string().url().optional().nullable().or(z.literal("")),
 })
 
 export async function PATCH(req: NextRequest) {
@@ -121,6 +135,13 @@ export async function PATCH(req: NextRequest) {
     if (data.availability !== undefined) updateData.availability = data.availability || null
     if (data.salaryExpectation !== undefined) updateData.salaryExpectation = data.salaryExpectation || null
     if (data.preferredLocation !== undefined) updateData.preferredLocation = data.preferredLocation || null
+    if (data.experienceLevel !== undefined) updateData.experienceLevel = data.experienceLevel || null
+    if (data.yearsOfExperience !== undefined) updateData.yearsOfExperience = data.yearsOfExperience ?? null
+    if (data.dateOfBirth !== undefined) updateData.dateOfBirth = data.dateOfBirth ? new Date(data.dateOfBirth) : null
+    if (data.gender !== undefined) updateData.gender = data.gender || null
+    if (data.languages !== undefined) updateData.languages = data.languages || []
+    if (data.certifications !== undefined) updateData.certifications = data.certifications || []
+    if (data.portfolioUrl !== undefined) updateData.portfolioUrl = data.portfolioUrl || null
 
     const updatedUser = await prisma.user.update({
       where: { id: userId },
@@ -144,6 +165,13 @@ export async function PATCH(req: NextRequest) {
         availability: true,
         salaryExpectation: true,
         preferredLocation: true,
+        experienceLevel: true,
+        yearsOfExperience: true,
+        dateOfBirth: true,
+        gender: true,
+        languages: true,
+        certifications: true,
+        portfolioUrl: true,
         image: true,
         createdAt: true,
         updatedAt: true,

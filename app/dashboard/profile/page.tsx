@@ -44,6 +44,13 @@ type UserProfile = {
   availability: string | null
   salaryExpectation: string | null
   preferredLocation: string | null
+  experienceLevel: string | null
+  yearsOfExperience: number | null
+  dateOfBirth: string | null
+  gender: string | null
+  languages: string[]
+  certifications: string[]
+  portfolioUrl: string | null
   image: string | null
 }
 
@@ -72,6 +79,15 @@ export default function ProfilePage() {
   const [availability, setAvailability] = useState("")
   const [salaryExpectation, setSalaryExpectation] = useState("")
   const [preferredLocation, setPreferredLocation] = useState("")
+  const [experienceLevel, setExperienceLevel] = useState<"FRESHER" | "EXPERIENCED" | "">("")
+  const [yearsOfExperience, setYearsOfExperience] = useState<number | "">("")
+  const [dateOfBirth, setDateOfBirth] = useState("")
+  const [gender, setGender] = useState<"MALE" | "FEMALE" | "OTHER" | "PREFER_NOT_TO_SAY" | "">("")
+  const [languages, setLanguages] = useState<string[]>([])
+  const [languageInput, setLanguageInput] = useState("")
+  const [certifications, setCertifications] = useState<string[]>([])
+  const [certificationInput, setCertificationInput] = useState("")
+  const [portfolioUrl, setPortfolioUrl] = useState("")
 
   useEffect(() => {
     fetchProfile()
@@ -103,6 +119,13 @@ export default function ProfilePage() {
       setAvailability(user.availability || "")
       setSalaryExpectation(user.salaryExpectation || "")
       setPreferredLocation(user.preferredLocation || "")
+      setExperienceLevel((user.experienceLevel as "FRESHER" | "EXPERIENCED") || "")
+      setYearsOfExperience(user.yearsOfExperience ?? "")
+      setDateOfBirth(user.dateOfBirth ? new Date(user.dateOfBirth).toISOString().split('T')[0] : "")
+      setGender((user.gender as "MALE" | "FEMALE" | "OTHER" | "PREFER_NOT_TO_SAY") || "")
+      setLanguages(user.languages || [])
+      setCertifications(user.certifications || [])
+      setPortfolioUrl(user.portfolioUrl || "")
     } catch (error) {
       console.error("Error fetching profile:", error)
       setMessage({ type: "error", text: "Failed to load profile" })
@@ -136,6 +159,13 @@ export default function ProfilePage() {
           availability: availability || null,
           salaryExpectation: salaryExpectation || null,
           preferredLocation: preferredLocation || null,
+          experienceLevel: experienceLevel || null,
+          yearsOfExperience: yearsOfExperience === "" ? null : Number(yearsOfExperience),
+          dateOfBirth: dateOfBirth || null,
+          gender: gender || null,
+          languages: languages.length > 0 ? languages : null,
+          certifications: certifications.length > 0 ? certifications : null,
+          portfolioUrl: portfolioUrl || null,
         }),
       })
 
@@ -191,6 +221,28 @@ export default function ProfilePage() {
 
   const removeSkill = (skill: string) => {
     setSkills(skills.filter((s) => s !== skill))
+  }
+
+  const addLanguage = () => {
+    if (languageInput.trim() && !languages.includes(languageInput.trim())) {
+      setLanguages([...languages, languageInput.trim()])
+      setLanguageInput("")
+    }
+  }
+
+  const removeLanguage = (lang: string) => {
+    setLanguages(languages.filter((l) => l !== lang))
+  }
+
+  const addCertification = () => {
+    if (certificationInput.trim() && !certifications.includes(certificationInput.trim())) {
+      setCertifications([...certifications, certificationInput.trim()])
+      setCertificationInput("")
+    }
+  }
+
+  const removeCertification = (cert: string) => {
+    setCertifications(certifications.filter((c) => c !== cert))
   }
 
   if (!session) {
@@ -296,17 +348,91 @@ export default function ProfilePage() {
                 />
               </div>
 
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-2">
+                    Location
+                  </label>
+                  <Input
+                    id="location"
+                    type="text"
+                    value={location}
+                    onChange={(e) => setLocation(e.target.value)}
+                    placeholder="e.g., San Francisco, CA"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="dateOfBirth" className="block text-sm font-medium text-gray-700 mb-2">
+                    Date of Birth
+                  </label>
+                  <Input
+                    id="dateOfBirth"
+                    type="date"
+                    value={dateOfBirth}
+                    onChange={(e) => setDateOfBirth(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="experienceLevel" className="block text-sm font-medium text-gray-700 mb-2">
+                    Experience Level *
+                  </label>
+                  <select
+                    id="experienceLevel"
+                    value={experienceLevel}
+                    onChange={(e) => {
+                      const val = e.target.value as "FRESHER" | "EXPERIENCED" | ""
+                      setExperienceLevel(val)
+                      if (val === "FRESHER") {
+                        setYearsOfExperience(0)
+                      }
+                    }}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
+                    required
+                  >
+                    <option value="">Select experience level</option>
+                    <option value="FRESHER">Fresher</option>
+                    <option value="EXPERIENCED">Experienced</option>
+                  </select>
+                </div>
+                <div>
+                  <label htmlFor="yearsOfExperience" className="block text-sm font-medium text-gray-700 mb-2">
+                    Years of Experience
+                  </label>
+                  <Input
+                    id="yearsOfExperience"
+                    type="number"
+                    min="0"
+                    max="50"
+                    value={yearsOfExperience}
+                    onChange={(e) => setYearsOfExperience(e.target.value === "" ? "" : Number(e.target.value))}
+                    placeholder="e.g., 5"
+                    disabled={experienceLevel === "FRESHER"}
+                  />
+                  {experienceLevel === "FRESHER" && (
+                    <p className="mt-1 text-xs text-gray-500">Automatically set to 0 for freshers</p>
+                  )}
+                </div>
+              </div>
+
               <div>
-                <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-2">
-                  Location
+                <label htmlFor="gender" className="block text-sm font-medium text-gray-700 mb-2">
+                  Gender
                 </label>
-                <Input
-                  id="location"
-                  type="text"
-                  value={location}
-                  onChange={(e) => setLocation(e.target.value)}
-                  placeholder="e.g., San Francisco, CA"
-                />
+                <select
+                  id="gender"
+                  value={gender}
+                  onChange={(e) => setGender(e.target.value as any)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
+                >
+                  <option value="">Prefer not to say</option>
+                  <option value="MALE">Male</option>
+                  <option value="FEMALE">Female</option>
+                  <option value="OTHER">Other</option>
+                  <option value="PREFER_NOT_TO_SAY">Prefer not to say</option>
+                </select>
               </div>
 
               <div>
@@ -326,7 +452,7 @@ export default function ProfilePage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label htmlFor="website" className="block text-sm font-medium text-gray-700 mb-2">
-                    Website / Portfolio
+                    Website
                   </label>
                   <Input
                     id="website"
@@ -334,6 +460,18 @@ export default function ProfilePage() {
                     value={website}
                     onChange={(e) => setWebsite(e.target.value)}
                     placeholder="https://yourwebsite.com"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="portfolioUrl" className="block text-sm font-medium text-gray-700 mb-2">
+                    Portfolio URL
+                  </label>
+                  <Input
+                    id="portfolioUrl"
+                    type="url"
+                    value={portfolioUrl}
+                    onChange={(e) => setPortfolioUrl(e.target.value)}
+                    placeholder="https://yourportfolio.com"
                   />
                 </div>
                 <div>
@@ -599,6 +737,88 @@ export default function ProfilePage() {
                   onChange={(e) => setSalaryExpectation(e.target.value)}
                   placeholder="e.g., $80,000 - $100,000, Negotiable, etc."
                 />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Languages Spoken
+                </label>
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Add a language (e.g., English, Spanish, Hindi)"
+                    value={languageInput}
+                    onChange={(e) => setLanguageInput(e.target.value)}
+                    onKeyPress={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault()
+                        addLanguage()
+                      }
+                    }}
+                  />
+                  <Button type="button" onClick={addLanguage}>
+                    Add
+                  </Button>
+                </div>
+                {languages.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {languages.map((lang) => (
+                      <span
+                        key={lang}
+                        className="inline-flex items-center gap-2 px-3 py-1 bg-gray-100 rounded-full text-sm"
+                      >
+                        {lang}
+                        <button
+                          type="button"
+                          onClick={() => removeLanguage(lang)}
+                          className="text-gray-500 hover:text-gray-700"
+                        >
+                          ×
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Certifications
+                </label>
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Add a certification (e.g., AWS Certified, PMP, etc.)"
+                    value={certificationInput}
+                    onChange={(e) => setCertificationInput(e.target.value)}
+                    onKeyPress={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault()
+                        addCertification()
+                      }
+                    }}
+                  />
+                  <Button type="button" onClick={addCertification}>
+                    Add
+                  </Button>
+                </div>
+                {certifications.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {certifications.map((cert) => (
+                      <span
+                        key={cert}
+                        className="inline-flex items-center gap-2 px-3 py-1 bg-gray-100 rounded-full text-sm"
+                      >
+                        {cert}
+                        <button
+                          type="button"
+                          onClick={() => removeCertification(cert)}
+                          className="text-gray-500 hover:text-gray-700"
+                        >
+                          ×
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
             </Card>
           )}

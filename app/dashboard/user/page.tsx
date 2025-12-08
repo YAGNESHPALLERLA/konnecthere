@@ -38,6 +38,13 @@ export default async function UserDashboard() {
       availability: true,
       salaryExpectation: true,
       preferredLocation: true,
+      experienceLevel: true,
+      yearsOfExperience: true,
+      dateOfBirth: true,
+      gender: true,
+      languages: true,
+      certifications: true,
+      portfolioUrl: true,
       createdAt: true,
       updatedAt: true,
     },
@@ -209,7 +216,7 @@ export default async function UserDashboard() {
             </div>
 
             {/* Additional Profile Info */}
-            {(userDetails?.phone || userDetails?.location || userDetails?.currentTitle) && (
+            {(userDetails?.phone || userDetails?.location || userDetails?.currentTitle || userDetails?.experienceLevel || userDetails?.yearsOfExperience) && (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm pt-4 border-t border-gray-200">
                 {userDetails.phone && (
                   <div>
@@ -229,6 +236,18 @@ export default async function UserDashboard() {
                     <p className="font-semibold">{userDetails.currentTitle}</p>
                   </div>
                 )}
+                {userDetails.experienceLevel && (
+                  <div>
+                    <p className="text-gray-600">Experience Level</p>
+                    <p className="font-semibold capitalize">{userDetails.experienceLevel.toLowerCase()}</p>
+                  </div>
+                )}
+                {userDetails.yearsOfExperience !== null && userDetails.yearsOfExperience !== undefined && (
+                  <div>
+                    <p className="text-gray-600">Years of Experience</p>
+                    <p className="font-semibold">{userDetails.yearsOfExperience} {userDetails.yearsOfExperience === 1 ? 'year' : 'years'}</p>
+                  </div>
+                )}
               </div>
             )}
 
@@ -241,13 +260,18 @@ export default async function UserDashboard() {
             )}
 
             {/* Social Links */}
-            {(userDetails?.website || userDetails?.linkedin || userDetails?.github || userDetails?.twitter) && (
+            {(userDetails?.website || userDetails?.linkedin || userDetails?.github || userDetails?.twitter || userDetails?.portfolioUrl) && (
               <div className="pt-4 border-t border-gray-200">
                 <p className="text-gray-600 text-sm mb-2">Links</p>
                 <div className="flex flex-wrap gap-3">
                   {userDetails.website && (
                     <a href={userDetails.website} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline text-sm">
                       Website
+                    </a>
+                  )}
+                  {userDetails.portfolioUrl && (
+                    <a href={userDetails.portfolioUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline text-sm">
+                      Portfolio
                     </a>
                   )}
                   {userDetails.linkedin && (
@@ -265,6 +289,34 @@ export default async function UserDashboard() {
                       Twitter
                     </a>
                   )}
+                </div>
+              </div>
+            )}
+
+            {/* Languages */}
+            {userDetails?.languages && userDetails.languages.length > 0 && (
+              <div className="pt-4 border-t border-gray-200">
+                <p className="text-gray-600 text-sm mb-2">Languages</p>
+                <div className="flex flex-wrap gap-2">
+                  {userDetails.languages.map((lang) => (
+                    <span key={lang} className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
+                      {lang}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Certifications */}
+            {userDetails?.certifications && userDetails.certifications.length > 0 && (
+              <div className="pt-4 border-t border-gray-200">
+                <p className="text-gray-600 text-sm mb-2">Certifications</p>
+                <div className="flex flex-wrap gap-2">
+                  {userDetails.certifications.map((cert) => (
+                    <span key={cert} className="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm">
+                      {cert}
+                    </span>
+                  ))}
                 </div>
               </div>
             )}

@@ -84,6 +84,17 @@ model User {
   salaryExpectation String?   // Salary expectation
   preferredLocation String?   // Preferred work location
   
+  // Experience details
+  experienceLevel String?      // "FRESHER" or "EXPERIENCED"
+  yearsOfExperience Int?        // Total years of professional experience
+  dateOfBirth   DateTime?      // Date of birth (for age calculation)
+  
+  // Additional profile fields
+  gender        String?        // Optional: "MALE", "FEMALE", "OTHER", "PREFER_NOT_TO_SAY"
+  languages     String[]       // Languages spoken (e.g., ["English", "Spanish", "Hindi"])
+  certifications String[]      // Professional certifications
+  portfolioUrl  String?        // Portfolio URL (alternative to website)
+  
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
 
