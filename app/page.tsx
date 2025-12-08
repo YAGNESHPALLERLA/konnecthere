@@ -1,5 +1,4 @@
 import Link from "next/link"
-import { redirect } from "next/navigation"
 import { auth } from "@/auth"
 import { Button } from "@/components/ui/Button"
 import { Card } from "@/components/ui/Card"
@@ -36,52 +35,60 @@ const steps = [
   { title: "Decide", body: "Shortlists land in a single queue with context, notes, and nudges." },
 ]
 
+/**
+ * Public home page - shows job listings for all users (logged in or not)
+ * 
+ * This page does NOT redirect authenticated users to dashboards.
+ * Users can access their dashboards via the navbar or after login.
+ * 
+ * Testing checklist:
+ * - As logged-out user: Visit `/` → see public job list (no redirect)
+ * - As USER: Login → redirected to user dashboard. Click HOME → see public job listing (no redirect)
+ * - As HR: Login → redirected to HR dashboard. Click HOME → see public job listing (no redirect)
+ * - As ADMIN: Login → redirected to admin dashboard. Click HOME → see public job listing (no redirect)
+ */
 export default async function Home() {
-  // Get session - redirect() throws a special error that must not be caught
-  try {
-    const session = await auth()
-    
-    // Only redirect if we have a valid session with a role
-    if (session?.user) {
-      const role = (session.user as any)?.role
-      if (role === "ADMIN") {
-        redirect("/dashboard/admin")
-      } else if (role === "HR") {
-        redirect("/dashboard/hr")
-      } else if (role === "USER") {
-        redirect("/dashboard/user")
-      }
-    }
-  } catch (error: any) {
-    // Check if this is a redirect error - if so, re-throw it
-    // Next.js redirect() throws a special error that must propagate
-    if (error?.digest?.startsWith("NEXT_REDIRECT")) {
-      throw error
-    }
-    
-    // For other errors (like auth() failures), just show the home page
-    // This prevents redirect loops
-    if (process.env.NODE_ENV === "development") {
-      console.error("[HOME] Session fetch error:", error)
-    }
-    // Continue to render home page for unauthenticated users
-  }
+  // Get session for conditional rendering (e.g., welcome message), but DO NOT redirect
+  const session = await auth().catch(() => null)
 
   return (
     <div className="bg-white text-black">
       <section className="border-b border-black/10">
         <PageShell
-          title="Work doesn't need noise"
-          description="KonnectHere is a deliberately minimal hiring surface for people who value signal over scroll."
+          title={session?.user ? `Welcome back, ${session.user.name || session.user.email}` : "Work doesn't need noise"}
+          description={session?.user ? "Browse all available job opportunities below." : "KonnectHere is a deliberately minimal hiring surface for people who value signal over scroll."}
           actions={
-            <>
-              <Button asChild className="px-6 py-3 text-base">
-                <Link href="/jobs">Browse roles</Link>
-              </Button>
-              <Button variant="ghost" asChild className="px-6 py-3 text-base">
-                <Link href="/auth/signup">Join the waitlist</Link>
-              </Button>
-            </>
+            session?.user ? (
+              <>
+                <Button asChild className="px-6 py-3 text-base">
+                  <Link href="/jobs">Browse all jobs</Link>
+                </Button>
+                {(session.user as any)?.role === "USER" && (
+                  <Button variant="ghost" asChild className="px-6 py-3 text-base">
+                    <Link href="/dashboard/user">Go to Dashboard</Link>
+                  </Button>
+                )}
+                {(session.user as any)?.role === "HR" && (
+                  <Button variant="ghost" asChild className="px-6 py-3 text-base">
+                    <Link href="/dashboard/hr">Go to HR Dashboard</Link>
+                  </Button>
+                )}
+                {(session.user as any)?.role === "ADMIN" && (
+                  <Button variant="ghost" asChild className="px-6 py-3 text-base">
+                    <Link href="/dashboard/admin">Go to Admin Dashboard</Link>
+                  </Button>
+                )}
+              </>
+            ) : (
+              <>
+                <Button asChild className="px-6 py-3 text-base">
+                  <Link href="/jobs">Browse roles</Link>
+                </Button>
+                <Button variant="ghost" asChild className="px-6 py-3 text-base">
+                  <Link href="/auth/signup">Join the waitlist</Link>
+                </Button>
+              </>
+            )
           }
         >
           <div className="grid gap-4 sm:grid-cols-3">
