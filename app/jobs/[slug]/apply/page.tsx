@@ -68,59 +68,35 @@ export default function ApplyPage() {
 
     setUploading(true)
     try {
-      // Get upload URL
-      const urlRes = await fetch("/api/resume/upload-url", {
+      // Upload file directly to server-side route
+      // The server handles S3 upload and database save
+      const formData = new FormData()
+      formData.append("file", file)
+
+      const uploadRes = await fetch("/api/resume/upload", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          fileName: file.name,
-          fileType: file.type,
-          fileSize: file.size,
-        }),
-      })
-
-      if (!urlRes.ok) {
-        throw new Error("Failed to get upload URL")
-      }
-
-      const { uploadUrl, fileUrl, key } = await urlRes.json()
-
-      // Upload to S3
-      // IMPORTANT: Don't send any custom headers with presigned URL PUT requests
-      // The presigned URL signature doesn't include Content-Type, so sending it causes mismatch
-      // S3 will auto-detect the content type from the file
-      const uploadRes = await fetch(uploadUrl, {
-        method: "PUT",
-        body: file,
-        // No headers - presigned URL doesn't require Content-Type when not specified in command
+        body: formData,
+        // Don't set Content-Type header - browser sets it automatically with boundary for multipart/form-data
       })
 
       if (!uploadRes.ok) {
-        throw new Error("Failed to upload file")
+        let errorData: any
+        try {
+          errorData = await uploadRes.json()
+        } catch {
+          errorData = { error: "Failed to upload file" }
+        }
+        throw new Error(errorData.error || "Failed to upload resume")
       }
 
-      // Save resume record
-      const saveRes = await fetch("/api/resumes", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          fileName: file.name,
-          fileUrl,
-          fileSize: file.size,
-          mimeType: file.type,
-        }),
-      })
-
-      if (saveRes.ok) {
-        const newResume = await saveRes.json()
-        setResumes([...resumes, newResume])
-        setSelectedResume(newResume.id)
-        setFile(null)
-        alert("Resume uploaded successfully!")
-      }
-    } catch (error) {
+      const newResume = await uploadRes.json()
+      setResumes([...resumes, newResume])
+      setSelectedResume(newResume.id)
+      setFile(null)
+      alert("Resume uploaded successfully!")
+    } catch (error: any) {
       console.error("Error uploading resume:", error)
-      alert("Failed to upload resume")
+      alert(error.message || "Failed to upload resume")
     } finally {
       setUploading(false)
     }

@@ -48,14 +48,24 @@ export default function ResumesPage() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const selectedFile = e.target.files[0]
-      if (selectedFile.type !== "application/pdf") {
-        alert("Please upload a PDF file")
+      
+      // Allowed file types
+      const allowedTypes = [
+        "application/pdf",
+        "application/msword", // .doc
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document", // .docx
+      ]
+      
+      if (!allowedTypes.includes(selectedFile.type)) {
+        alert("Please upload a PDF, DOC, or DOCX file")
         return
       }
+      
       if (selectedFile.size > 10 * 1024 * 1024) {
         alert("File size must be less than 10MB")
         return
       }
+      
       setFile(selectedFile)
     }
   }
@@ -65,90 +75,41 @@ export default function ResumesPage() {
 
     setUploading(true)
     try {
-      // Step 1: Get presigned URL
-      let urlRes: Response
-      try {
-        urlRes = await fetch("/api/resume/upload-url", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            fileName: file.name,
-            fileType: file.type,
-            fileSize: file.size,
-          }),
-        })
-      } catch (fetchError: any) {
-        console.error("Network error:", fetchError)
-        throw new Error("Network error: Unable to reach server. Please check your internet connection and try again.")
-      }
+      // Upload file directly to server-side route
+      // The server handles S3 upload and database save
+      const formData = new FormData()
+      formData.append("file", file)
 
-      if (!urlRes.ok) {
-        let errorData: any
-        try {
-          errorData = await urlRes.json()
-        } catch {
-          errorData = { error: `Server error: ${urlRes.status} ${urlRes.statusText}` }
-        }
-        
-        console.error("Upload URL error:", errorData)
-        
-        if (errorData.code === "AWS_NOT_CONFIGURED" || errorData.error?.includes("AWS") || errorData.error?.includes("S3") || errorData.error?.includes("credentials")) {
-          throw new Error("AWS S3 is not configured. Please configure AWS credentials in Vercel environment variables. See RESUME_UPLOAD_TROUBLESHOOTING.md for details.")
-        }
-        
-        throw new Error(errorData.error || `Failed to get upload URL (${urlRes.status})`)
-      }
-
-      const { uploadUrl, fileUrl, key } = await urlRes.json()
-
-      if (!uploadUrl) {
-        throw new Error("No upload URL received from server")
-      }
-
-      // Step 2: Upload to S3
-      // IMPORTANT: Don't send any custom headers with presigned URL PUT requests
-      // The presigned URL signature doesn't include Content-Type, so sending it causes mismatch
-      // S3 will auto-detect the content type from the file
-      const uploadRes = await fetch(uploadUrl, {
-        method: "PUT",
-        body: file,
-        // No headers - presigned URL doesn't require Content-Type when not specified in command
+      const uploadRes = await fetch("/api/resume/upload", {
+        method: "POST",
+        body: formData,
+        // Don't set Content-Type header - browser sets it automatically with boundary for multipart/form-data
       })
 
       if (!uploadRes.ok) {
-        const errorText = await uploadRes.text().catch(() => "Unknown error")
-        console.error("S3 upload error:", {
-          status: uploadRes.status,
-          statusText: uploadRes.statusText,
-          headers: Object.fromEntries(uploadRes.headers.entries()),
-          body: errorText,
-          uploadUrl: uploadUrl.substring(0, 100) + "...", // Log first 100 chars of URL
-        })
-        
-        // Provide more specific error messages
-        if (uploadRes.status === 403) {
-          throw new Error(`S3 Access Denied (403). Check: 1) IAM permissions, 2) Bucket policy, 3) Content-Type header matches presigned URL. Error: ${errorText}`)
+        let errorData: any
+        try {
+          errorData = await uploadRes.json()
+        } catch {
+          errorData = { error: `Server error: ${uploadRes.status} ${uploadRes.statusText}` }
         }
-        throw new Error(`Failed to upload to S3: ${uploadRes.status} ${uploadRes.statusText}. Details: ${errorText}`)
+        
+        console.error("Upload error:", errorData)
+        
+        // Provide user-friendly error messages
+        if (errorData.code === "AWS_NOT_CONFIGURED" || errorData.code === "AWS_CREDENTIALS_ERROR") {
+          throw new Error("AWS S3 is not configured. Please configure AWS credentials in Vercel environment variables.")
+        }
+        
+        if (errorData.code === "BUCKET_NOT_FOUND") {
+          throw new Error(`S3 bucket not found. Please check AWS_S3_BUCKET_NAME environment variable.`)
+        }
+        
+        throw new Error(errorData.error || `Failed to upload resume (${uploadRes.status})`)
       }
 
-      // Step 3: Create resume record in database
-      const createRes = await fetch("/api/resumes", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          fileName: file.name,
-          fileUrl,
-          fileSize: file.size,
-          mimeType: file.type,
-        }),
-      })
-
-      if (!createRes.ok) {
-        const errorData = await createRes.json().catch(() => ({ error: "Unknown error" }))
-        console.error("Create resume error:", errorData)
-        throw new Error(errorData.error || "Failed to create resume record")
-      }
+      const resume = await uploadRes.json()
+      console.log("Resume uploaded successfully:", resume)
 
       alert("Resume uploaded successfully!")
       setFile(null)
@@ -216,12 +177,12 @@ export default function ResumesPage() {
           <div className="space-y-4">
             <div>
               <label htmlFor="resume-upload" className="block text-sm font-medium text-gray-700 mb-2">
-                Select PDF File (max 10MB)
+                Select Resume File (PDF, DOC, or DOCX - max 10MB)
               </label>
               <input
                 id="resume-upload"
                 type="file"
-                accept="application/pdf"
+                accept="application/pdf,.doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                 onChange={handleFileChange}
                 className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
               />
@@ -253,7 +214,7 @@ export default function ResumesPage() {
               )}
             </div>
             <p className="text-xs text-gray-500">
-              Upload your resume in PDF format. It will be automatically parsed to extract your skills and experience.
+              Upload your resume in PDF, DOC, or DOCX format. It will be automatically parsed to extract your skills and experience.
             </p>
           </div>
         </Card>
