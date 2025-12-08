@@ -71,7 +71,7 @@ export default function CandidateProfilePage() {
       }
       fetchData()
     }
-  }, [session, status, router, candidateId, applicationId])
+  }, [session, sessionStatus, router, candidateId, applicationId])
 
   const fetchData = async () => {
     try {
@@ -125,7 +125,7 @@ export default function CandidateProfilePage() {
     }
   }
 
-  if (status === "loading" || loading) {
+  if (sessionStatus === "loading" || loading) {
     return (
       <PageShell title="Candidate Profile">
         <div className="text-center py-12">
