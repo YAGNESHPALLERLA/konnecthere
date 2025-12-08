@@ -35,7 +35,7 @@ export async function PATCH(
           select: {
             id: true,
             company: {
-              select: { ownerId: true },
+              select: { ownerId: true, hrId: true },
             },
           },
         },
@@ -47,8 +47,14 @@ export async function PATCH(
     }
 
     const ownerId = application.job.company.ownerId
-    const isAdmin = (session.user as any).role === "ADMIN"
-    if (ownerId !== (session.user as any).id && !isAdmin) {
+    const hrId = application.job.company.hrId
+    const userId = (session.user as any).id
+    const userRole = (session.user as any).role
+    const isAdmin = userRole === "ADMIN"
+    const isOwner = ownerId === userId
+    const isHR = userRole === "HR" && hrId === userId
+
+    if (!isOwner && !isAdmin && !isHR) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 })
     }
 
