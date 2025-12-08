@@ -13,6 +13,22 @@ export default async function HRDashboard() {
   // Or redirect to user's own dashboard if wrong role
   const user = await requireRole("HR")
 
+  // Get full user details
+  const userDetails = await prisma.user.findUnique({
+    where: { id: user.id },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      image: true,
+      role: true,
+      status: true,
+      emailVerified: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  })
+
   // Get companies managed by this HR user
   const companies = await prisma.company.findMany({
     where: {
@@ -81,25 +97,166 @@ export default async function HRDashboard() {
     },
   })
 
+  // Get total counts
+  const [totalJobs, totalApplications, publishedJobs, pendingApplications] = await Promise.all([
+    prisma.job.count({
+      where: {
+        companyId: { in: companies.map((c) => c.id) },
+      },
+    }),
+    prisma.application.count({
+      where: {
+        job: {
+          companyId: { in: companies.map((c) => c.id) },
+        },
+      },
+    }),
+    prisma.job.count({
+      where: {
+        companyId: { in: companies.map((c) => c.id) },
+        status: "PUBLISHED",
+      },
+    }),
+    prisma.application.count({
+      where: {
+        job: {
+          companyId: { in: companies.map((c) => c.id) },
+        },
+        status: "PENDING",
+      },
+    }),
+  ])
+
+  // Get unread message count
+  const unreadCount = await prisma.message.count({
+    where: {
+      conversation: {
+        participants: {
+          some: {
+            userId: user.id,
+          },
+        },
+      },
+      readAt: null,
+      senderId: {
+        not: user.id,
+      },
+    },
+  })
+
   return (
     <PageShell
       title="HR Dashboard"
       description="Manage your company's jobs and applicants"
     >
       <div className="space-y-8">
+        {/* Profile Summary */}
+        <Card className="p-6">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+            <div className="flex items-center gap-4">
+              {userDetails?.image ? (
+                <img
+                  src={userDetails.image}
+                  alt={userDetails.name || "Profile"}
+                  className="w-20 h-20 rounded-full object-cover border-2 border-gray-200"
+                />
+              ) : (
+                <div className="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center text-2xl font-bold text-gray-600">
+                  {(userDetails?.name || userDetails?.email || "H").charAt(0).toUpperCase()}
+                </div>
+              )}
+              <div>
+                <h2 className="text-2xl font-bold">
+                  {userDetails?.name || "HR User"}
+                </h2>
+                <p className="text-gray-600">{userDetails?.email}</p>
+                <div className="flex items-center gap-3 mt-2">
+                  <span className="inline-block rounded-full bg-black px-3 py-1 text-xs font-medium text-white">
+                    {userDetails?.role || "HR"}
+                  </span>
+                  <span className={`inline-block rounded-full px-3 py-1 text-xs font-medium ${
+                    userDetails?.status === "ACTIVE" 
+                      ? "bg-green-100 text-green-800" 
+                      : "bg-red-100 text-red-800"
+                  }`}>
+                    {userDetails?.status || "ACTIVE"}
+                  </span>
+                  {userDetails?.emailVerified && (
+                    <span className="inline-block rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-800">
+                      Verified
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              <Link href="/dashboard/profile">
+                <Button variant="outline">Edit Profile</Button>
+              </Link>
+              <Link href="/hr/jobs/new">
+                <Button>Post New Job</Button>
+              </Link>
+            </div>
+          </div>
+          <div className="mt-6 pt-6 border-t border-gray-200 grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+            <div>
+              <p className="text-gray-600">Member Since</p>
+              <p className="font-semibold">
+                {userDetails?.createdAt 
+                  ? new Date(userDetails.createdAt).toLocaleDateString("en-US", { 
+                      year: "numeric", 
+                      month: "long" 
+                    })
+                  : "N/A"}
+              </p>
+            </div>
+            <div>
+              <p className="text-gray-600">Last Updated</p>
+              <p className="font-semibold">
+                {userDetails?.updatedAt 
+                  ? new Date(userDetails.updatedAt).toLocaleDateString("en-US", { 
+                      year: "numeric", 
+                      month: "long" 
+                    })
+                  : "N/A"}
+              </p>
+            </div>
+            <div>
+              <p className="text-gray-600">Account Status</p>
+              <p className="font-semibold capitalize">
+                {userDetails?.status?.toLowerCase() || "Active"}
+              </p>
+            </div>
+            <div>
+              <p className="text-gray-600">Email Status</p>
+              <p className="font-semibold">
+                {userDetails?.emailVerified ? "Verified" : "Unverified"}
+              </p>
+            </div>
+          </div>
+        </Card>
+
         {/* Quick Stats */}
-        <div className="grid gap-4 sm:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
           <Card className="p-4">
             <p className="text-sm text-gray-600">Companies</p>
             <p className="text-2xl font-bold">{companies.length}</p>
           </Card>
           <Card className="p-4">
-            <p className="text-sm text-gray-600">Active Jobs</p>
-            <p className="text-2xl font-bold">{jobs.length}</p>
+            <p className="text-sm text-gray-600">Total Jobs</p>
+            <p className="text-2xl font-bold">{totalJobs}</p>
           </Card>
           <Card className="p-4">
-            <p className="text-sm text-gray-600">Applications</p>
-            <p className="text-2xl font-bold">{applications.length}</p>
+            <p className="text-sm text-gray-600">Published</p>
+            <p className="text-2xl font-bold text-green-600">{publishedJobs}</p>
+          </Card>
+          <Card className="p-4">
+            <p className="text-sm text-gray-600">Total Applications</p>
+            <p className="text-2xl font-bold">{totalApplications}</p>
+          </Card>
+          <Card className="p-4">
+            <p className="text-sm text-gray-600">Pending</p>
+            <p className="text-2xl font-bold text-yellow-600">{pendingApplications}</p>
           </Card>
         </div>
 
@@ -112,7 +269,17 @@ export default async function HRDashboard() {
             <Button variant="outline">View All Applications</Button>
           </Link>
           <Link href="/messages">
-            <Button variant="outline">Messages</Button>
+            <Button variant="outline">
+              Messages
+              {unreadCount > 0 && (
+                <span className="ml-2 rounded-full bg-black px-2 py-1 text-xs font-medium text-white">
+                  {unreadCount}
+                </span>
+              )}
+            </Button>
+          </Link>
+          <Link href="/dashboard/profile">
+            <Button variant="outline">Edit Profile</Button>
           </Link>
         </div>
 
@@ -212,10 +379,23 @@ export default async function HRDashboard() {
                       </Link>
                     </Table.Cell>
                     <Table.Cell>
-                      {app.user.name || app.user.email}
+                      <div>
+                        <p className="font-medium">{app.user.name || "Unnamed"}</p>
+                        <p className="text-xs text-gray-500">{app.user.email}</p>
+                      </div>
                     </Table.Cell>
                     <Table.Cell>
-                      <span className="inline-block rounded-full bg-black px-3 py-1 text-xs font-medium text-white">
+                      <span className={`inline-block rounded-full px-3 py-1 text-xs font-medium ${
+                        app.status === "SHORTLISTED"
+                          ? "bg-green-100 text-green-800"
+                          : app.status === "REJECTED"
+                          ? "bg-red-100 text-red-700"
+                          : app.status === "HIRED"
+                          ? "bg-blue-100 text-blue-800"
+                          : app.status === "REVIEWED"
+                          ? "bg-yellow-100 text-yellow-800"
+                          : "bg-gray-100 text-gray-800"
+                      }`}>
                         {app.status}
                       </span>
                     </Table.Cell>
