@@ -51,14 +51,24 @@ export default function ApplyPage() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const selectedFile = e.target.files[0]
-      if (selectedFile.type !== "application/pdf") {
-        alert("Please upload a PDF file")
+      
+      // Allowed file types
+      const allowedTypes = [
+        "application/pdf",
+        "application/msword", // .doc
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document", // .docx
+      ]
+      
+      if (!allowedTypes.includes(selectedFile.type)) {
+        alert("Please upload a PDF, DOC, or DOCX file")
         return
       }
+      
       if (selectedFile.size > 10 * 1024 * 1024) {
         alert("File size must be less than 10MB")
         return
       }
+      
       setFile(selectedFile)
     }
   }
