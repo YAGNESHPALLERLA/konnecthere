@@ -20,8 +20,22 @@ const updateJobSchema = z.object({
   status: z.enum(["DRAFT", "PUBLISHED", "CLOSED", "ARCHIVED"]).optional(),
 })
 
-function canManageJob(ownerId: string, session: any) {
-  return ownerId === (session.user as any).id || (session.user as any).role === "ADMIN"
+async function canManageJob(companyId: string, session: any) {
+  const userRole = (session.user as any).role
+  const userId = (session.user as any).id
+
+  if (userRole === "ADMIN") return true
+
+  // Check if user is the owner
+  const company = await prisma.company.findUnique({
+    where: { id: companyId },
+    select: { ownerId: true, hrId: true },
+  })
+
+  if (!company) return false
+
+  // Owner or HR manager can manage
+  return company.ownerId === userId || company.hrId === userId
 }
 
 export async function GET(
@@ -64,7 +78,9 @@ export async function GET(
       return NextResponse.json({ error: "Job not found" }, { status: 404 })
     }
 
-    if (!canManageJob(job.company.ownerId, session)) {
+    // Check access for GET (HR can view jobs for companies they manage)
+    const hasAccess = await canManageJob(job.companyId, session)
+    if (!hasAccess) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 })
     }
 
@@ -106,7 +122,8 @@ export async function PATCH(
       return NextResponse.json({ error: "Job not found" }, { status: 404 })
     }
 
-    if (!canManageJob(job.company.ownerId, session)) {
+    const hasAccess = await canManageJob(job.companyId, session)
+    if (!hasAccess) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 })
     }
 
@@ -157,7 +174,8 @@ export async function DELETE(
       return NextResponse.json({ error: "Job not found" }, { status: 404 })
     }
 
-    if (!canManageJob(job.company.ownerId, session)) {
+    const hasAccess = await canManageJob(job.companyId, session)
+    if (!hasAccess) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 })
     }
 
