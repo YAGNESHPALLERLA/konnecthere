@@ -41,19 +41,20 @@ export async function generateUploadUrl({
   const key = `${folder}/${userId}/${timestamp}-${sanitizedFileName}`
 
   try {
-    // Normalize ContentType to ensure exact match (remove any charset or extra params)
-    const normalizedContentType = fileType.split(';')[0].trim()
-    
+    // Don't include ContentType in PutObjectCommand to avoid signature mismatch
+    // S3 will infer the content type from the file, or we can set it via metadata
     const command = new PutObjectCommand({
       Bucket: BUCKET_NAME,
       Key: key,
-      ContentType: normalizedContentType, // Use normalized content type
+      // Removed ContentType to avoid signature mismatch issues
+      // S3 will auto-detect or we can set it via metadata
       // Server-side encryption
       ServerSideEncryption: "AES256",
       // Metadata
       Metadata: {
         userId,
         uploadedAt: new Date().toISOString(),
+        contentType: fileType, // Store in metadata instead
       },
     })
 

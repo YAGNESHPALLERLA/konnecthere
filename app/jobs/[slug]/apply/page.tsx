@@ -86,15 +86,13 @@ export default function ApplyPage() {
       const { uploadUrl, fileUrl, key } = await urlRes.json()
 
       // Upload to S3
-      // IMPORTANT: When ContentType is set in PutObjectCommand, we MUST include it in the PUT request
-      // Normalize the Content-Type to match what was used in presigned URL generation
-      const normalizedContentType = file.type.split(';')[0].trim()
+      // IMPORTANT: Don't send any custom headers with presigned URL PUT requests
+      // The presigned URL signature doesn't include Content-Type, so sending it causes mismatch
+      // S3 will auto-detect the content type from the file
       const uploadRes = await fetch(uploadUrl, {
         method: "PUT",
         body: file,
-        headers: {
-          "Content-Type": normalizedContentType, // Must match exactly (normalized, no charset)
-        },
+        // No headers - presigned URL doesn't require Content-Type when not specified in command
       })
 
       if (!uploadRes.ok) {
