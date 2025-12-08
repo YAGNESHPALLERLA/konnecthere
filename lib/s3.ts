@@ -41,10 +41,13 @@ export async function generateUploadUrl({
   const key = `${folder}/${userId}/${timestamp}-${sanitizedFileName}`
 
   try {
+    // Normalize ContentType to ensure exact match (remove any charset or extra params)
+    const normalizedContentType = fileType.split(';')[0].trim()
+    
     const command = new PutObjectCommand({
       Bucket: BUCKET_NAME,
       Key: key,
-      ContentType: fileType,
+      ContentType: normalizedContentType, // Use normalized content type
       // Server-side encryption
       ServerSideEncryption: "AES256",
       // Metadata

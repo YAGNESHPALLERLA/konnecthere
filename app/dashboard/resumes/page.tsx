@@ -106,12 +106,15 @@ export default function ResumesPage() {
       }
 
       // Step 2: Upload to S3
-      // Note: Don't set Content-Type header - it's already included in the presigned URL
-      // Setting it again can cause signature mismatch and 403 errors
+      // IMPORTANT: When ContentType is set in PutObjectCommand, we MUST include it in the PUT request
+      // Normalize the Content-Type to match what was used in presigned URL generation
+      const normalizedContentType = file.type.split(';')[0].trim()
       const uploadRes = await fetch(uploadUrl, {
         method: "PUT",
         body: file,
-        // Removed Content-Type header - presigned URL already includes it
+        headers: {
+          "Content-Type": normalizedContentType, // Must match exactly (normalized, no charset)
+        },
       })
 
       if (!uploadRes.ok) {
