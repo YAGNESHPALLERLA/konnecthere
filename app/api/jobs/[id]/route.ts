@@ -71,6 +71,11 @@ export async function GET(
             },
           },
         },
+        _count: {
+          select: {
+            applications: true,
+          },
+        },
       },
     })
 

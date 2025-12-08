@@ -28,9 +28,12 @@ type Job = {
     name: string
     slug: string
   }
-  _count: {
+  _count?: {
     applications: number
   }
+  applications?: Array<{
+    id: string
+  }>
 }
 
 export default function HRJobDetailPage() {
@@ -128,7 +131,7 @@ export default function HRJobDetailPage() {
               </span>
               <span>•</span>
               <span>
-                Applicants: <span className="font-medium">{job._count.applications}</span>
+                Applicants: <span className="font-medium">{job._count?.applications ?? job.applications?.length ?? 0}</span>
               </span>
             </div>
           </div>
@@ -207,7 +210,7 @@ export default function HRJobDetailPage() {
         <Card className="p-6">
           <div className="flex flex-wrap gap-3">
             <Link href={`/hr/jobs/${jobId}/applicants`}>
-              <Button>View All Applicants ({job._count.applications})</Button>
+              <Button>View All Applicants ({job._count?.applications ?? job.applications?.length ?? 0})</Button>
             </Link>
             <Link href={`/jobs/${job.slug}`} target="_blank">
               <Button variant="outline">View Public Listing</Button>
