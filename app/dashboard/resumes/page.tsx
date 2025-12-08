@@ -66,23 +66,37 @@ export default function ResumesPage() {
     setUploading(true)
     try {
       // Step 1: Get presigned URL
-      const urlRes = await fetch("/api/resume/upload-url", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          fileName: file.name,
-          fileType: file.type,
-          fileSize: file.size,
-        }),
-      })
+      let urlRes: Response
+      try {
+        urlRes = await fetch("/api/resume/upload-url", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            fileName: file.name,
+            fileType: file.type,
+            fileSize: file.size,
+          }),
+        })
+      } catch (fetchError: any) {
+        console.error("Network error:", fetchError)
+        throw new Error("Network error: Unable to reach server. Please check your internet connection and try again.")
+      }
 
       if (!urlRes.ok) {
-        const errorData = await urlRes.json().catch(() => ({ error: "Unknown error" }))
-        console.error("Upload URL error:", errorData)
-        if (errorData.error?.includes("AWS") || errorData.error?.includes("S3") || errorData.error?.includes("credentials")) {
-          throw new Error("AWS S3 is not configured. Please contact support or check your environment variables.")
+        let errorData: any
+        try {
+          errorData = await urlRes.json()
+        } catch {
+          errorData = { error: `Server error: ${urlRes.status} ${urlRes.statusText}` }
         }
-        throw new Error(errorData.error || "Failed to get upload URL")
+        
+        console.error("Upload URL error:", errorData)
+        
+        if (errorData.code === "AWS_NOT_CONFIGURED" || errorData.error?.includes("AWS") || errorData.error?.includes("S3") || errorData.error?.includes("credentials")) {
+          throw new Error("AWS S3 is not configured. Please configure AWS credentials in Vercel environment variables. See RESUME_UPLOAD_TROUBLESHOOTING.md for details.")
+        }
+        
+        throw new Error(errorData.error || `Failed to get upload URL (${urlRes.status})`)
       }
 
       const { uploadUrl, fileUrl, key } = await urlRes.json()
