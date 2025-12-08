@@ -108,20 +108,36 @@ konnecthere/
 │   ├── api/               # API routes
 │   ├── auth/              # Authentication pages
 │   ├── jobs/              # Job listing and detail pages
+│   ├── dashboard/         # Role-based dashboards
+│   ├── hr/                # HR-specific routes
 │   ├── employer/          # Employer dashboard
-│   └── candidate/         # Candidate dashboard
+│   ├── candidate/         # Candidate dashboard
+│   └── messages/          # Messaging system
 ├── components/            # React components
 ├── lib/                   # Utilities and configurations
 │   ├── auth.ts           # NextAuth configuration
+│   ├── auth/             # Auth utilities (roles, etc.)
 │   ├── prisma.ts         # Prisma client
 │   ├── s3.ts             # S3 upload utilities
 │   └── utils.ts          # Helper functions
+├── docs/                  # Documentation
+│   └── ROUTING.md        # Routing & navigation guide
 ├── prisma/
 │   └── schema.prisma     # Database schema
 ├── .github/
 │   └── workflows/        # CI/CD pipelines
 └── Dockerfile            # Docker configuration
 ```
+
+## 🗺️ Routing & Navigation
+
+For detailed information about routes, navigation, and role-based access control, see [docs/ROUTING.md](docs/ROUTING.md).
+
+Key points:
+- All routes are defined in the `app/` directory
+- Role-based dashboards: `/dashboard` redirects to role-specific dashboards
+- Protected routes use `requireRole()` from `@/lib/auth/roles`
+- Messaging system supports conversations via `/messages` with query params
 
 ## 🎯 Week 1 Deliverables (Current)
 
@@ -149,9 +165,11 @@ The app supports multiple authentication methods:
 3. **Google OAuth**: Sign in with Google
 
 User roles:
-- `CANDIDATE`: Job seekers
-- `EMPLOYER`: Companies posting jobs
+- `USER`: Job seekers (formerly `CANDIDATE`)
+- `HR`: Companies posting jobs (formerly `EMPLOYER`)
 - `ADMIN`: Platform administrators
+
+**Note**: Legacy roles (`CANDIDATE`, `EMPLOYER`) are automatically mapped to new roles for backward compatibility.
 
 ## 📝 API Routes
 

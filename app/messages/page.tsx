@@ -54,6 +54,7 @@ function MessagesContent() {
   const conversationId = searchParams.get("id")
   const targetUserId = searchParams.get("userId")
   const jobId = searchParams.get("jobId")
+  const applicationId = searchParams.get("applicationId")
 
   const [conversations, setConversations] = useState<Conversation[]>([])
   const [selectedConversation, setSelectedConversation] = useState<string | null>(
@@ -69,9 +70,15 @@ function MessagesContent() {
       fetchConversations()
       if (targetUserId && !conversationId) {
         createOrGetConversation(targetUserId)
+      } else if (jobId && !conversationId) {
+        // Find job owner and create conversation
+        findJobOwnerAndCreateConversation(jobId)
+      } else if (applicationId && !conversationId) {
+        // Find application user and create conversation
+        findApplicationUserAndCreateConversation(applicationId)
       }
     }
-  }, [session, targetUserId, conversationId])
+  }, [session, targetUserId, conversationId, jobId, applicationId])
 
   useEffect(() => {
     if (selectedConversation) {
@@ -116,6 +123,38 @@ function MessagesContent() {
       }
     } catch (error) {
       console.error("Error creating conversation:", error)
+    }
+  }
+
+  const findJobOwnerAndCreateConversation = async (jobId: string) => {
+    try {
+      // Fetch job to get owner
+      const res = await fetch(`/api/jobs/${jobId}`)
+      if (res.ok) {
+        const job = await res.json()
+        const ownerId = job.company?.ownerId
+        if (ownerId) {
+          await createOrGetConversation(ownerId)
+        }
+      }
+    } catch (error) {
+      console.error("Error finding job owner:", error)
+    }
+  }
+
+  const findApplicationUserAndCreateConversation = async (applicationId: string) => {
+    try {
+      // Fetch application to get user
+      const res = await fetch(`/api/applications/${applicationId}`)
+      if (res.ok) {
+        const application = await res.json()
+        const userId = application.user?.id
+        if (userId) {
+          await createOrGetConversation(userId)
+        }
+      }
+    } catch (error) {
+      console.error("Error finding application user:", error)
     }
   }
 
