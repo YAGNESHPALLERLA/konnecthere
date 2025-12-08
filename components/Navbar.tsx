@@ -16,7 +16,10 @@ export function Navbar() {
 
   // Role-based navigation links
   const getNavLinks = () => {
-    const baseLinks = [{ href: "/jobs", label: "Jobs" }]
+    const baseLinks = [
+      { href: "/", label: "Home" },
+      { href: "/jobs", label: "Jobs" }
+    ]
 
     if (!session) return baseLinks
 
@@ -60,7 +63,7 @@ export function Navbar() {
               href={link.href}
               className={cn(
                 "text-sm font-semibold uppercase tracking-[0.08em]",
-                pathname.startsWith(link.href) ? "text-black" : "text-black/45 hover:text-black"
+                (link.href === "/" ? pathname === "/" : pathname.startsWith(link.href)) ? "text-black" : "text-black/45 hover:text-black"
               )}
             >
               {link.label}

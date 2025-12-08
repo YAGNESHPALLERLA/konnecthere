@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/Button"
 import { Card } from "@/components/ui/Card"
 import { PageShell } from "@/components/layouts/PageShell"
 import { Pill } from "@/components/ui/Pill"
+import { JobsList } from "@/components/JobsList"
 
 export const dynamic = "force-dynamic"
 
@@ -159,6 +160,14 @@ export default async function Home() {
             </Button>
           </div>
         </div>
+      </PageShell>
+
+      {/* Jobs Listing Section */}
+      <PageShell
+        title="All Open Roles"
+        description="Browse all available job opportunities"
+      >
+        <JobsList />
       </PageShell>
     </div>
   )
