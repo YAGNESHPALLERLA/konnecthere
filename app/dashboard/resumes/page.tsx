@@ -77,10 +77,19 @@ export default function ResumesPage() {
       })
 
       if (!urlRes.ok) {
-        throw new Error("Failed to get upload URL")
+        const errorData = await urlRes.json().catch(() => ({ error: "Unknown error" }))
+        console.error("Upload URL error:", errorData)
+        if (errorData.error?.includes("AWS") || errorData.error?.includes("S3") || errorData.error?.includes("credentials")) {
+          throw new Error("AWS S3 is not configured. Please contact support or check your environment variables.")
+        }
+        throw new Error(errorData.error || "Failed to get upload URL")
       }
 
       const { uploadUrl, fileUrl, key } = await urlRes.json()
+
+      if (!uploadUrl) {
+        throw new Error("No upload URL received from server")
+      }
 
       // Step 2: Upload to S3
       const uploadRes = await fetch(uploadUrl, {
@@ -92,7 +101,9 @@ export default function ResumesPage() {
       })
 
       if (!uploadRes.ok) {
-        throw new Error("Failed to upload to S3")
+        const errorText = await uploadRes.text().catch(() => "Unknown error")
+        console.error("S3 upload error:", errorText)
+        throw new Error(`Failed to upload to S3: ${uploadRes.status} ${uploadRes.statusText}`)
       }
 
       // Step 3: Create resume record in database
@@ -108,7 +119,9 @@ export default function ResumesPage() {
       })
 
       if (!createRes.ok) {
-        throw new Error("Failed to create resume record")
+        const errorData = await createRes.json().catch(() => ({ error: "Unknown error" }))
+        console.error("Create resume error:", errorData)
+        throw new Error(errorData.error || "Failed to create resume record")
       }
 
       alert("Resume uploaded successfully!")
@@ -117,9 +130,10 @@ export default function ResumesPage() {
       const fileInput = document.getElementById("resume-upload") as HTMLInputElement
       if (fileInput) fileInput.value = ""
       await fetchResumes()
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error uploading resume:", error)
-      alert("Failed to upload resume. Please try again.")
+      const errorMessage = error.message || "Failed to upload resume. Please try again."
+      alert(errorMessage)
     } finally {
       setUploading(false)
     }
