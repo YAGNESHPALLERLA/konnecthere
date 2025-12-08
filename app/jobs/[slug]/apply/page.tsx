@@ -190,7 +190,7 @@ export default function ApplyPage() {
 
           <div className="mt-4 border-t pt-4">
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Upload New Resume (PDF, max 10MB)
+              Upload New Resume (PDF, DOC, or DOCX - max 10MB)
             </label>
             <div className="flex gap-4">
               <input
