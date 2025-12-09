@@ -166,11 +166,23 @@ function MessagesContent() {
       if (res.ok) {
         const data = await res.json()
         // Ensure messages is an array and has proper structure
-        const messagesArray = Array.isArray(data.messages) ? data.messages : []
+        const messagesArray = Array.isArray(data.messages) 
+          ? data.messages.filter((msg: any) => msg && msg.id && msg.body && msg.senderId && msg.sender)
+          : []
+        
+        // Log for debugging (remove in production if needed)
+        if (process.env.NODE_ENV === "development") {
+          console.log("[MESSAGES] Fetched messages:", {
+            count: messagesArray.length,
+            sample: messagesArray[0],
+          })
+        }
+        
         setMessages(messagesArray)
         fetchConversations() // Refresh to update unread counts
       } else {
-        console.error("Failed to fetch messages:", res.status, res.statusText)
+        const errorData = await res.json().catch(() => ({}))
+        console.error("Failed to fetch messages:", res.status, res.statusText, errorData)
         setMessages([])
       }
     } catch (error) {
@@ -287,40 +299,54 @@ function MessagesContent() {
                   </p>
                 </div>
 
-                <div className="flex-1 overflow-y-auto space-y-4 mb-4">
+                <div className="flex-1 overflow-y-auto space-y-4 mb-4 min-h-0">
                   {messages.length === 0 ? (
                     <div className="flex items-center justify-center h-full text-gray-500 text-sm">
                       No messages yet. Start the conversation!
                     </div>
                   ) : (
-                    messages.map((msg) => {
-                      const currentUserId = session?.user?.id
-                      const isOwn = currentUserId && msg.senderId === currentUserId
-                      return (
-                        <div
-                          key={msg.id}
-                          className={`flex ${isOwn ? "justify-end" : "justify-start"}`}
-                        >
+                    messages
+                      .filter((msg) => msg && msg.id && msg.body) // Filter out invalid messages
+                      .map((msg) => {
+                        const currentUserId = session?.user?.id
+                        const isOwn = currentUserId && msg.senderId === currentUserId
+                        const messageBody = msg.body?.trim() || ""
+                        
+                        // Skip rendering if message body is empty
+                        if (!messageBody) {
+                          return null
+                        }
+                        
+                        return (
                           <div
-                            className={`max-w-[70%] rounded-lg p-3 ${
-                              isOwn
-                                ? "bg-black text-white"
-                                : "bg-gray-100 text-black"
-                            }`}
+                            key={msg.id}
+                            className={`flex ${isOwn ? "justify-end" : "justify-start"}`}
                           >
-                            {!isOwn && msg.sender && (
-                              <p className="text-xs font-medium mb-1">
-                                {msg.sender.name || msg.sender.email || "Unknown"}
+                            <div
+                              className={`max-w-[70%] rounded-lg p-3 shadow-sm ${
+                                isOwn
+                                  ? "bg-black text-white"
+                                  : "bg-gray-100 text-black border border-gray-200"
+                              }`}
+                            >
+                              {!isOwn && msg.sender && (
+                                <p className="text-xs font-medium mb-1 opacity-90">
+                                  {msg.sender.name || msg.sender.email || "Unknown"}
+                                </p>
+                              )}
+                              <p className="text-sm whitespace-pre-wrap break-words leading-relaxed">
+                                {messageBody}
                               </p>
-                            )}
-                            <p className="text-sm whitespace-pre-wrap break-words">{msg.body || ""}</p>
-                            <p className="text-xs mt-1 opacity-70">
-                              {msg.createdAt ? new Date(msg.createdAt).toLocaleTimeString() : ""}
-                            </p>
+                              <p className={`text-xs mt-2 ${isOwn ? "opacity-70" : "opacity-60"}`}>
+                                {msg.createdAt ? new Date(msg.createdAt).toLocaleTimeString([], { 
+                                  hour: '2-digit', 
+                                  minute: '2-digit' 
+                                }) : ""}
+                              </p>
+                            </div>
                           </div>
-                        </div>
-                      )
-                    })
+                        )
+                      })
                   )}
                 </div>
 
