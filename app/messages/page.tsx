@@ -81,15 +81,17 @@ function MessagesContent() {
   }, [session, targetUserId, conversationId, jobId, applicationId])
 
   useEffect(() => {
-    if (selectedConversation) {
+    if (selectedConversation && session) {
       fetchMessages(selectedConversation)
       // Poll for new messages every 3 seconds
       const interval = setInterval(() => {
         fetchMessages(selectedConversation)
       }, 3000)
       return () => clearInterval(interval)
+    } else {
+      setMessages([])
     }
-  }, [selectedConversation])
+  }, [selectedConversation, session])
 
   const fetchConversations = async () => {
     try {
@@ -163,11 +165,17 @@ function MessagesContent() {
       const res = await fetch(`/api/conversations/${convId}`)
       if (res.ok) {
         const data = await res.json()
-        setMessages(data.messages || [])
+        // Ensure messages is an array and has proper structure
+        const messagesArray = Array.isArray(data.messages) ? data.messages : []
+        setMessages(messagesArray)
         fetchConversations() // Refresh to update unread counts
+      } else {
+        console.error("Failed to fetch messages:", res.status, res.statusText)
+        setMessages([])
       }
     } catch (error) {
       console.error("Error fetching messages:", error)
+      setMessages([])
     }
   }
 
@@ -280,33 +288,40 @@ function MessagesContent() {
                 </div>
 
                 <div className="flex-1 overflow-y-auto space-y-4 mb-4">
-                  {messages.map((msg) => {
-                    const isOwn = msg.senderId === session.user?.id
-                    return (
-                      <div
-                        key={msg.id}
-                        className={`flex ${isOwn ? "justify-end" : "justify-start"}`}
-                      >
+                  {messages.length === 0 ? (
+                    <div className="flex items-center justify-center h-full text-gray-500 text-sm">
+                      No messages yet. Start the conversation!
+                    </div>
+                  ) : (
+                    messages.map((msg) => {
+                      const currentUserId = session?.user?.id
+                      const isOwn = currentUserId && msg.senderId === currentUserId
+                      return (
                         <div
-                          className={`max-w-[70%] rounded-lg p-3 ${
-                            isOwn
-                              ? "bg-black text-white"
-                              : "bg-gray-100 text-black"
-                          }`}
+                          key={msg.id}
+                          className={`flex ${isOwn ? "justify-end" : "justify-start"}`}
                         >
-                          {!isOwn && (
-                            <p className="text-xs font-medium mb-1">
-                              {msg.sender.name || msg.sender.email}
+                          <div
+                            className={`max-w-[70%] rounded-lg p-3 ${
+                              isOwn
+                                ? "bg-black text-white"
+                                : "bg-gray-100 text-black"
+                            }`}
+                          >
+                            {!isOwn && msg.sender && (
+                              <p className="text-xs font-medium mb-1">
+                                {msg.sender.name || msg.sender.email || "Unknown"}
+                              </p>
+                            )}
+                            <p className="text-sm whitespace-pre-wrap break-words">{msg.body || ""}</p>
+                            <p className="text-xs mt-1 opacity-70">
+                              {msg.createdAt ? new Date(msg.createdAt).toLocaleTimeString() : ""}
                             </p>
-                          )}
-                          <p className="text-sm whitespace-pre-wrap">{msg.body}</p>
-                          <p className="text-xs mt-1 opacity-70">
-                            {new Date(msg.createdAt).toLocaleTimeString()}
-                          </p>
+                          </div>
                         </div>
-                      </div>
-                    )
-                  })}
+                      )
+                    })
+                  )}
                 </div>
 
                 <div className="flex gap-2">
