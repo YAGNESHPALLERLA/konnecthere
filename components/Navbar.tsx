@@ -23,27 +23,32 @@ export function Navbar() {
 
     if (!session) return baseLinks
 
+    // Add Konnect and Messages for all authenticated users
+    const authenticatedLinks = [
+      ...baseLinks,
+      { href: "/konnect", label: "Konnect" },
+      { href: "/messages", label: "Messages" },
+    ]
+
+    // Add Dashboard link - will redirect to role-specific dashboard
     if (userRole === "ADMIN") {
       return [
-        ...baseLinks,
-        { href: "/dashboard/admin", label: "Admin" },
-        { href: "/messages", label: "Messages" },
+        ...authenticatedLinks,
+        { href: "/dashboard", label: "Admin" },
       ]
     }
 
     if (userRole === "HR") {
       return [
-        ...baseLinks,
-        { href: "/dashboard/hr", label: "HR Dashboard" },
-        { href: "/messages", label: "Messages" },
+        ...authenticatedLinks,
+        { href: "/dashboard", label: "HR Dashboard" },
       ]
     }
 
     // USER or default
     return [
-      ...baseLinks,
-      { href: "/dashboard/user", label: "Dashboard" },
-      { href: "/messages", label: "Messages" },
+      ...authenticatedLinks,
+      { href: "/dashboard", label: "Dashboard" },
     ]
   }
 
