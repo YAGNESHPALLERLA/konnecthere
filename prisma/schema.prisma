@@ -51,73 +51,84 @@ model VerificationToken {
 
 // Application models
 model User {
-  id            String        @id @default(cuid())
+  id            String     @id @default(cuid())
   name          String?
-  email         String        @unique
+  email         String     @unique
   emailVerified DateTime?
   image         String?
   password      String? // Hashed password for email auth
-  role          UserRole      @default(USER)
-  status        UserStatus    @default(ACTIVE)
-  
-  // Profile fields
-  phone         String?
-  bio           String?       @db.Text
-  location      String?
-  currentTitle  String?       // Current job title
-  website       String?       // Personal website/portfolio
-  linkedin      String?       // LinkedIn profile URL
-  github        String?       // GitHub profile URL
-  twitter       String?       // Twitter/X profile URL
-  
-  // Education
-  education     Json?         // Array of education entries: [{school, degree, field, startDate, endDate, description}]
-  
-  // Work Experience
-  experience    Json?         // Array of experience entries: [{company, title, startDate, endDate, description, current}]
-  
-  // Skills
-  skills        String[]      // Array of skills
-  
-  // Additional info
-  availability  String?       // e.g., "Available immediately", "2 weeks notice", etc.
-  salaryExpectation String?   // Salary expectation
-  preferredLocation String?   // Preferred work location
-  
-  // Experience details
-  experienceLevel String?      // "FRESHER" or "EXPERIENCED"
-  yearsOfExperience Int?        // Total years of professional experience
-  dateOfBirth   DateTime?      // Date of birth (for age calculation)
-  
-  // Additional profile fields
-  gender        String?        // Optional: "MALE", "FEMALE", "OTHER", "PREFER_NOT_TO_SAY"
-  languages     String[]       // Languages spoken (e.g., ["English", "Spanish", "Hindi"])
-  certifications String[]      // Professional certifications
-  portfolioUrl  String?        // Portfolio URL (alternative to website)
-  
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+  role          UserRole   @default(USER)
+  status        UserStatus @default(ACTIVE)
 
-  accounts      Account[]
-  sessions      Session[]
-  companies     Company[] @relation("CompanyOwner") // Users can own multiple companies
-  managedCompanies Company[] @relation("CompanyHR") // HR users manage companies
-  applications  Application[]
-  resumes       Resume[]
-  savedSearches SavedSearch[]
-  jobAlerts     JobAlert[]
-  savedJobs     SavedJob[]
+  // Profile fields
+  phone        String?
+  bio          String? @db.Text
+  location     String?
+  currentTitle String? // Current job title
+  website      String? // Personal website/portfolio
+  linkedin     String? // LinkedIn profile URL
+  github       String? // GitHub profile URL
+  twitter      String? // Twitter/X profile URL
+
+  // Education
+  education Json? // Array of education entries: [{school, degree, field, startDate, endDate, description}]
+
+  // Work Experience
+  experience Json? // Array of experience entries: [{company, title, startDate, endDate, description, current}]
+
+  // Skills
+  skills String[] // Array of skills
+
+  // Additional info
+  availability      String? // e.g., "Available immediately", "2 weeks notice", etc.
+  salaryExpectation String? // Salary expectation
+  preferredLocation String? // Preferred work location
+
+  // Experience details
+  experienceLevel   String? // "FRESHER" or "EXPERIENCED"
+  yearsOfExperience Int? // Total years of professional experience
+  dateOfBirth       DateTime? // Date of birth (for age calculation)
+
+  // Additional profile fields
+  gender         String? // Optional: "MALE", "FEMALE", "OTHER", "PREFER_NOT_TO_SAY"
+  languages      String[] // Languages spoken (e.g., ["English", "Spanish", "Hindi"])
+  certifications String[] // Professional certifications
+  portfolioUrl   String? // Portfolio URL (alternative to website)
+
+  deletedAt   DateTime? // Soft delete
+  lastLoginAt DateTime? // Track last login
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  accounts                 Account[]
+  sessions                 Session[]
+  companies                Company[]                 @relation("CompanyOwner") // Users can own multiple companies
+  managedCompanies         Company[]                 @relation("CompanyHR") // HR users manage companies
+  applications             Application[]
+  resumes                  Resume[]
+  savedSearches            SavedSearch[]
+  jobAlerts                JobAlert[]
+  savedJobs                SavedJob[]
   // Messaging relations
   conversationParticipants ConversationParticipant[]
-  sentMessages  Message[]
+  sentMessages             Message[]
+
+  // Admin relations
+  applicationStatusChanges ApplicationStatusChange[]
+  adminActionLogs          AdminActionLog[]
+  notifications            NotificationRecipient[]
+  flaggedItems             FlaggedItem[]
+  resolvedFlags            FlaggedItem[]             @relation("ResolvedFlags")
 
   @@index([email])
   @@index([role])
   @@index([status])
+  @@index([deletedAt])
 }
 
 enum UserStatus {
   ACTIVE
+  INACTIVE
   SUSPENDED
 }
 
@@ -125,75 +136,86 @@ enum UserRole {
   USER
   HR
   ADMIN
+  SUPER_ADMIN
+  MODERATOR
   // Legacy roles for backward compatibility
   CANDIDATE
   EMPLOYER
 }
 
 model Company {
-  id          String   @id @default(cuid())
+  id          String        @id @default(cuid())
   name        String
-  slug        String   @unique
-  description String?  @db.Text
+  slug        String        @unique
+  description String?       @db.Text
   website     String?
   logo        String?
   industry    String?
   size        String? // e.g., "1-10", "11-50", "51-200", etc.
   location    String?
-  verified    Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  verified    Boolean       @default(false)
+  status      CompanyStatus @default(PENDING) // For admin approval
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
 
-  ownerId     String
-  owner       User     @relation("CompanyOwner", fields: [ownerId], references: [id], onDelete: Cascade)
-  hrId        String? // HR user assigned to manage this company
-  hr          User?    @relation("CompanyHR", fields: [hrId], references: [id], onDelete: SetNull)
-  jobs        Job[]
+  ownerId String
+  owner   User    @relation("CompanyOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  hrId    String? // HR user assigned to manage this company
+  hr      User?   @relation("CompanyHR", fields: [hrId], references: [id], onDelete: SetNull)
+  jobs    Job[]
 
   @@index([ownerId])
   @@index([hrId])
   @@index([slug])
+  @@index([status])
+}
+
+enum CompanyStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  SUSPENDED
 }
 
 model Job {
-  id              String        @id @default(cuid())
-  title           String
-  slug            String        @unique
-  description     String        @db.Text
-  requirements    String?       @db.Text
-  location        String? // e.g., "San Francisco, CA" or "Remote"
-  remote          Boolean       @default(false)
-  salaryMin       Int?
-  salaryMax       Int?
-  salaryCurrency  String?       @default("USD")
-  employmentType  EmploymentType @default(FULL_TIME)
-  experienceLevel ExperienceLevel @default(MID_LEVEL)
-  status          JobStatus     @default(DRAFT)
-  featured        Boolean       @default(false)
-  expiresAt       DateTime?
-  views           Int           @default(0)
-  applicationsCount Int         @default(0)
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
+  id                String          @id @default(cuid())
+  title             String
+  slug              String          @unique
+  description       String          @db.Text
+  requirements      String?         @db.Text
+  location          String? // e.g., "San Francisco, CA" or "Remote"
+  remote            Boolean         @default(false)
+  salaryMin         Int?
+  salaryMax         Int?
+  salaryCurrency    String?         @default("USD")
+  employmentType    EmploymentType  @default(FULL_TIME)
+  experienceLevel   ExperienceLevel @default(MID_LEVEL)
+  status            JobStatus       @default(DRAFT)
+  featured          Boolean         @default(false)
+  expiresAt         DateTime?
+  views             Int             @default(0)
+  applicationsCount Int             @default(0)
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
 
-  companyId       String
-  company         Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  applications    Application[]
-  searchIndex     SearchIndex?
-  savedBy         SavedJob[]
+  companyId    String
+  company      Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  applications Application[]
+  searchIndex  SearchIndex?
+  savedBy      SavedJob[]
 
   // LinkedIn/External sync metadata
-  linkedInJobId   String?
-  externalJobId   String? // For Indeed, ZipRecruiter, etc.
-  sharedToLinkedIn Boolean      @default(false)
-  sharedToTwitter Boolean       @default(false)
-  sharedToFacebook Boolean      @default(false)
+  linkedInJobId    String?
+  externalJobId    String? // For Indeed, ZipRecruiter, etc.
+  sharedToLinkedIn Boolean @default(false)
+  sharedToTwitter  Boolean @default(false)
+  sharedToFacebook Boolean @default(false)
+  // @@fulltext([title, description, requirements]) // Fulltext search handled at application level
 
   @@index([companyId])
   @@index([status])
   @@index([slug])
   @@index([createdAt])
-  // @@fulltext([title, description, requirements]) // Fulltext search handled at application level
 }
 
 enum EmploymentType {
@@ -216,6 +238,7 @@ enum JobStatus {
   PUBLISHED
   CLOSED
   ARCHIVED
+  REJECTED
 }
 
 model SavedJob {
@@ -223,10 +246,10 @@ model SavedJob {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  jobId     String
-  job       Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  jobId  String
+  job    Job    @relation(fields: [jobId], references: [id], onDelete: Cascade)
 
   @@unique([userId, jobId]) // One save per user per job
   @@index([userId])
@@ -234,24 +257,42 @@ model SavedJob {
 }
 
 model Application {
-  id          String           @id @default(cuid())
-  coverLetter String?          @db.Text
+  id          String            @id @default(cuid())
+  coverLetter String?           @db.Text
   status      ApplicationStatus @default(PENDING)
-  notes       String?          @db.Text // Internal notes by employer
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
+  notes       String?           @db.Text // Internal notes by employer
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
 
-  jobId       String
-  job         Job              @relation(fields: [jobId], references: [id], onDelete: Cascade)
-  userId      String
-  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  resumeId    String?
-  resume      Resume?          @relation(fields: [resumeId], references: [id], onDelete: SetNull)
+  jobId    String
+  job      Job     @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  userId   String
+  user     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  resumeId String?
+  resume   Resume? @relation(fields: [resumeId], references: [id], onDelete: SetNull)
+
+  statusHistory ApplicationStatusChange[]
 
   @@unique([jobId, userId]) // One application per user per job
   @@index([jobId])
   @@index([userId])
   @@index([status])
+}
+
+model ApplicationStatusChange {
+  id            String             @id @default(cuid())
+  applicationId String
+  application   Application        @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  oldStatus     ApplicationStatus?
+  newStatus     ApplicationStatus
+  changedById   String? // Admin or HR user who made the change
+  changedBy     User?              @relation(fields: [changedById], references: [id], onDelete: SetNull)
+  notes         String?            @db.Text
+  createdAt     DateTime           @default(now())
+
+  @@index([applicationId])
+  @@index([changedById])
+  @@index([createdAt])
 }
 
 enum ApplicationStatus {
@@ -263,59 +304,59 @@ enum ApplicationStatus {
 }
 
 model Resume {
-  id          String   @id @default(cuid())
-  fileName    String
-  fileUrl     String   // S3 URL
-  fileSize    Int      // Bytes
-  mimeType    String   @default("application/pdf")
-  
-  // Parsed fields (from resume parser microservice)
-  parsedName  String?
-  parsedEmail String?
-  parsedPhone String?
-  parsedSkills String[] // Array of skills
-  parsedTitle String? // Job title
-  parsedExperience Int? // Years of experience
-  parsedEducation String? @db.Text
-  parsedRaw   Json? // Full parsed data
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id       String @id @default(cuid())
+  fileName String
+  fileUrl  String // S3 URL
+  fileSize Int // Bytes
+  mimeType String @default("application/pdf")
 
-  userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // Parsed fields (from resume parser microservice)
+  parsedName       String?
+  parsedEmail      String?
+  parsedPhone      String?
+  parsedSkills     String[] // Array of skills
+  parsedTitle      String? // Job title
+  parsedExperience Int? // Years of experience
+  parsedEducation  String?  @db.Text
+  parsedRaw        Json? // Full parsed data
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId       String
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   applications Application[]
 
   @@index([userId])
 }
 
 model SavedSearch {
-  id          String   @id @default(cuid())
-  name        String
-  query       String? // Search query
-  filters     Json? // Filters as JSON (location, remote, salary, etc.)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        String   @id @default(cuid())
+  name      String
+  query     String? // Search query
+  filters   Json? // Filters as JSON (location, remote, salary, etc.)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
 }
 
 model JobAlert {
-  id          String   @id @default(cuid())
-  name        String
-  query       String?
-  filters     Json?
-  frequency   AlertFrequency @default(DAILY)
-  active      Boolean  @default(true)
-  lastSentAt  DateTime?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id         String         @id @default(cuid())
+  name       String
+  query      String?
+  filters    Json?
+  frequency  AlertFrequency @default(DAILY)
+  active     Boolean        @default(true)
+  lastSentAt DateTime?
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
 
-  userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([active])
@@ -328,18 +369,18 @@ enum AlertFrequency {
 }
 
 model SearchIndex {
-  id        String   @id @default(cuid())
-  jobId     String   @unique
-  job       Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
-  
+  id    String @id @default(cuid())
+  jobId String @unique
+  job   Job    @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
   // Algolia sync metadata
   algoliaObjectId String? // Algolia object ID
   indexedAt       DateTime?
   lastSyncedAt    DateTime?
-  
+
   // Full-text search fields (for Postgres fallback)
-  searchableText  String? @db.Text
-  
+  searchableText String? @db.Text
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -349,9 +390,9 @@ model SearchIndex {
 
 // Messaging models
 model Conversation {
-  id           String                    @id @default(cuid())
-  createdAt    DateTime                  @default(now())
-  updatedAt    DateTime                  @updatedAt
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   participants ConversationParticipant[]
   messages     Message[]
@@ -386,3 +427,161 @@ model Message {
   @@index([createdAt])
 }
 
+// Admin Portal Models
+
+model Skill {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  category    String? // e.g., "Technical", "Soft Skills", "Languages"
+  description String?  @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([name])
+  @@index([category])
+}
+
+model JobRole {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  category    String? // e.g., "Engineering", "Design", "Marketing"
+  description String?  @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([name])
+  @@index([category])
+}
+
+model Industry {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?  @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([name])
+}
+
+model Location {
+  id          String   @id @default(cuid())
+  city        String
+  state       String?
+  country     String   @default("USA")
+  countryCode String? // ISO country code
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([city, state, country])
+  @@index([city])
+  @@index([country])
+}
+
+model AdminActionLog {
+  id         String   @id @default(cuid())
+  adminId    String
+  admin      User     @relation(fields: [adminId], references: [id], onDelete: Cascade)
+  actionType String // e.g., "USER_UPDATE", "JOB_APPROVE", "ROLE_CHANGE"
+  entityType String // e.g., "User", "Job", "Application"
+  entityId   String
+  metadata   Json? // Additional context
+  ipAddress  String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
+
+  @@index([adminId])
+  @@index([actionType])
+  @@index([entityType])
+  @@index([entityId])
+  @@index([createdAt])
+}
+
+model Notification {
+  id            String    @id @default(cuid())
+  title         String
+  body          String    @db.Text
+  type          String // e.g., "SYSTEM", "JOB_ALERT", "APPLICATION_UPDATE"
+  targetRole    String? // Target role filter (USER, HR, ADMIN, or null for all)
+  targetSegment Json? // Advanced targeting (location, skills, etc.)
+  sentAt        DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  recipients NotificationRecipient[]
+
+  @@index([type])
+  @@index([targetRole])
+  @@index([createdAt])
+}
+
+model NotificationRecipient {
+  id             String       @id @default(cuid())
+  notificationId String
+  notification   Notification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+  userId         String
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  readAt         DateTime?
+  createdAt      DateTime     @default(now())
+
+  @@unique([notificationId, userId])
+  @@index([userId])
+  @@index([readAt])
+}
+
+model Setting {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  value       Json // Flexible JSON value
+  category    String? // e.g., "EMAIL", "SMS", "PRIVACY", "TERMS"
+  description String?  @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([key])
+  @@index([category])
+}
+
+model Template {
+  id        String   @id @default(cuid())
+  type      String // e.g., "EMAIL_VERIFICATION", "JOB_ALERT", "APPLICATION_STATUS"
+  name      String
+  subject   String?
+  body      String   @db.Text
+  variables Json? // Available template variables
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([type, name])
+  @@index([type])
+  @@index([isActive])
+}
+
+model FlaggedItem {
+  id           String     @id @default(cuid())
+  entityType   String // "USER", "JOB", "RESUME", "MESSAGE"
+  entityId     String
+  reason       String     @db.Text
+  status       FlagStatus @default(PENDING)
+  flaggedById  String?
+  flaggedBy    User?      @relation(fields: [flaggedById], references: [id], onDelete: SetNull)
+  resolvedById String?
+  resolvedBy   User?      @relation("ResolvedFlags", fields: [resolvedById], references: [id], onDelete: SetNull)
+  resolvedAt   DateTime?
+  notes        String?    @db.Text
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@index([entityType])
+  @@index([entityId])
+  @@index([status])
+  @@index([flaggedById])
+  @@index([createdAt])
+}
+
+enum FlagStatus {
+  PENDING
+  REVIEWED
+  RESOLVED
+  DISMISSED
+}

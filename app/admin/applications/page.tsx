@@ -1,4 +1,4 @@
-import { requireRole } from "@/lib/auth/roles"
+import { requireAdmin } from "@/lib/auth/admin-rbac"
 import { prisma } from "@/lib/prisma"
 import { PageShell } from "@/components/layouts/PageShell"
 import { Button } from "@/components/ui/Button"
@@ -9,7 +9,7 @@ import Link from "next/link"
 export const dynamic = "force-dynamic"
 
 export default async function AdminApplicationsPage() {
-  await requireRole("ADMIN")
+  await requireAdmin()
 
   const applications = await prisma.application.findMany({
     orderBy: { createdAt: "desc" },
@@ -45,7 +45,7 @@ export default async function AdminApplicationsPage() {
         <Card className="p-6">
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-xl font-bold">Applications ({applications.length})</h2>
-            <Link href="/dashboard/admin">
+            <Link href="/admin">
               <Button variant="outline">Back to Dashboard</Button>
             </Link>
           </div>
@@ -85,7 +85,7 @@ export default async function AdminApplicationsPage() {
                       {new Date(app.createdAt).toLocaleDateString()}
                     </Table.Cell>
                     <Table.Cell>
-                      <Link href={`/hr/applications/${app.id}`}>
+                      <Link href={`/admin/applications/${app.id}`}>
                         <Button variant="ghost" size="sm">
                           View
                         </Button>
