@@ -8,6 +8,7 @@ export const runtime = "nodejs"
 const updateCompanySchema = z.object({
   status: z.enum(["PENDING", "APPROVED", "REJECTED", "SUSPENDED"]).optional(),
   verified: z.boolean().optional(),
+  // Map status to verified for backward compatibility
 })
 
 export async function PATCH(
@@ -28,12 +29,18 @@ export async function PATCH(
       return NextResponse.json({ error: "Company not found" }, { status: 404 })
     }
 
+    // Map status to verified field until migration
+    const updateData: any = {}
+    if (data.verified !== undefined) {
+      updateData.verified = data.verified
+    } else if (data.status !== undefined) {
+      // Map status enum to verified boolean
+      updateData.verified = data.status === "APPROVED"
+    }
+
     const updatedCompany = await prisma.company.update({
       where: { id },
-      data: {
-        ...(data.status !== undefined && { status: data.status }),
-        ...(data.verified !== undefined && { verified: data.verified }),
-      },
+      data: updateData,
     })
 
     // Log admin action
@@ -44,7 +51,7 @@ export async function PATCH(
       entityId: id,
       metadata: {
         changes: data,
-        previousStatus: existingCompany.status,
+        previousVerified: existingCompany.verified,
         companyName: existingCompany.name,
       },
     })

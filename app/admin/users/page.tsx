@@ -15,13 +15,13 @@ export default async function AdminUsersPage({
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }) {
-  await requireAdmin()
-  const params = await searchParams
+  try {
+    await requireAdmin()
+    const params = await searchParams
 
-  // Build where clause
-  const where: any = {
-    deletedAt: null, // Only show non-deleted users
-  }
+    // Build where clause
+    const where: any = {}
+    // Note: deletedAt filter will be added after migration
 
   if (params.search) {
     where.OR = [
@@ -62,7 +62,7 @@ export default async function AdminUsersPage({
         status: true,
         location: true,
         createdAt: true,
-        lastLoginAt: true,
+        // lastLoginAt: true, // Uncomment after migration
       },
     }),
     prisma.user.count({ where }),
@@ -174,5 +174,20 @@ export default async function AdminUsersPage({
       </div>
     </PageShell>
   )
+  } catch (error: any) {
+    console.error("Error in AdminUsersPage:", error)
+    return (
+      <PageShell title="Error" description="An error occurred">
+        <Card className="p-6">
+          <p className="text-red-600">Error loading users: {error.message || "Unknown error"}</p>
+          <Link href="/admin">
+            <Button variant="outline" className="mt-4">
+              Back to Dashboard
+            </Button>
+          </Link>
+        </Card>
+      </PageShell>
+    )
+  }
 }
 

@@ -25,7 +25,6 @@ export default async function AdminAnalyticsPage() {
     prisma.user.count({
       where: {
         createdAt: { gte: thirtyDaysAgo },
-        deletedAt: null,
       },
     }),
     prisma.job.count({
@@ -40,7 +39,7 @@ export default async function AdminAnalyticsPage() {
     }),
     prisma.company.findMany({
       where: {
-        status: "APPROVED",
+        verified: true, // Use verified until migration
       },
       include: {
         _count: {

@@ -18,7 +18,7 @@ export async function GET(
     switch (type) {
       case "users": {
         const users = await prisma.user.findMany({
-          where: { deletedAt: null },
+          where: {},
           select: {
             id: true,
             name: true,
