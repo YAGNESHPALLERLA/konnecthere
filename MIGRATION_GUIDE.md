@@ -34,35 +34,34 @@ This migration adds the following fields and tables to support the admin portal:
 
 ## How to Apply Migration
 
-### Option 1: Using Prisma Migrate (Recommended)
+### Option 1: Direct SQL Execution (Recommended for Production)
+
+The easiest way is to run the standalone SQL script directly on your database:
 
 ```bash
-# Apply the migration
+# Using psql
+psql $DATABASE_URL -f prisma/migrations/apply_admin_fields.sql
+
+# Or using Railway CLI
+railway connect postgres
+\i prisma/migrations/apply_admin_fields.sql
+
+# Or copy and paste the SQL into your database admin tool (pgAdmin, DBeaver, etc.)
+```
+
+**This script is idempotent** - it's safe to run multiple times. It checks if columns/tables exist before creating them.
+
+### Option 2: Using Prisma Migrate
+
+If your migration system is working:
+
+```bash
+# Mark any failed migrations as resolved first
+npx prisma migrate resolve --applied <migration_name>
+
+# Then apply new migrations
 npx prisma migrate deploy
-
-# Or for development
-npx prisma migrate dev
 ```
-
-### Option 2: Manual SQL Execution
-
-If you have database access, you can run the SQL file directly:
-
-```bash
-# Connect to your database and run:
-psql $DATABASE_URL -f prisma/migrations/20251209220000_add_soft_delete_and_admin_fields/migration.sql
-```
-
-### Option 3: Using Railway/Production Database
-
-If using Railway or similar:
-
-1. Connect to your database
-2. Run the migration SQL file manually
-3. Mark migration as applied:
-   ```bash
-   npx prisma migrate resolve --applied 20251209220000_add_soft_delete_and_admin_fields
-   ```
 
 ## After Migration
 
@@ -107,4 +106,3 @@ DROP TABLE IF EXISTS "Setting";
 DROP TABLE IF EXISTS "Template";
 DROP TABLE IF EXISTS "FlaggedItem";
 ```
-
