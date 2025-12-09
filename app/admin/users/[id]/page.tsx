@@ -14,38 +14,47 @@ export default async function AdminUserDetailPage({
 }: {
   params: Promise<{ id: string }>
 }) {
-  await requireAdmin()
-  const { id } = await params
+  try {
+    await requireAdmin()
+    const { id } = await params
 
-  const user = await prisma.user.findUnique({
-    where: { id },
-    include: {
-      applications: {
-        take: 10,
-        orderBy: { createdAt: "desc" },
-        include: {
-          job: {
-            select: {
-              id: true,
-              title: true,
-              slug: true,
-              company: { select: { name: true } },
+    const user = await prisma.user.findUnique({
+      where: { id },
+      include: {
+        applications: {
+          take: 10,
+          orderBy: { createdAt: "desc" },
+          include: {
+            job: {
+              select: {
+                id: true,
+                title: true,
+                slug: true,
+                company: { 
+                  select: { 
+                    name: true,
+                    id: true,
+                  } 
+                },
+              },
             },
           },
         },
-      },
-      resumes: {
-        take: 5,
-        orderBy: { createdAt: "desc" },
-      },
-      companies: {
-        take: 5,
-        include: {
-          _count: { select: { jobs: true } },
+        resumes: {
+          take: 5,
+          orderBy: { createdAt: "desc" },
+        },
+        companies: {
+          take: 5,
+          include: {
+            _count: { select: { jobs: true } },
+          },
         },
       },
-    },
-  })
+    }).catch((error) => {
+      console.error("Error fetching user:", error)
+      throw error
+    })
 
   if (!user) {
     redirect("/admin/users")
@@ -180,7 +189,7 @@ export default async function AdminUserDetailPage({
         )}
 
         {/* Resumes */}
-        {user.resumes.length > 0 && (
+        {user.resumes && user.resumes.length > 0 && (
           <Card className="p-6">
             <h3 className="text-lg font-bold mb-4">Resumes ({user.resumes.length})</h3>
             <div className="space-y-3">
@@ -190,20 +199,22 @@ export default async function AdminUserDetailPage({
                   className="flex items-center justify-between p-3 border border-gray-200 rounded-lg"
                 >
                   <div>
-                    <p className="font-medium">{resume.fileName}</p>
+                    <p className="font-medium">{resume.fileName || "Resume"}</p>
                     <p className="text-sm text-gray-600">
                       Uploaded {new Date(resume.createdAt).toLocaleDateString()}
                     </p>
                   </div>
-                  <a
-                    href={resume.fileUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <Button variant="outline" size="sm">
-                      View
-                    </Button>
-                  </a>
+                  {resume.fileUrl && (
+                    <a
+                      href={resume.fileUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <Button variant="outline" size="sm">
+                        View
+                      </Button>
+                    </a>
+                  )}
                 </div>
               ))}
             </div>
@@ -212,5 +223,20 @@ export default async function AdminUserDetailPage({
       </div>
     </PageShell>
   )
+  } catch (error: any) {
+    console.error("Error in AdminUserDetailPage:", error)
+    return (
+      <PageShell title="Error" description="An error occurred">
+        <Card className="p-6">
+          <p className="text-red-600">Error loading user: {error.message || "Unknown error"}</p>
+          <Link href="/admin/users">
+            <Button variant="outline" className="mt-4">
+              Back to Users
+            </Button>
+          </Link>
+        </Card>
+      </PageShell>
+    )
+  }
 }
 
