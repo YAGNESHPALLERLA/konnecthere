@@ -36,6 +36,7 @@ export async function GET(req: NextRequest) {
 
     const where: any = {
       status: "PUBLISHED",
+      deletedAt: null, // Only show non-deleted jobs
     }
 
     if (search) {

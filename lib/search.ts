@@ -121,6 +121,7 @@ async function searchJobsAlgolia(filters: SearchFilters) {
 async function searchJobsPostgres(filters: SearchFilters) {
   const where: Prisma.JobWhereInput = {
     status: "PUBLISHED",
+    deletedAt: null, // Only show non-deleted jobs
   }
 
   if (filters.location) {
@@ -181,6 +182,7 @@ async function searchJobsPostgres(filters: SearchFilters) {
       SELECT count(*)::int as total
       FROM "Job"
       WHERE "Job"."status" = 'PUBLISHED'
+      AND "Job"."deletedAt" IS NULL
         AND to_tsvector('english', coalesce("Job"."title",'') || ' ' || coalesce("Job"."description",'') || ' ' || coalesce("Job"."requirements",''))
           @@ to_tsquery('english', ${tsQuery})
     `

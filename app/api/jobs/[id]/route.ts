@@ -114,8 +114,11 @@ export async function PATCH(
     const body = await req.json()
     const data = updateJobSchema.parse(body)
 
-    const job = await prisma.job.findUnique({
-      where: { id },
+    const job = await prisma.job.findFirst({
+      where: { 
+        id,
+        deletedAt: null, // Only show non-deleted jobs
+      },
       include: {
         company: {
           select: { ownerId: true },
@@ -166,8 +169,11 @@ export async function DELETE(
 
     const { id } = await params
 
-    const job = await prisma.job.findUnique({
-      where: { id },
+    const job = await prisma.job.findFirst({
+      where: { 
+        id,
+        deletedAt: null, // Only show non-deleted jobs
+      },
       include: {
         company: {
           select: { ownerId: true },
@@ -184,7 +190,11 @@ export async function DELETE(
       return NextResponse.json({ error: "Forbidden" }, { status: 403 })
     }
 
-    await prisma.job.delete({ where: { id } })
+    // Soft delete instead of hard delete
+    await prisma.job.update({
+      where: { id },
+      data: { deletedAt: new Date() },
+    })
     removeJobFromAlgolia(id).catch((err) =>
       console.error("Failed to remove job from search index:", err)
     )

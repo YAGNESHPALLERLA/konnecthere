@@ -23,6 +23,7 @@ export const GET = asyncHandler(async (req) => {
   // Build where clause
   const where: any = {
     status: "ACTIVE", // Only show active users
+    deletedAt: null, // Only show non-deleted users
     id: {
       not: session.user.id, // Exclude current user
     },
