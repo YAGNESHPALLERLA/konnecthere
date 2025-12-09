@@ -9,9 +9,10 @@ import Link from "next/link"
 export const dynamic = "force-dynamic"
 
 export default async function AdminDashboard() {
-  await requireAdmin()
+  try {
+    await requireAdmin()
 
-  // Get comprehensive metrics
+    // Get comprehensive metrics
   const [
     totalUsers,
     activeUsers,
@@ -355,5 +356,15 @@ export default async function AdminDashboard() {
       </div>
     </PageShell>
   )
+  } catch (error: any) {
+    console.error("Error in AdminDashboard:", error)
+    return (
+      <PageShell title="Error" description="An error occurred">
+        <Card className="p-6">
+          <p className="text-red-600">Error loading dashboard: {error.message || "Unknown error"}</p>
+        </Card>
+      </PageShell>
+    )
+  }
 }
 
