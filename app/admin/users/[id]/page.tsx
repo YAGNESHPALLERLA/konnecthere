@@ -156,7 +156,7 @@ export default async function AdminUserDetailPage({
         </Card>
 
         {/* Applications */}
-        {user.applications.length > 0 && (
+        {user.applications && user.applications.length > 0 && (
           <Card className="p-6">
             <h3 className="text-lg font-bold mb-4">Recent Applications ({user.applications.length})</h3>
             <div className="space-y-3">
@@ -166,13 +166,21 @@ export default async function AdminUserDetailPage({
                   className="flex items-center justify-between p-3 border border-gray-200 rounded-lg"
                 >
                   <div>
-                    <Link
-                      href={`/jobs/${app.job.slug}`}
-                      className="font-medium hover:underline"
-                    >
-                      {app.job.title}
-                    </Link>
-                    <p className="text-sm text-gray-600">{app.job.company.name}</p>
+                    {app.job ? (
+                      <>
+                        <Link
+                          href={`/jobs/${app.job.slug || app.job.id}`}
+                          className="font-medium hover:underline"
+                        >
+                          {app.job.title}
+                        </Link>
+                        {app.job.company && (
+                          <p className="text-sm text-gray-600">{app.job.company.name}</p>
+                        )}
+                      </>
+                    ) : (
+                      <p className="text-sm text-gray-600">Job not found</p>
+                    )}
                   </div>
                   <div className="flex items-center gap-4">
                     <span className="text-sm text-gray-600">
