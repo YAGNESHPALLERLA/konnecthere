@@ -27,19 +27,19 @@ export default async function AdminDashboard() {
     recentJobs,
     recentApplications,
   ] = await Promise.all([
-    prisma.user.count(),
-    prisma.user.count({ where: { status: "ACTIVE" } }),
-    prisma.user.count({ where: { role: "HR" } }),
+    prisma.user.count({ where: { deletedAt: null } }),
+    prisma.user.count({ where: { status: "ACTIVE", deletedAt: null } }),
+    prisma.user.count({ where: { role: "HR", deletedAt: null } }),
     prisma.job.count(),
     prisma.job.count({ where: { status: "PUBLISHED" } }),
     prisma.application.count(),
     prisma.application.count({ where: { status: "PENDING" } }),
     prisma.company.count(),
-    prisma.company.count({ where: { verified: true } }), // Use verified field until migration
+    prisma.company.count({ where: { status: "APPROVED", deletedAt: null } }),
     prisma.user.findMany({
       take: 5,
       orderBy: { createdAt: "desc" },
-      where: {},
+      where: { deletedAt: null },
       select: {
         id: true,
         name: true,

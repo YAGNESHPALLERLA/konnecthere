@@ -72,12 +72,16 @@ export default async function AdminCompanyDetailPage({
               <div className="flex gap-2 mt-2">
                 <span
                   className={`inline-block rounded-full px-3 py-1 text-xs font-medium ${
-                    company.verified
+                    company.status === "APPROVED"
                       ? "bg-green-100 text-green-800"
-                      : "bg-yellow-100 text-yellow-800"
+                      : company.status === "PENDING"
+                      ? "bg-yellow-100 text-yellow-800"
+                      : company.status === "REJECTED"
+                      ? "bg-red-100 text-red-800"
+                      : "bg-gray-100 text-gray-800"
                   }`}
                 >
-                  {company.verified ? "VERIFIED" : "PENDING"}
+                  {company.status}
                 </span>
                 {company.verified && (
                   <span className="inline-block rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-800">

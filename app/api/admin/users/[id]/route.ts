@@ -141,11 +141,12 @@ export async function DELETE(
       )
     }
 
-    // Soft delete - update status for now, deletedAt will work after migration
+    // Soft delete
     await prisma.user.update({
       where: { id },
       data: {
-        status: "SUSPENDED", // Use SUSPENDED until migration adds INACTIVE
+        deletedAt: new Date(),
+        status: "INACTIVE",
       },
     })
 

@@ -29,18 +29,12 @@ export async function PATCH(
       return NextResponse.json({ error: "Company not found" }, { status: 404 })
     }
 
-    // Map status to verified field until migration
-    const updateData: any = {}
-    if (data.verified !== undefined) {
-      updateData.verified = data.verified
-    } else if (data.status !== undefined) {
-      // Map status enum to verified boolean
-      updateData.verified = data.status === "APPROVED"
-    }
-
     const updatedCompany = await prisma.company.update({
       where: { id },
-      data: updateData,
+      data: {
+        ...(data.status !== undefined && { status: data.status }),
+        ...(data.verified !== undefined && { verified: data.verified }),
+      },
     })
 
     // Log admin action
@@ -51,7 +45,7 @@ export async function PATCH(
       entityId: id,
       metadata: {
         changes: data,
-        previousVerified: existingCompany.verified,
+        previousStatus: existingCompany.status,
         companyName: existingCompany.name,
       },
     })

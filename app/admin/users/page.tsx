@@ -20,8 +20,9 @@ export default async function AdminUsersPage({
     const params = await searchParams
 
     // Build where clause
-    const where: any = {}
-    // Note: deletedAt filter will be added after migration
+    const where: any = {
+      deletedAt: null, // Only show non-deleted users
+    }
 
   if (params.search) {
     where.OR = [
@@ -62,7 +63,7 @@ export default async function AdminUsersPage({
         status: true,
         location: true,
         createdAt: true,
-        // lastLoginAt: true, // Uncomment after migration
+        lastLoginAt: true,
       },
     }),
     prisma.user.count({ where }),

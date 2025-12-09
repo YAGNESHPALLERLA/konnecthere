@@ -155,6 +155,7 @@ model Company {
   location    String?
   verified    Boolean       @default(false)
   status      CompanyStatus @default(PENDING) // For admin approval
+  deletedAt   DateTime? // Soft delete
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
 
@@ -168,6 +169,7 @@ model Company {
   @@index([hrId])
   @@index([slug])
   @@index([status])
+  @@index([deletedAt])
 }
 
 enum CompanyStatus {
@@ -195,6 +197,7 @@ model Job {
   expiresAt         DateTime?
   views             Int             @default(0)
   applicationsCount Int             @default(0)
+  deletedAt         DateTime? // Soft delete
   createdAt         DateTime        @default(now())
   updatedAt         DateTime        @updatedAt
 
@@ -216,6 +219,7 @@ model Job {
   @@index([status])
   @@index([slug])
   @@index([createdAt])
+  @@index([deletedAt])
 }
 
 enum EmploymentType {
@@ -272,11 +276,13 @@ model Application {
   resume   Resume? @relation(fields: [resumeId], references: [id], onDelete: SetNull)
 
   statusHistory ApplicationStatusChange[]
+  deletedAt     DateTime? // Soft delete
 
   @@unique([jobId, userId]) // One application per user per job
   @@index([jobId])
   @@index([userId])
   @@index([status])
+  @@index([deletedAt])
 }
 
 model ApplicationStatusChange {
