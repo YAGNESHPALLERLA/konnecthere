@@ -17,7 +17,10 @@ export async function GET(req: NextRequest) {
     }
 
     const applications = await prisma.application.findMany({
-      where: { userId },
+      where: { 
+        userId,
+        deletedAt: null, // Only show non-deleted applications
+      },
       include: {
         job: {
           select: {

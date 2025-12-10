@@ -54,6 +54,7 @@ export default async function AdminHRPage({
   const companies = await prisma.company.findMany({
     where: {
       hrId: { in: hrUsers.map((u) => u.id) },
+      deletedAt: null,
     },
     include: {
       hr: {

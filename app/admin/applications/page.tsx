@@ -12,6 +12,7 @@ export default async function AdminApplicationsPage() {
   await requireAdmin()
 
   const applications = await prisma.application.findMany({
+    where: { deletedAt: null }, // Only show non-deleted applications in admin view
     orderBy: { createdAt: "desc" },
     include: {
       user: {

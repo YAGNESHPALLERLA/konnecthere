@@ -27,6 +27,7 @@ export async function GET(req: NextRequest) {
     const jobs = await prisma.job.findMany({
       where: {
         companyId: { in: companyIds },
+        deletedAt: null,
       },
       include: {
         company: {

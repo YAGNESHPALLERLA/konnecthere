@@ -49,8 +49,11 @@ export async function GET(
     }
 
     const { id } = await params
-    const job = await prisma.job.findUnique({
-      where: { id },
+    const job = await prisma.job.findFirst({
+      where: { 
+        id,
+        deletedAt: null, // Only show non-deleted jobs
+      },
       include: {
         company: {
           select: { id: true, name: true, slug: true, logo: true, ownerId: true },

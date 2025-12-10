@@ -31,11 +31,13 @@ export default async function AdminAnalyticsPage() {
     prisma.job.count({
       where: {
         createdAt: { gte: thirtyDaysAgo },
+        deletedAt: null,
       },
     }),
     prisma.application.count({
       where: {
         createdAt: { gte: thirtyDaysAgo },
+        deletedAt: null,
       },
     }),
     prisma.company.findMany({

@@ -12,6 +12,7 @@ export default async function AdminJobsPage() {
   await requireAdmin()
 
   const jobs = await prisma.job.findMany({
+    where: { deletedAt: null }, // Only show non-deleted jobs in admin view
     orderBy: { createdAt: "desc" },
     include: {
       company: {

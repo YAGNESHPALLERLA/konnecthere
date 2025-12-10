@@ -89,7 +89,10 @@ async function searchJobsAlgolia(filters: SearchFilters) {
 
   const hits = response.hits || []
   const jobs = await prisma.job.findMany({
-    where: { id: { in: hits.map((hit: any) => hit.objectID || hit.id) } },
+    where: { 
+      id: { in: hits.map((hit: any) => hit.objectID || hit.id) },
+      deletedAt: null,
+    },
     include: {
       company: {
         select: {
@@ -168,6 +171,7 @@ async function searchJobsPostgres(filters: SearchFilters) {
       SELECT "Job".*
       FROM "Job"
       WHERE "Job"."status" = 'PUBLISHED'
+        AND "Job"."deletedAt" IS NULL
         AND to_tsvector('english', coalesce("Job"."title",'') || ' ' || coalesce("Job"."description",'') || ' ' || coalesce("Job"."requirements",''))
           @@ to_tsquery('english', ${tsQuery})
       ORDER BY ts_rank(

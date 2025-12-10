@@ -30,11 +30,11 @@ export default async function AdminDashboard() {
     prisma.user.count({ where: { deletedAt: null } }),
     prisma.user.count({ where: { status: "ACTIVE", deletedAt: null } }),
     prisma.user.count({ where: { role: "HR", deletedAt: null } }),
-    prisma.job.count(),
-    prisma.job.count({ where: { status: "PUBLISHED" } }),
-    prisma.application.count(),
-    prisma.application.count({ where: { status: "PENDING" } }),
-    prisma.company.count(),
+    prisma.job.count({ where: { deletedAt: null } }),
+    prisma.job.count({ where: { status: "PUBLISHED", deletedAt: null } }),
+    prisma.application.count({ where: { deletedAt: null } }),
+    prisma.application.count({ where: { status: "PENDING", deletedAt: null } }),
+    prisma.company.count({ where: { deletedAt: null } }),
     prisma.company.count({ where: { status: "APPROVED", deletedAt: null } }),
     prisma.user.findMany({
       take: 5,
@@ -52,6 +52,7 @@ export default async function AdminDashboard() {
     prisma.job.findMany({
       take: 5,
       orderBy: { createdAt: "desc" },
+      where: { deletedAt: null },
       include: {
         company: { select: { name: true } },
         _count: { select: { applications: true } },
@@ -60,6 +61,7 @@ export default async function AdminDashboard() {
     prisma.application.findMany({
       take: 5,
       orderBy: { createdAt: "desc" },
+      where: { deletedAt: null },
       include: {
         user: { select: { name: true, email: true } },
         job: { select: { title: true, slug: true } },

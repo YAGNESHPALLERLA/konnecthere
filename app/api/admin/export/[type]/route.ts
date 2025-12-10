@@ -50,6 +50,7 @@ export async function GET(
 
       case "jobs": {
         const jobs = await prisma.job.findMany({
+          where: { deletedAt: null },
           include: {
             company: {
               select: {
@@ -78,6 +79,7 @@ export async function GET(
 
       case "applications": {
         const applications = await prisma.application.findMany({
+          where: { deletedAt: null },
           include: {
             user: {
               select: {
