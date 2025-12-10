@@ -5,6 +5,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useSession, signOut } from "next-auth/react"
 import { Button } from "@/components/ui/Button"
+import { ProfilePictureUpload } from "@/components/ui/ProfilePictureUpload"
 import { cn } from "@/lib/utils"
 
 export function Navbar() {
@@ -93,22 +94,13 @@ export function Navbar() {
           ) : session ? (
             <>
               <div className="flex items-center gap-3 px-3 py-1.5 rounded-lg bg-muted/50">
-                {/* Profile Picture */}
-                {session.user?.image ? (
-                  <img
-                    src={session.user.image}
-                    alt={session.user?.name || "Profile"}
-                    className="h-8 w-8 rounded-full object-cover border-2 border-border"
-                  />
-                ) : (
-                  <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center border-2 border-border">
-                    <span className="text-xs font-semibold text-primary-foreground">
-                      {(session.user?.name || session.user?.email || "U")
-                        .charAt(0)
-                        .toUpperCase()}
-                    </span>
-                  </div>
-                )}
+                {/* Profile Picture with Upload */}
+                <ProfilePictureUpload
+                  currentImage={session.user?.image}
+                  userName={session.user?.name || session.user?.email || undefined}
+                  size="sm"
+                  showEditButton={true}
+                />
                 <div className="flex flex-col">
                   <span className="text-sm font-medium text-foreground leading-tight">
                     {session.user?.name || session.user?.email}
@@ -177,22 +169,13 @@ export function Navbar() {
               <>
                 <div className="mt-2 space-y-2">
                   <div className="flex items-center gap-3 px-4 py-2 rounded-lg bg-muted/50">
-                    {/* Profile Picture */}
-                    {session.user?.image ? (
-                      <img
-                        src={session.user.image}
-                        alt={session.user?.name || "Profile"}
-                        className="h-10 w-10 rounded-full object-cover border-2 border-border"
-                      />
-                    ) : (
-                      <div className="h-10 w-10 rounded-full bg-primary flex items-center justify-center border-2 border-border flex-shrink-0">
-                        <span className="text-sm font-semibold text-primary-foreground">
-                          {(session.user?.name || session.user?.email || "U")
-                            .charAt(0)
-                            .toUpperCase()}
-                        </span>
-                      </div>
-                    )}
+                    {/* Profile Picture with Upload */}
+                    <ProfilePictureUpload
+                      currentImage={session.user?.image}
+                      userName={session.user?.name || session.user?.email || undefined}
+                      size="md"
+                      showEditButton={true}
+                    />
                     <div className="flex flex-col min-w-0 flex-1">
                       <p className="text-sm font-medium text-foreground truncate">
                         {session.user?.name || session.user?.email}

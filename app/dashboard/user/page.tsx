@@ -4,6 +4,7 @@ import { PageShell } from "@/components/layouts/PageShell"
 import { Button } from "@/components/ui/Button"
 import { Card } from "@/components/ui/Card"
 import { SimpleTable as Table } from "@/components/ui/SimpleTable"
+import { ProfilePictureUpload } from "@/components/ui/ProfilePictureUpload"
 import Link from "next/link"
 
 export const dynamic = "force-dynamic"
@@ -133,17 +134,12 @@ export default async function UserDashboard() {
         <Card className="p-6">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
             <div className="flex items-center gap-4">
-              {userDetails?.image ? (
-                <img
-                  src={userDetails.image}
-                  alt={userDetails.name || "Profile"}
-                  className="w-20 h-20 rounded-full object-cover border-2 border-gray-200"
-                />
-              ) : (
-                <div className="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center text-2xl font-bold text-gray-600">
-                  {(userDetails?.name || userDetails?.email || "U").charAt(0).toUpperCase()}
-                </div>
-              )}
+              <ProfilePictureUpload
+                currentImage={userDetails?.image}
+                userName={userDetails?.name || userDetails?.email || undefined}
+                size="lg"
+                showEditButton={true}
+              />
               <div>
                 <h2 className="text-2xl font-bold">
                   {userDetails?.name || "User"}
