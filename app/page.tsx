@@ -52,50 +52,54 @@ export default async function Home() {
   const session = await auth().catch(() => null)
 
   return (
-    <div className="bg-white text-black">
-      <section className="border-b border-black/10">
+    <div className="bg-white text-foreground">
+      <section className="border-b border-border bg-gradient-to-br from-white via-primary-50/20 to-white">
         <PageShell
           title={session?.user ? `Welcome back, ${session.user.name || session.user.email}` : "Work doesn't need noise"}
           description={session?.user ? "Browse all available job opportunities below." : "KonnectHere is a deliberately minimal hiring surface for people who value signal over scroll."}
           actions={
             session?.user ? (
               <>
-                <Button asChild className="px-6 py-3 text-base">
+                <Button asChild size="lg">
                   <Link href="/jobs">Browse all jobs</Link>
                 </Button>
                 {(session.user as any)?.role === "USER" && (
-                  <Button variant="ghost" asChild className="px-6 py-3 text-base">
+                  <Button variant="ghost" asChild size="lg">
                     <Link href="/dashboard/user">Go to Dashboard</Link>
                   </Button>
                 )}
                 {(session.user as any)?.role === "HR" && (
-                  <Button variant="ghost" asChild className="px-6 py-3 text-base">
+                  <Button variant="ghost" asChild size="lg">
                     <Link href="/dashboard/hr">Go to HR Dashboard</Link>
                   </Button>
                 )}
                 {(session.user as any)?.role === "ADMIN" && (
-                  <Button variant="ghost" asChild className="px-6 py-3 text-base">
+                  <Button variant="ghost" asChild size="lg">
                     <Link href="/dashboard/admin">Go to Admin Dashboard</Link>
                   </Button>
                 )}
               </>
             ) : (
               <>
-                <Button asChild className="px-6 py-3 text-base">
+                <Button asChild size="lg">
                   <Link href="/jobs">Browse roles</Link>
                 </Button>
-                <Button variant="ghost" asChild className="px-6 py-3 text-base">
+                <Button variant="ghost" asChild size="lg">
                   <Link href="/auth/signup">Join the waitlist</Link>
                 </Button>
               </>
             )
           }
         >
-          <div className="grid gap-4 sm:grid-cols-3">
-            {highlights.map((item) => (
-              <div key={item.label} className="rounded-lg border border-black/10 p-6">
-                <p className="text-3xl font-semibold">{item.label}</p>
-                <p className="text-sm uppercase tracking-[0.08em] text-black/50">{item.description}</p>
+          <div className="grid gap-6 sm:grid-cols-3 animate-in fade-in slide-in-from-bottom-6 duration-700 delay-150">
+            {highlights.map((item, index) => (
+              <div 
+                key={item.label} 
+                className="rounded-xl border border-border bg-white p-6 shadow-sm transition-all duration-300 hover:shadow-md hover:-translate-y-1"
+                style={{ animationDelay: `${index * 100}ms` }}
+              >
+                <p className="text-4xl font-bold text-foreground mb-2">{item.label}</p>
+                <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider">{item.description}</p>
               </div>
             ))}
           </div>
@@ -104,9 +108,14 @@ export default async function Home() {
 
       <PageShell>
         <div className="grid gap-6 md:grid-cols-3">
-          {pillars.map((pillar) => (
-            <Card key={pillar.title} title={pillar.title}>
-              <p className="text-sm text-black/70">{pillar.copy}</p>
+          {pillars.map((pillar, index) => (
+            <Card 
+              key={pillar.title} 
+              title={pillar.title}
+              className="animate-in fade-in slide-in-from-bottom-4 duration-500"
+              style={{ animationDelay: `${index * 100}ms` }}
+            >
+              <p className="text-base text-muted-foreground leading-relaxed">{pillar.copy}</p>
             </Card>
           ))}
         </div>
@@ -118,10 +127,13 @@ export default async function Home() {
       >
         <div className="grid gap-6 md:grid-cols-3">
           {steps.map((step, index) => (
-            <div key={step.title} className="rounded-lg border border-black/10 p-5">
-              <Pill>Phase {index + 1}</Pill>
-              <h3 className="mt-4 text-xl font-semibold">{step.title}</h3>
-              <p className="mt-3 text-sm text-black/70">{step.body}</p>
+            <div 
+              key={step.title} 
+              className="group rounded-xl border border-border bg-white p-6 shadow-sm transition-all duration-300 hover:shadow-md hover:-translate-y-1"
+            >
+              <Pill className="bg-primary-50 text-primary-700 border-primary-200">Phase {index + 1}</Pill>
+              <h3 className="mt-5 text-xl font-semibold text-foreground">{step.title}</h3>
+              <p className="mt-3 text-base text-muted-foreground leading-relaxed">{step.body}</p>
             </div>
           ))}
         </div>
@@ -153,16 +165,16 @@ export default async function Home() {
       </PageShell>
 
       <PageShell subdued className="mt-0">
-        <div className="rounded-2xl border border-black/10 bg-white p-10 text-center">
-          <h2 className="text-3xl font-semibold">Hire or get hired with intent</h2>
-          <p className="mt-4 text-base text-black/70">
+        <div className="rounded-2xl border border-border bg-gradient-to-br from-white to-primary-50/30 p-12 text-center shadow-sm">
+          <h2 className="text-4xl font-bold text-foreground mb-4">Hire or get hired with intent</h2>
+          <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
             KonnectHere keeps the experience simple so you can focus on the conversations that matter.
           </p>
-          <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
-            <Button asChild className="px-6 py-3 text-base">
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
+            <Button asChild size="lg">
               <Link href="/jobs">Explore open roles</Link>
             </Button>
-            <Button variant="ghost" asChild className="px-6 py-3 text-base">
+            <Button variant="ghost" asChild size="lg">
               <Link href="/auth/signup">Talk to our team</Link>
             </Button>
           </div>

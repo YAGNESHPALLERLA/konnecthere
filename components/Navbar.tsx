@@ -55,107 +55,138 @@ export function Navbar() {
   const links = getNavLinks()
 
   return (
-    <header className="sticky top-0 z-40 border-b border-black/10 bg-white/95 backdrop-blur">
-      <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-4 sm:px-8">
-        <Link href="/" className="text-lg font-semibold tracking-tight">
+    <header className="sticky top-0 z-40 border-b border-border bg-white/95 backdrop-blur-sm shadow-sm">
+      <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-6 py-4 sm:px-8">
+        <Link 
+          href="/" 
+          className="text-xl font-bold tracking-tight text-foreground transition-opacity duration-200 hover:opacity-80"
+        >
           KonnectHere
         </Link>
 
-        <nav className="hidden items-center gap-6 md:flex">
-          {links.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className={cn(
-                "text-sm font-semibold uppercase tracking-[0.08em]",
-                (link.href === "/" ? pathname === "/" : pathname.startsWith(link.href)) ? "text-black" : "text-black/45 hover:text-black"
-              )}
-            >
-              {link.label}
-            </Link>
-          ))}
+        <nav className="hidden items-center gap-1 md:flex">
+          {links.map((link) => {
+            const isActive = link.href === "/" ? pathname === "/" : pathname.startsWith(link.href)
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={cn(
+                  "relative px-4 py-2 text-sm font-medium tracking-tight transition-colors duration-200 rounded-lg",
+                  isActive 
+                    ? "text-primary font-semibold" 
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                )}
+              >
+                {link.label}
+                {isActive && (
+                  <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-primary" />
+                )}
+              </Link>
+            )
+          })}
         </nav>
 
-        <div className="hidden items-center gap-4 md:flex">
+        <div className="hidden items-center gap-3 md:flex">
           {status === "loading" ? (
-            <span className="text-sm text-black/40">Loading…</span>
+            <span className="text-sm text-muted-foreground">Loading…</span>
           ) : session ? (
             <>
-              <span className="text-sm font-medium text-black/70">
-                {session.user?.name || session.user?.email}
-              </span>
-              {userRole && (
-                <span className="text-xs font-medium text-black/50 uppercase">
-                  {userRole}
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-muted/50">
+                <span className="text-sm font-medium text-foreground">
+                  {session.user?.name || session.user?.email}
                 </span>
-              )}
-              <Button onClick={() => signOut()} className="px-5 py-2">
+                {userRole && (
+                  <span className="text-xs font-medium text-muted-foreground uppercase px-2 py-0.5 rounded bg-background">
+                    {userRole}
+                  </span>
+                )}
+              </div>
+              <Button onClick={() => signOut()} variant="outline" size="sm">
                 Sign out
               </Button>
             </>
           ) : (
             <>
-              <Link href="/auth/signin" className="text-sm font-semibold uppercase tracking-[0.08em] text-black">
+              <Link 
+                href="/auth/signin" 
+                className="text-sm font-medium text-foreground transition-colors duration-200 hover:text-primary"
+              >
                 Sign in
               </Link>
-              <Link
-                href="/auth/signup"
-                className="inline-flex items-center rounded-md border border-black px-5 py-2 text-sm font-semibold uppercase tracking-[0.08em]"
-              >
-                Join
-              </Link>
+              <Button asChild>
+                <Link href="/auth/signup">Join</Link>
+              </Button>
             </>
           )}
         </div>
 
         <button
           type="button"
-          className="inline-flex h-10 w-10 items-center justify-center rounded-md border border-black/10 md:hidden"
+          className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-background transition-colors duration-200 hover:bg-muted md:hidden"
           onClick={() => setOpen((prev) => !prev)}
           aria-label="Toggle navigation"
         >
-          <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 7h16M4 12h16M4 17h16" />
+          <svg className="h-5 w-5 text-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7h16M4 12h16M4 17h16" />
           </svg>
         </button>
       </div>
 
       {open && (
-        <div className="border-t border-black/10 bg-white px-6 py-4 md:hidden">
-          <nav className="flex flex-col gap-3">
-            {links.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                onClick={() => setOpen(false)}
-                className="text-base font-semibold uppercase tracking-[0.08em] text-black"
-              >
-                {link.label}
-              </Link>
-            ))}
-            {status === "loading" && <span className="text-sm text-black/40">Loading…</span>}
+        <div className="border-t border-border bg-white px-6 py-4 md:hidden animate-in slide-in-from-top-2 duration-200">
+          <nav className="flex flex-col gap-2">
+            {links.map((link) => {
+              const isActive = link.href === "/" ? pathname === "/" : pathname.startsWith(link.href)
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  onClick={() => setOpen(false)}
+                  className={cn(
+                    "px-4 py-2 text-base font-medium rounded-lg transition-colors duration-200",
+                    isActive 
+                      ? "text-primary bg-primary/10 font-semibold" 
+                      : "text-foreground hover:bg-muted"
+                  )}
+                >
+                  {link.label}
+                </Link>
+              )
+            })}
+            {status === "loading" && <span className="text-sm text-muted-foreground">Loading…</span>}
             {session ? (
               <>
-                {userRole && (
-                  <span className="text-xs font-medium text-black/50 uppercase mb-2">
-                    {userRole}
-                  </span>
-                )}
-                <Button onClick={() => signOut()} className="mt-2 w-full justify-center">
-                  Sign out
-                </Button>
+                <div className="mt-2 space-y-2">
+                  <div className="px-4 py-2 rounded-lg bg-muted/50">
+                    <p className="text-sm font-medium text-foreground">
+                      {session.user?.name || session.user?.email}
+                    </p>
+                    {userRole && (
+                      <p className="text-xs text-muted-foreground uppercase mt-1">
+                        {userRole}
+                      </p>
+                    )}
+                  </div>
+                  <Button onClick={() => signOut()} variant="outline" className="w-full justify-center">
+                    Sign out
+                  </Button>
+                </div>
               </>
             ) : (
               <div className="mt-2 flex flex-col gap-2">
-                <Link href="/auth/signin" onClick={() => setOpen(false)} className="text-sm font-semibold text-black">
+                <Link 
+                  href="/auth/signin" 
+                  onClick={() => setOpen(false)} 
+                  className="px-4 py-2 text-sm font-medium text-foreground text-center rounded-lg hover:bg-muted transition-colors duration-200"
+                >
                   Sign in
                 </Link>
-                <Link
-                  href="/auth/signup"
-                  className="inline-flex items-center rounded-md border border-black px-4 py-2 text-sm font-semibold uppercase tracking-[0.08em]"
-                >
-                  Create account
-                </Link>
+                <Button asChild className="w-full">
+                  <Link href="/auth/signup" onClick={() => setOpen(false)}>
+                    Create account
+                  </Link>
+                </Button>
               </div>
             )}
           </nav>

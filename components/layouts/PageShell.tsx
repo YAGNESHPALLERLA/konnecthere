@@ -12,13 +12,13 @@ type PageShellProps = {
 
 export function PageShell({ title, description, actions, children, className, subdued }: PageShellProps) {
   return (
-    <div className={cn(subdued ? "bg-[#F5F5F5]" : "bg-white", "w-full")}>
-      <div className={cn("mx-auto flex w-full max-w-6xl flex-col gap-8 px-6 py-12 sm:px-8 lg:px-10", className)}>
+    <div className={cn(subdued ? "bg-muted/30" : "bg-white", "w-full")}>
+      <div className={cn("mx-auto flex w-full max-w-7xl flex-col gap-8 px-6 py-16 sm:px-8 lg:px-10", className)}>
         {(title || description || actions) && (
-          <header className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-            <div>
-              {title && <h1 className="text-3xl font-semibold tracking-tight">{title}</h1>}
-              {description && <p className="mt-2 max-w-2xl text-base text-black/70">{description}</p>}
+          <header className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="space-y-3">
+              {title && <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl">{title}</h1>}
+              {description && <p className="max-w-2xl text-lg text-muted-foreground leading-relaxed">{description}</p>}
             </div>
             {actions && <div className="flex flex-wrap gap-3">{actions}</div>}
           </header>

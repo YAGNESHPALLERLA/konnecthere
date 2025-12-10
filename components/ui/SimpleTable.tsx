@@ -8,7 +8,7 @@ type SimpleTableProps = {
 
 export function SimpleTable({ children, className }: SimpleTableProps) {
   return (
-    <div className={cn("overflow-hidden rounded-lg border border-black/10 bg-white text-sm text-black", className)}>
+    <div className={cn("overflow-hidden rounded-xl border border-border bg-white text-sm shadow-sm", className)}>
       <table className="w-full border-collapse">
         {children}
       </table>
@@ -18,7 +18,7 @@ export function SimpleTable({ children, className }: SimpleTableProps) {
 
 SimpleTable.Head = function TableHead({ children, className }: { children: ReactNode; className?: string }) {
   return (
-    <thead className={cn("bg-[#F5F5F5] text-left text-[11px] font-semibold uppercase tracking-[0.08em]", className)}>
+    <thead className={cn("bg-muted/50 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground", className)}>
       {children}
     </thead>
   )
@@ -26,7 +26,7 @@ SimpleTable.Head = function TableHead({ children, className }: { children: React
 
 SimpleTable.Body = function TableBody({ children, className }: { children: ReactNode; className?: string }) {
   return (
-    <tbody className={cn("", className)}>
+    <tbody className={cn("divide-y divide-border", className)}>
       {children}
     </tbody>
   )
@@ -34,7 +34,7 @@ SimpleTable.Body = function TableBody({ children, className }: { children: React
 
 SimpleTable.Row = function TableRow({ children, className }: { children: ReactNode; className?: string }) {
   return (
-    <tr className={cn("border-t border-black/5 transition-colors hover:bg-[#F5F5F5]", className)}>
+    <tr className={cn("border-t border-border transition-colors duration-150 hover:bg-muted/50", className)}>
       {children}
     </tr>
   )
@@ -42,7 +42,7 @@ SimpleTable.Row = function TableRow({ children, className }: { children: ReactNo
 
 SimpleTable.Header = function TableHeader({ children, className }: { children: ReactNode; className?: string }) {
   return (
-    <th className={cn("px-4 py-3", className)}>
+    <th className={cn("px-6 py-4 text-left", className)}>
       {children}
     </th>
   )
@@ -50,7 +50,7 @@ SimpleTable.Header = function TableHeader({ children, className }: { children: R
 
 SimpleTable.Cell = function TableCell({ children, className }: { children: ReactNode; className?: string }) {
   return (
-    <td className={cn("px-4 py-3 align-middle", className)}>
+    <td className={cn("px-6 py-4 align-middle text-foreground", className)}>
       {children}
     </td>
   )

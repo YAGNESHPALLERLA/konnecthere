@@ -3,21 +3,22 @@ import { cn } from "@/lib/utils"
 
 type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: "default" | "ghost" | "outline"
-  size?: "sm" | "default"
+  size?: "sm" | "default" | "lg"
   fullWidth?: boolean
   asChild?: boolean
 }
 
 const baseStyles =
-  "inline-flex items-center justify-center rounded-md border border-black/80 bg-white px-4 py-2 text-sm font-semibold uppercase tracking-tight text-black transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2"
+  "inline-flex items-center justify-center rounded-lg font-semibold tracking-tight transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none"
 const variantMap = {
-  default: "hover:bg-[#F5F5F5]",
-  ghost: "border-transparent hover:bg-[#F5F5F5]",
-  outline: "border-black/20 hover:border-black/40 hover:bg-[#F5F5F5]",
+  default: "bg-primary text-primary-foreground border border-primary hover:bg-primary-700 hover:shadow-md hover:-translate-y-0.5 active:translate-y-0",
+  ghost: "border-transparent text-foreground hover:bg-muted hover:text-foreground",
+  outline: "border-border bg-background text-foreground hover:bg-muted hover:border-primary/50",
 }
 const sizeMap = {
-  sm: "px-3 py-1 text-xs",
-  default: "px-4 py-2 text-sm",
+  sm: "px-3 py-1.5 text-xs h-8",
+  default: "px-5 py-2.5 text-sm h-10",
+  lg: "px-6 py-3 text-base h-12",
 }
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(

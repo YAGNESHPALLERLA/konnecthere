@@ -37,16 +37,19 @@ const columns = [
 
 export function Footer() {
   return (
-    <footer className="border-t border-black/10 bg-white">
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-10 px-6 py-12 sm:px-8">
+    <footer className="border-t border-border bg-muted/30">
+      <div className="mx-auto flex w-full max-w-7xl flex-col gap-12 px-6 py-16 sm:px-8">
         <div className="grid gap-10 md:grid-cols-4">
           {columns.map((section) => (
-            <div key={section.title} className="space-y-3">
-              <h4 className="text-sm font-semibold uppercase tracking-[0.08em] text-black">{section.title}</h4>
-              <ul className="space-y-2 text-sm text-black/60">
+            <div key={section.title} className="space-y-4">
+              <h4 className="text-sm font-semibold uppercase tracking-wider text-foreground">{section.title}</h4>
+              <ul className="space-y-3 text-sm">
                 {section.links.map((link) => (
                   <li key={link.href}>
-                    <Link href={link.href} className="hover:text-black">
+                    <Link 
+                      href={link.href} 
+                      className="text-muted-foreground transition-colors duration-200 hover:text-foreground"
+                    >
                       {link.label}
                     </Link>
                   </li>
@@ -55,16 +58,27 @@ export function Footer() {
             </div>
           ))}
         </div>
-        <div className="flex flex-col gap-2 border-t border-black/10 pt-8 text-sm text-black/50 sm:flex-row sm:items-center sm:justify-between">
-          <p>&copy; {new Date().getFullYear()} KonnectHere. Built for modern teams.</p>
-          <div className="flex gap-4 text-sm">
-            <Link href="/contact" className="hover:text-black">
+        <div className="flex flex-col gap-4 border-t border-border pt-8 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-sm text-muted-foreground">
+            &copy; {new Date().getFullYear()} KonnectHere. Built for modern teams.
+          </p>
+          <div className="flex gap-6 text-sm">
+            <Link 
+              href="/contact" 
+              className="text-muted-foreground transition-colors duration-200 hover:text-foreground"
+            >
               Contact
             </Link>
-            <Link href="/support" className="hover:text-black">
+            <Link 
+              href="/support" 
+              className="text-muted-foreground transition-colors duration-200 hover:text-foreground"
+            >
               Support
             </Link>
-            <Link href="/status" className="hover:text-black">
+            <Link 
+              href="/status" 
+              className="text-muted-foreground transition-colors duration-200 hover:text-foreground"
+            >
               System status
             </Link>
           </div>

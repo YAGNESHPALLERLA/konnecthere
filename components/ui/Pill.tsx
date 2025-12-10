@@ -10,7 +10,7 @@ export function Pill({ children, className }: PillProps) {
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-full border border-black/15 px-3 py-1 text-xs font-medium uppercase tracking-[0.08em] text-black",
+        "inline-flex items-center rounded-full border border-border bg-muted px-3 py-1 text-xs font-medium text-foreground transition-colors duration-200",
         className
       )}
     >

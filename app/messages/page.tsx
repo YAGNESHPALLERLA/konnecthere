@@ -252,10 +252,10 @@ function MessagesContent() {
                         setSelectedConversation(conv.id)
                         router.push(`/messages?id=${conv.id}`)
                       }}
-                      className={`w-full text-left p-3 rounded-lg transition-colors ${
+                      className={`w-full text-left p-3 rounded-lg transition-all duration-200 ${
                         selectedConversation === conv.id
-                          ? "bg-gray-100 border-l-4 border-blue-600"
-                          : "hover:bg-gray-50"
+                          ? "bg-primary-50 border-l-4 border-primary shadow-sm"
+                          : "hover:bg-muted border-l-4 border-transparent"
                       }`}
                     >
                       <div className="flex items-center justify-between gap-2">
@@ -274,7 +274,7 @@ function MessagesContent() {
                           )}
                         </div>
                         {conv.unreadCount > 0 && (
-                          <span className="flex-shrink-0 rounded-full bg-blue-600 px-2 py-0.5 text-xs font-medium text-white">
+                          <span className="flex-shrink-0 rounded-full bg-primary px-2 py-0.5 text-xs font-semibold text-primary-foreground">
                             {conv.unreadCount}
                           </span>
                         )}
@@ -305,7 +305,7 @@ function MessagesContent() {
                 </div>
 
                 {/* Messages Area - Scrollable */}
-                <div className="flex-1 overflow-y-auto p-4 space-y-2 min-h-0 bg-gray-50">
+                <div className="flex-1 overflow-y-auto p-4 space-y-3 min-h-0 bg-muted/30">
                   {messages.length === 0 ? (
                     <div className="flex items-center justify-center h-full text-gray-500 text-sm">
                       No messages yet. Start the conversation!
@@ -328,27 +328,27 @@ function MessagesContent() {
                             className={`flex ${isOwn ? "justify-end" : "justify-start"}`}
                           >
                             <div
-                              className={`max-w-[75%] md:max-w-[65%] rounded-2xl px-4 py-2.5 ${
+                              className={`max-w-[75%] md:max-w-[65%] rounded-2xl px-4 py-2.5 shadow-sm transition-all duration-200 ${
                                 isOwn
-                                  ? "bg-blue-600 text-white rounded-br-sm"
-                                  : "bg-white text-gray-900 border border-gray-200 rounded-bl-sm"
+                                  ? "bg-primary text-primary-foreground rounded-br-sm"
+                                  : "bg-white text-foreground border border-border rounded-bl-sm"
                               }`}
                             >
                               {!isOwn && msg.sender && (
-                                <p className="text-xs font-semibold mb-1 text-gray-700">
+                                <p className="text-xs font-semibold mb-1 text-muted-foreground">
                                   {msg.sender.name || msg.sender.email || "Unknown"}
                                 </p>
                               )}
                               <p
                                 className={`text-sm whitespace-pre-wrap break-words leading-relaxed ${
-                                  isOwn ? "text-white" : "text-gray-900"
+                                  isOwn ? "text-primary-foreground" : "text-foreground"
                                 }`}
                               >
                                 {messageBody}
                               </p>
                               <p
                                 className={`text-xs mt-1.5 ${
-                                  isOwn ? "text-blue-100" : "text-gray-500"
+                                  isOwn ? "text-primary-100" : "text-muted-foreground"
                                 }`}
                               >
                                 {msg.createdAt

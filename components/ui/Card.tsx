@@ -7,21 +7,23 @@ type CardProps = {
   actions?: ReactNode
   children: ReactNode
   className?: string
+  style?: React.CSSProperties
 }
 
-export function Card({ title, subtitle, actions, children, className }: CardProps) {
+export function Card({ title, subtitle, actions, children, className, style }: CardProps) {
   return (
     <section
       className={cn(
-        "rounded-lg border border-black/10 bg-white p-6 text-black shadow-none",
+        "rounded-xl border border-border bg-white p-6 text-foreground shadow-sm transition-shadow duration-200 hover:shadow-md",
         className
       )}
+      style={style}
     >
       {(title || subtitle || actions) && (
         <header className="mb-6 flex flex-wrap items-start justify-between gap-4">
           <div>
-            {title && <h3 className="text-xl font-semibold tracking-tight">{title}</h3>}
-            {subtitle && <p className="text-sm text-black/60">{subtitle}</p>}
+            {title && <h3 className="text-xl font-semibold tracking-tight text-foreground">{title}</h3>}
+            {subtitle && <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>}
           </div>
           {actions && <div className="flex items-center gap-2">{actions}</div>}
         </header>
