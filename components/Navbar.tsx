@@ -48,7 +48,7 @@ export function Navbar() {
     // USER or default
     return [
       ...authenticatedLinks,
-      { href: "/dashboard", label: "Dashboard" },
+      { href: "/dashboard", label: "My Profile" },
     ]
   }
 
@@ -92,15 +92,33 @@ export function Navbar() {
             <span className="text-sm text-muted-foreground">Loading…</span>
           ) : session ? (
             <>
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-muted/50">
-                <span className="text-sm font-medium text-foreground">
-                  {session.user?.name || session.user?.email}
-                </span>
-                {userRole && (
-                  <span className="text-xs font-medium text-muted-foreground uppercase px-2 py-0.5 rounded bg-background">
-                    {userRole}
-                  </span>
+              <div className="flex items-center gap-3 px-3 py-1.5 rounded-lg bg-muted/50">
+                {/* Profile Picture */}
+                {session.user?.image ? (
+                  <img
+                    src={session.user.image}
+                    alt={session.user?.name || "Profile"}
+                    className="h-8 w-8 rounded-full object-cover border-2 border-border"
+                  />
+                ) : (
+                  <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center border-2 border-border">
+                    <span className="text-xs font-semibold text-primary-foreground">
+                      {(session.user?.name || session.user?.email || "U")
+                        .charAt(0)
+                        .toUpperCase()}
+                    </span>
+                  </div>
                 )}
+                <div className="flex flex-col">
+                  <span className="text-sm font-medium text-foreground leading-tight">
+                    {session.user?.name || session.user?.email}
+                  </span>
+                  {userRole && (
+                    <span className="text-xs font-medium text-muted-foreground uppercase">
+                      {userRole}
+                    </span>
+                  )}
+                </div>
               </div>
               <Button onClick={() => signOut()} variant="outline" size="sm">
                 Sign out
@@ -158,15 +176,33 @@ export function Navbar() {
             {session ? (
               <>
                 <div className="mt-2 space-y-2">
-                  <div className="px-4 py-2 rounded-lg bg-muted/50">
-                    <p className="text-sm font-medium text-foreground">
-                      {session.user?.name || session.user?.email}
-                    </p>
-                    {userRole && (
-                      <p className="text-xs text-muted-foreground uppercase mt-1">
-                        {userRole}
-                      </p>
+                  <div className="flex items-center gap-3 px-4 py-2 rounded-lg bg-muted/50">
+                    {/* Profile Picture */}
+                    {session.user?.image ? (
+                      <img
+                        src={session.user.image}
+                        alt={session.user?.name || "Profile"}
+                        className="h-10 w-10 rounded-full object-cover border-2 border-border"
+                      />
+                    ) : (
+                      <div className="h-10 w-10 rounded-full bg-primary flex items-center justify-center border-2 border-border flex-shrink-0">
+                        <span className="text-sm font-semibold text-primary-foreground">
+                          {(session.user?.name || session.user?.email || "U")
+                            .charAt(0)
+                            .toUpperCase()}
+                        </span>
+                      </div>
                     )}
+                    <div className="flex flex-col min-w-0 flex-1">
+                      <p className="text-sm font-medium text-foreground truncate">
+                        {session.user?.name || session.user?.email}
+                      </p>
+                      {userRole && (
+                        <p className="text-xs text-muted-foreground uppercase">
+                          {userRole}
+                        </p>
+                      )}
+                    </div>
                   </div>
                   <Button onClick={() => signOut()} variant="outline" className="w-full justify-center">
                     Sign out

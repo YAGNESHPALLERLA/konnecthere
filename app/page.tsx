@@ -65,17 +65,17 @@ export default async function Home() {
                 </Button>
                 {(session.user as any)?.role === "USER" && (
                   <Button variant="ghost" asChild size="lg">
-                    <Link href="/dashboard/user">Go to Dashboard</Link>
+                    <Link href="/dashboard/user">My Profile</Link>
                   </Button>
                 )}
                 {(session.user as any)?.role === "HR" && (
                   <Button variant="ghost" asChild size="lg">
-                    <Link href="/dashboard/hr">Go to HR Dashboard</Link>
+                    <Link href="/dashboard/hr">My Profile</Link>
                   </Button>
                 )}
                 {(session.user as any)?.role === "ADMIN" && (
                   <Button variant="ghost" asChild size="lg">
-                    <Link href="/dashboard/admin">Go to Admin Dashboard</Link>
+                    <Link href="/dashboard/admin">My Profile</Link>
                   </Button>
                 )}
               </>
