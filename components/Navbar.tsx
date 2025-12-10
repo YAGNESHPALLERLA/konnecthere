@@ -101,8 +101,8 @@ export function Navbar() {
                   size="sm"
                   showEditButton={true}
                 />
-                <div className="flex flex-col">
-                  <span className="text-sm font-medium text-foreground leading-tight">
+                <Link href="/dashboard" className="flex flex-col hover:opacity-80 transition-opacity">
+                  <span className="text-sm font-medium text-foreground leading-tight cursor-pointer">
                     {session.user?.name || session.user?.email}
                   </span>
                   {userRole && (
@@ -110,7 +110,7 @@ export function Navbar() {
                       {userRole}
                     </span>
                   )}
-                </div>
+                </Link>
               </div>
               <Button onClick={() => signOut()} variant="outline" size="sm">
                 Sign out
@@ -176,8 +176,8 @@ export function Navbar() {
                       size="md"
                       showEditButton={true}
                     />
-                    <div className="flex flex-col min-w-0 flex-1">
-                      <p className="text-sm font-medium text-foreground truncate">
+                    <Link href="/dashboard" className="flex flex-col min-w-0 flex-1 hover:opacity-80 transition-opacity">
+                      <p className="text-sm font-medium text-foreground truncate cursor-pointer">
                         {session.user?.name || session.user?.email}
                       </p>
                       {userRole && (
@@ -185,7 +185,7 @@ export function Navbar() {
                           {userRole}
                         </p>
                       )}
-                    </div>
+                    </Link>
                   </div>
                   <Button onClick={() => signOut()} variant="outline" className="w-full justify-center">
                     Sign out

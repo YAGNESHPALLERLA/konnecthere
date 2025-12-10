@@ -324,13 +324,15 @@ export const authOptions: NextAuthConfig = {
           token.id = user.id
           token.role = (user.role as "USER" | "HR" | "ADMIN") || "USER"
           token.email = user.email
+          token.image = user.image || null
+          token.name = user.name || null
         } else if (trigger === "update") {
           // Refresh user data from DB if needed
           const userId = token.sub || token.id
           if (userId) {
             const dbUser = await prisma.user.findUnique({
               where: { id: userId as string },
-              select: { role: true, status: true, email: true }
+              select: { role: true, status: true, email: true, image: true, name: true }
             })
             if (dbUser) {
               // Map legacy roles
@@ -343,6 +345,9 @@ export const authOptions: NextAuthConfig = {
               } else if (dbUser.role === "EMPLOYER") {
                 token.role = "HR"
               }
+              // Update image and name from database
+              token.image = dbUser.image || null
+              token.name = dbUser.name || null
             }
           }
         }
@@ -358,6 +363,13 @@ export const authOptions: NextAuthConfig = {
           // Use token.sub for user ID (NextAuth v5 standard)
           session.user.id = (token.sub as string) || (token.id as string) || ""
           session.user.role = (token.role as "USER" | "HR" | "ADMIN") || "USER"
+          // Include image and name from token
+          if (token.image) {
+            session.user.image = token.image as string
+          }
+          if (token.name) {
+            session.user.name = token.name as string
+          }
         }
         return session
       } catch (error) {

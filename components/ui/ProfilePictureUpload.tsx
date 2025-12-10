@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import { useSession } from "next-auth/react"
 import { Button } from "@/components/ui/Button"
 import { cn } from "@/lib/utils"
@@ -38,6 +38,11 @@ export function ProfilePictureUpload({
   const [uploading, setUploading] = useState(false)
   const [preview, setPreview] = useState<string | null>(currentImage || null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // Update preview when currentImage prop changes
+  useEffect(() => {
+    setPreview(currentImage || null)
+  }, [currentImage])
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -81,7 +86,12 @@ export function ProfilePictureUpload({
 
       const data = await res.json()
 
-      // Update session to reflect new image
+      // Update preview with the new image URL
+      if (data.imageUrl) {
+        setPreview(data.imageUrl)
+      }
+
+      // Update session to reflect new image - trigger a refresh
       await updateSession()
 
       // Call onUpdate callback if provided
@@ -89,8 +99,10 @@ export function ProfilePictureUpload({
         onUpdate()
       }
 
-      // Reload page to show updated image everywhere
-      window.location.reload()
+      // Small delay before reload to ensure session is updated
+      setTimeout(() => {
+        window.location.reload()
+      }, 1000)
     } catch (error: any) {
       console.error("Error uploading profile picture:", error)
       alert(error.message || "Failed to upload profile picture")
@@ -130,6 +142,11 @@ export function ProfilePictureUpload({
               sizeClasses[size],
               uploading && "opacity-50"
             )}
+            onError={(e) => {
+              // If image fails to load, fall back to initials
+              console.error("Failed to load profile image:", preview)
+              setPreview(null)
+            }}
           />
         ) : (
           <div
