@@ -37,18 +37,18 @@ const columns = [
 
 export function Footer() {
   return (
-    <footer className="border-t border-border bg-muted/30">
+    <footer className="border-t border-slate-200 bg-slate-50">
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-12 px-6 py-16 sm:px-8">
         <div className="grid gap-10 md:grid-cols-4">
           {columns.map((section) => (
             <div key={section.title} className="space-y-4">
-              <h4 className="text-sm font-semibold uppercase tracking-wider text-foreground">{section.title}</h4>
+              <h4 className="muted-label">{section.title}</h4>
               <ul className="space-y-3 text-sm">
                 {section.links.map((link) => (
                   <li key={link.href}>
                     <Link 
                       href={link.href} 
-                      className="text-muted-foreground transition-colors duration-200 hover:text-foreground"
+                      className="text-slate-600 transition-colors duration-150 hover:text-slate-900"
                     >
                       {link.label}
                     </Link>
@@ -58,26 +58,26 @@ export function Footer() {
             </div>
           ))}
         </div>
-        <div className="flex flex-col gap-4 border-t border-border pt-8 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-sm text-muted-foreground">
+        <div className="flex flex-col gap-4 border-t border-slate-200 pt-8 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-sm text-slate-600">
             &copy; {new Date().getFullYear()} KonnectHere. Built for modern teams.
           </p>
           <div className="flex gap-6 text-sm">
             <Link 
               href="/contact" 
-              className="text-muted-foreground transition-colors duration-200 hover:text-foreground"
+              className="text-slate-600 transition-colors duration-150 hover:text-slate-900"
             >
               Contact
             </Link>
             <Link 
               href="/support" 
-              className="text-muted-foreground transition-colors duration-200 hover:text-foreground"
+              className="text-slate-600 transition-colors duration-150 hover:text-slate-900"
             >
               Support
             </Link>
             <Link 
               href="/status" 
-              className="text-muted-foreground transition-colors duration-200 hover:text-foreground"
+              className="text-slate-600 transition-colors duration-150 hover:text-slate-900"
             >
               System status
             </Link>

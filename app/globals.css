@@ -3,13 +3,13 @@
 
 @layer base {
   :root {
-    color: #0A0A0A;
-    background-color: #ffffff;
+    color: #020617;
+    background-color: #f3f4f6;
     font-family: "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   }
 
   * {
-    border-color: rgba(0, 0, 0, 0.12);
+    border-color: #e5e7eb;
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -26,8 +26,8 @@
     min-height: 100vh;
     margin: 0;
     padding: 0;
-    background-color: #ffffff;
-    color: #0A0A0A;
+    background-color: #f3f4f6;
+    color: #020617;
     font-family: "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     line-height: 1.6;
     letter-spacing: -0.01em;
@@ -41,40 +41,69 @@
   h4,
   h5,
   h6 {
-    color: #000000;
+    color: #020617;
     font-family: "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-weight: 600;
     line-height: 1.2;
+    letter-spacing: -0.02em;
     margin: 0 0 0.75rem 0;
   }
 
   h1 {
-    font-size: clamp(2.25rem, 3vw, 3rem);
-    font-weight: 700;
+    font-size: clamp(2rem, 3vw, 3rem);
+    font-weight: 600;
+    letter-spacing: -0.03em;
   }
 
   h2 {
     font-size: clamp(1.75rem, 2.4vw, 2.5rem);
     font-weight: 600;
+    letter-spacing: -0.02em;
   }
 
   h3 {
     font-size: clamp(1.25rem, 2vw, 1.75rem);
+    font-weight: 600;
+  }
+
+  /* Page titles */
+  .page-title {
+    font-size: clamp(1.5rem, 2vw, 2rem);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: #020617;
+  }
+
+  /* Section titles */
+  .section-title {
+    font-size: clamp(1.125rem, 1.5vw, 1.25rem);
+    font-weight: 600;
+    color: #020617;
+  }
+
+  /* Muted labels */
+  .muted-label {
+    font-size: 0.75rem;
     font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #6b7280;
   }
 
   p {
     margin: 0 0 1rem 0;
-    color: rgba(0, 0, 0, 0.85);
+    color: #020617;
   }
 
   a {
-    color: #000000;
+    color: #020617;
     text-decoration: none;
     font-weight: 500;
+    transition: color 0.15s ease;
   }
 
   a:hover {
-    text-decoration: underline;
+    color: #4f46e5;
   }
 
   button,
@@ -87,6 +116,6 @@
   }
 
   ::selection {
-    background: rgba(0, 0, 0, 0.08);
+    background: rgba(79, 70, 229, 0.2);
   }
 }

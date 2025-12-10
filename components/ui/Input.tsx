@@ -13,8 +13,8 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
       <input
         ref={ref}
         className={cn(
-          "w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground transition-all duration-200 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 hover:border-foreground/30",
-          error && "border-red-500 focus:border-red-500 focus:ring-red-500/20",
+          "w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm text-foreground placeholder:text-slate-400 transition-all duration-200 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 hover:border-slate-400",
+          error && "border-red-500 focus:border-red-500 focus:ring-red-500/40",
           className
         )}
         {...props}
@@ -22,11 +22,11 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     )
 
     return (
-      <label className="flex w-full flex-col gap-2 text-sm font-medium text-black">
+      <label className="flex w-full flex-col gap-2 text-sm font-medium text-slate-900">
         {label && <span>{label}</span>}
         {inputElement}
         {(helperText || error) && (
-          <span className={cn("text-xs text-black/50", error && "text-red-600")}>
+          <span className={cn("text-xs text-slate-500", error && "text-red-600")}>
             {error ?? helperText}
           </span>
         )}

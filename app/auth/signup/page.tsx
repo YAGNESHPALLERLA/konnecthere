@@ -86,15 +86,15 @@ export default function SignUpPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-white via-primary-50/20 to-white py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
+    <div className="min-h-screen flex items-center justify-center bg-background py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
         <div className="text-center">
-          <h2 className="text-4xl font-bold text-foreground mb-2">
+          <h2 className="page-title mb-2">
             Create your account
           </h2>
-          <p className="text-base text-muted-foreground">
+          <p className="text-base text-slate-600">
             Or{" "}
-            <Link href="/auth/signin" className="font-medium text-primary hover:text-primary-700 transition-colors duration-200">
+            <Link href="/auth/signin" className="font-medium text-indigo-600 hover:text-indigo-700 transition-colors duration-150">
               sign in to your existing account
             </Link>
           </p>
@@ -109,14 +109,14 @@ export default function SignUpPage() {
 
             <div className="space-y-4">
               <div>
-                <label htmlFor="role" className="block text-sm font-medium text-foreground mb-2">
+                <label htmlFor="role" className="block text-sm font-medium text-slate-900 mb-2">
                   I am a
                 </label>
                 <select
                   id="role"
                   value={formData.role}
                   onChange={(e) => setFormData({ ...formData, role: e.target.value as any })}
-                  className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm text-foreground transition-all duration-200 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  className="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm text-foreground transition-all duration-200 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 hover:border-slate-400"
                 >
                   <option value="CANDIDATE">Job Seeker</option>
                   <option value="EMPLOYER">Employer</option>
@@ -162,7 +162,7 @@ export default function SignUpPage() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-9 text-muted-foreground hover:text-foreground transition-colors duration-200"
+                  className="absolute right-3 top-9 text-slate-500 hover:text-slate-700 transition-colors duration-150"
                   aria-label={showPassword ? "Hide password" : "Show password"}
                 >
                   {showPassword ? (
@@ -194,7 +194,7 @@ export default function SignUpPage() {
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-9 text-muted-foreground hover:text-foreground transition-colors duration-200"
+                  className="absolute right-3 top-9 text-slate-500 hover:text-slate-700 transition-colors duration-150"
                   aria-label={showConfirmPassword ? "Hide password" : "Show password"}
                 >
                   {showConfirmPassword ? (
@@ -219,10 +219,10 @@ export default function SignUpPage() {
           <div className="mt-8">
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-border" />
+                <div className="w-full border-t border-slate-200" />
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-3 bg-white text-muted-foreground">Or continue with</span>
+                <span className="px-3 bg-white text-slate-500">Or continue with</span>
               </div>
             </div>
 

@@ -56,7 +56,7 @@ export function Navbar() {
   const links = getNavLinks()
 
   return (
-    <header className="sticky top-0 z-40 border-b border-border bg-white/95 backdrop-blur-sm shadow-sm">
+    <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/80 backdrop-blur-md shadow-sm">
       <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-6 py-4 sm:px-8">
         <Link 
           href="/" 
@@ -73,15 +73,15 @@ export function Navbar() {
                 key={link.href}
                 href={link.href}
                 className={cn(
-                  "relative px-4 py-2 text-sm font-medium tracking-tight transition-colors duration-200 rounded-lg",
+                  "relative px-4 py-2 text-sm font-medium tracking-tight transition-colors duration-150 rounded-lg",
                   isActive 
-                    ? "text-primary font-semibold" 
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                    ? "text-slate-900 font-semibold bg-slate-100" 
+                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
                 )}
               >
                 {link.label}
                 {isActive && (
-                  <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-primary" />
+                  <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-indigo-500 rounded-full" />
                 )}
               </Link>
             )
@@ -93,7 +93,7 @@ export function Navbar() {
             <span className="text-sm text-muted-foreground">Loading…</span>
           ) : session ? (
             <>
-              <div className="flex items-center gap-3 px-3 py-1.5 rounded-lg bg-muted/50">
+              <div className="flex items-center gap-3 px-3 py-1.5 rounded-lg bg-slate-50">
                 {/* Profile Picture with Upload */}
                 <ProfilePictureUpload
                   currentImage={session.user?.image}
@@ -101,12 +101,12 @@ export function Navbar() {
                   size="sm"
                   showEditButton={true}
                 />
-                <Link href="/dashboard" className="flex flex-col hover:opacity-80 transition-opacity">
-                  <span className="text-sm font-medium text-foreground leading-tight cursor-pointer">
+                <Link href="/dashboard" className="flex flex-col hover:opacity-80 transition-opacity duration-150">
+                  <span className="text-sm font-medium text-slate-900 leading-tight cursor-pointer">
                     {session.user?.name || session.user?.email}
                   </span>
                   {userRole && (
-                    <span className="text-xs font-medium text-muted-foreground uppercase">
+                    <span className="text-xs font-medium text-slate-500 uppercase">
                       {userRole}
                     </span>
                   )}
@@ -120,7 +120,7 @@ export function Navbar() {
             <>
               <Link 
                 href="/auth/signin" 
-                className="text-sm font-medium text-foreground transition-colors duration-200 hover:text-primary"
+                className="text-sm font-medium text-slate-700 transition-colors duration-150 hover:text-slate-900"
               >
                 Sign in
               </Link>
@@ -133,7 +133,7 @@ export function Navbar() {
 
         <button
           type="button"
-          className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-background transition-colors duration-200 hover:bg-muted md:hidden"
+          className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-300 bg-white transition-colors duration-150 hover:bg-slate-50 md:hidden"
           onClick={() => setOpen((prev) => !prev)}
           aria-label="Toggle navigation"
         >
@@ -144,7 +144,7 @@ export function Navbar() {
       </div>
 
       {open && (
-        <div className="border-t border-border bg-white px-6 py-4 md:hidden animate-in slide-in-from-top-2 duration-200">
+        <div className="border-t border-slate-200 bg-white px-6 py-4 md:hidden animate-in slide-in-from-top-2 duration-200">
           <nav className="flex flex-col gap-2">
             {links.map((link) => {
               const isActive = link.href === "/" ? pathname === "/" : pathname.startsWith(link.href)
@@ -154,10 +154,10 @@ export function Navbar() {
                   href={link.href}
                   onClick={() => setOpen(false)}
                   className={cn(
-                    "px-4 py-2 text-base font-medium rounded-lg transition-colors duration-200",
+                    "px-4 py-2 text-base font-medium rounded-lg transition-colors duration-150",
                     isActive 
-                      ? "text-primary bg-primary/10 font-semibold" 
-                      : "text-foreground hover:bg-muted"
+                      ? "text-slate-900 bg-slate-100 font-semibold" 
+                      : "text-slate-700 hover:bg-slate-50"
                   )}
                 >
                   {link.label}
@@ -168,7 +168,7 @@ export function Navbar() {
             {session ? (
               <>
                 <div className="mt-2 space-y-2">
-                  <div className="flex items-center gap-3 px-4 py-2 rounded-lg bg-muted/50">
+                  <div className="flex items-center gap-3 px-4 py-2 rounded-lg bg-slate-50">
                     {/* Profile Picture with Upload */}
                     <ProfilePictureUpload
                       currentImage={session.user?.image}
@@ -176,12 +176,12 @@ export function Navbar() {
                       size="md"
                       showEditButton={true}
                     />
-                    <Link href="/dashboard" className="flex flex-col min-w-0 flex-1 hover:opacity-80 transition-opacity">
-                      <p className="text-sm font-medium text-foreground truncate cursor-pointer">
+                    <Link href="/dashboard" className="flex flex-col min-w-0 flex-1 hover:opacity-80 transition-opacity duration-150">
+                      <p className="text-sm font-medium text-slate-900 truncate cursor-pointer">
                         {session.user?.name || session.user?.email}
                       </p>
                       {userRole && (
-                        <p className="text-xs text-muted-foreground uppercase">
+                        <p className="text-xs text-slate-500 uppercase">
                           {userRole}
                         </p>
                       )}
@@ -197,7 +197,7 @@ export function Navbar() {
                 <Link 
                   href="/auth/signin" 
                   onClick={() => setOpen(false)} 
-                  className="px-4 py-2 text-sm font-medium text-foreground text-center rounded-lg hover:bg-muted transition-colors duration-200"
+                  className="px-4 py-2 text-sm font-medium text-slate-700 text-center rounded-lg hover:bg-slate-50 transition-colors duration-150"
                 >
                   Sign in
                 </Link>

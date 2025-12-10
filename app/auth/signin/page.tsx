@@ -93,15 +93,15 @@ function SignInContent() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-white via-primary-50/20 to-white py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
+    <div className="min-h-screen flex items-center justify-center bg-background py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
         <div className="text-center">
-          <h2 className="text-4xl font-bold text-foreground mb-2">
+          <h2 className="page-title mb-2">
             Sign in to your account
           </h2>
-          <p className="text-base text-muted-foreground">
+          <p className="text-base text-slate-600">
             Or{" "}
-            <Link href="/auth/signup" className="font-medium text-primary hover:text-primary-700 transition-colors duration-200">
+            <Link href="/auth/signup" className="font-medium text-indigo-600 hover:text-indigo-700 transition-colors duration-150">
               create a new account
             </Link>
           </p>
@@ -141,7 +141,7 @@ function SignInContent() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-9 text-muted-foreground hover:text-foreground transition-colors duration-200"
+                  className="absolute right-3 top-9 text-slate-500 hover:text-slate-700 transition-colors duration-150"
                   aria-label={showPassword ? "Hide password" : "Show password"}
                 >
                   {showPassword ? (
@@ -166,10 +166,10 @@ function SignInContent() {
           <div className="mt-8">
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-border" />
+                <div className="w-full border-t border-slate-200" />
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-3 bg-white text-muted-foreground">Or continue with</span>
+                <span className="px-3 bg-white text-slate-500">Or continue with</span>
               </div>
             </div>
 
@@ -200,7 +200,7 @@ function SignInContent() {
 
 export default function SignInPage() {
   return (
-    <Suspense fallback={<div className="py-12 text-center text-sm text-muted-foreground">Loading…</div>}>
+    <Suspense fallback={<div className="py-12 text-center text-sm text-slate-600">Loading…</div>}>
       <SignInContent />
     </Suspense>
   )

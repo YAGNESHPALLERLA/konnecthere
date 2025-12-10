@@ -16,47 +16,90 @@ const config: Config = {
     },
     extend: {
       colors: {
-        background: "#FFFFFF",
-        foreground: "#0A0A0A",
+        // Base backgrounds
+        background: "#f3f4f6", // Soft warm gray for main page background
+        foreground: "#020617", // Primary text color
+        
+        // Surfaces / cards
+        surface: {
+          DEFAULT: "#ffffff", // Primary card background
+          alt: "#f9fafb", // Subtle alternate surface
+        },
+        
+        // Primary brand accent (indigo)
         primary: {
-          DEFAULT: "#2563EB",
+          DEFAULT: "#4f46e5", // Primary accent
           foreground: "#FFFFFF",
-          50: "#EFF6FF",
-          100: "#DBEAFE",
-          200: "#BFDBFE",
-          300: "#93C5FD",
-          400: "#60A5FA",
-          500: "#3B82F6",
-          600: "#2563EB",
-          700: "#1D4ED8",
-          800: "#1E40AF",
-          900: "#1E3A8A",
+          hover: "#4338ca", // Primary accent hover
+          50: "#eef2ff",
+          100: "#e0e7ff",
+          200: "#c7d2fe",
+          300: "#a5b4fc",
+          400: "#818cf8",
+          500: "#6366f1",
+          600: "#4f46e5",
+          700: "#4338ca",
+          800: "#3730a3",
+          900: "#312e81",
         },
+        
+        // Secondary accent (success / highlights)
         secondary: {
-          DEFAULT: "#6366F1",
+          DEFAULT: "#22c55e", // Success / highlights
           foreground: "#FFFFFF",
         },
+        
+        // Destructive
+        destructive: {
+          DEFAULT: "#ef4444",
+          foreground: "#FFFFFF",
+        },
+        
+        // Muted colors
         muted: {
-          DEFAULT: "#F5F5F5",
-          foreground: "#737373",
+          DEFAULT: "#f9fafb", // Muted background
+          foreground: "#6b7280", // Muted text
         },
-        accent: {
-          DEFAULT: "#F5F5F5",
-          subtle: "#E5E5E5",
-          line: "rgba(0,0,0,0.08)",
+        
+        // Border
+        border: "#e5e7eb",
+        
+        // Dark sections (header/footer accents)
+        dark: {
+          DEFAULT: "#0f172a",
+          alt: "#0b1220",
+          deep: "#020617",
         },
-        border: "rgba(0,0,0,0.12)",
-        ring: "#2563EB",
+        
+        // Slate palette for consistency
+        slate: {
+          50: "#f8fafc",
+          100: "#f1f5f9",
+          200: "#e2e8f0",
+          300: "#cbd5e1",
+          400: "#94a3b8",
+          500: "#64748b",
+          600: "#475569",
+          700: "#334155",
+          800: "#1e293b",
+          900: "#0f172a",
+        },
+        
+        // Focus ring
+        ring: "#4f46e5",
       },
       borderColor: {
         subtle: "rgba(0,0,0,0.12)",
         DEFAULT: "rgba(0,0,0,0.12)",
       },
       borderRadius: {
-        md: "8px",
-        lg: "12px",
-        xl: "16px",
-        "2xl": "20px",
+        DEFAULT: "0.75rem", // 12px - rounded-xl default
+        sm: "0.5rem", // 8px
+        md: "0.625rem", // 10px
+        lg: "0.75rem", // 12px
+        xl: "1rem", // 16px - primary for cards
+        "2xl": "1.25rem", // 20px
+        full: "9999px", // For pills and rounded buttons
       },
       spacing: {
         1: "4px",
@@ -74,12 +117,12 @@ const config: Config = {
       },
       boxShadow: {
         none: "none",
-        sm: "0 1px 2px 0 rgba(0, 0, 0, 0.05)",
+        sm: "0 1px 2px 0 rgba(0, 0, 0, 0.05)", // Cards default
         DEFAULT: "0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1)",
-        md: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)",
+        md: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)", // Cards hover
         lg: "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1)",
         xl: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)",
-        "hover": "0 4px 12px rgba(0, 0, 0, 0.15)",
+        nav: "0 1px 2px 0 rgba(0, 0, 0, 0.05)", // Nav & sticky header
       },
       transitionDuration: {
         DEFAULT: "200ms",

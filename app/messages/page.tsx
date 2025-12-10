@@ -233,16 +233,16 @@ function MessagesContent() {
     <PageShell title="Messages" description="Chat with HR, admins, and other users">
       <div className="flex flex-col md:flex-row h-[calc(100vh-200px)] gap-4">
         {/* Conversation List - Left Column */}
-        <div className="w-full md:w-80 flex-shrink-0 border-r border-gray-200 md:border-r md:border-b-0 border-b">
+        <div className="w-full md:w-80 flex-shrink-0 border-r border-slate-200 md:border-r md:border-b-0 border-b">
           <Card className="h-full p-0 overflow-hidden flex flex-col">
-            <div className="p-4 border-b border-gray-200">
-              <h2 className="text-lg font-bold">Conversations</h2>
+            <div className="p-4 border-b border-slate-200">
+              <h2 className="section-title">Conversations</h2>
             </div>
             <div className="flex-1 overflow-y-auto p-2">
               {loading ? (
-                <div className="p-4 text-center text-gray-600">Loading...</div>
+                <div className="p-4 text-center text-slate-600">Loading...</div>
               ) : conversations.length === 0 ? (
-                <div className="p-4 text-center text-gray-600">No conversations yet.</div>
+                <div className="p-4 text-center text-slate-600">No conversations yet.</div>
               ) : (
                 <div className="space-y-1">
                   {conversations.map((conv) => (
@@ -252,29 +252,29 @@ function MessagesContent() {
                         setSelectedConversation(conv.id)
                         router.push(`/messages?id=${conv.id}`)
                       }}
-                      className={`w-full text-left p-3 rounded-lg transition-all duration-200 ${
+                      className={`w-full text-left p-3 rounded-xl transition-all duration-150 ${
                         selectedConversation === conv.id
-                          ? "bg-primary-50 border-l-4 border-primary shadow-sm"
-                          : "hover:bg-muted border-l-4 border-transparent"
+                          ? "bg-slate-100 border-l-4 border-indigo-500 shadow-sm"
+                          : "hover:bg-slate-50 border-l-4 border-transparent"
                       }`}
                     >
                       <div className="flex items-center justify-between gap-2">
                         <div className="flex-1 min-w-0">
-                          <p className="font-semibold text-sm truncate text-gray-900">
+                          <p className="font-semibold text-sm truncate text-slate-900">
                             {conv.participant?.name || conv.participant?.email || "Unknown"}
                           </p>
-                          <p className="text-xs text-gray-500 truncate mt-0.5">
+                          <p className="text-xs text-slate-500 truncate mt-0.5">
                             {conv.participant?.role || "USER"}
                           </p>
                           {conv.lastMessage && (
-                            <p className="text-xs text-gray-600 truncate mt-1">
+                            <p className="text-xs text-slate-600 truncate mt-1">
                               {conv.lastMessage.body.substring(0, 40)}
                               {conv.lastMessage.body.length > 40 ? "..." : ""}
                             </p>
                           )}
                         </div>
                         {conv.unreadCount > 0 && (
-                          <span className="flex-shrink-0 rounded-full bg-primary px-2 py-0.5 text-xs font-semibold text-primary-foreground">
+                          <span className="flex-shrink-0 rounded-full bg-indigo-500 px-2 py-0.5 text-xs font-semibold text-white">
                             {conv.unreadCount}
                           </span>
                         )}
@@ -293,21 +293,21 @@ function MessagesContent() {
             {selectedConversation ? (
               <>
                 {/* Chat Header */}
-                <div className="p-4 border-b border-gray-200 bg-white">
-                  <h3 className="text-lg font-bold text-gray-900">
+                <div className="p-4 border-b border-slate-200 bg-white">
+                  <h3 className="section-title">
                     {currentConversation?.participant?.name ||
                       currentConversation?.participant?.email ||
                       "Conversation"}
                   </h3>
-                  <p className="text-sm text-gray-600 mt-0.5">
+                  <p className="text-sm text-slate-600 mt-0.5">
                     {currentConversation?.participant?.role || "USER"}
                   </p>
                 </div>
 
                 {/* Messages Area - Scrollable */}
-                <div className="flex-1 overflow-y-auto p-4 space-y-3 min-h-0 bg-muted/30">
+                <div className="flex-1 overflow-y-auto p-4 space-y-3 min-h-0 bg-slate-50">
                   {messages.length === 0 ? (
-                    <div className="flex items-center justify-center h-full text-gray-500 text-sm">
+                    <div className="flex items-center justify-center h-full text-slate-500 text-sm">
                       No messages yet. Start the conversation!
                     </div>
                   ) : (
@@ -328,27 +328,27 @@ function MessagesContent() {
                             className={`flex ${isOwn ? "justify-end" : "justify-start"}`}
                           >
                             <div
-                              className={`max-w-[75%] md:max-w-[65%] rounded-2xl px-4 py-2.5 shadow-sm transition-all duration-200 ${
+                              className={`max-w-[75%] md:max-w-[65%] rounded-2xl px-3 py-2 text-sm shadow-sm transition-all duration-150 ${
                                 isOwn
-                                  ? "bg-primary text-primary-foreground rounded-br-sm"
-                                  : "bg-white text-foreground border border-border rounded-bl-sm"
+                                  ? "bg-indigo-500 text-white rounded-br-sm"
+                                  : "bg-slate-100 text-slate-900 rounded-bl-sm"
                               }`}
                             >
                               {!isOwn && msg.sender && (
-                                <p className="text-xs font-semibold mb-1 text-muted-foreground">
+                                <p className="text-xs font-semibold mb-1 text-slate-600">
                                   {msg.sender.name || msg.sender.email || "Unknown"}
                                 </p>
                               )}
                               <p
                                 className={`text-sm whitespace-pre-wrap break-words leading-relaxed ${
-                                  isOwn ? "text-primary-foreground" : "text-foreground"
+                                  isOwn ? "text-white" : "text-slate-900"
                                 }`}
                               >
                                 {messageBody}
                               </p>
                               <p
                                 className={`text-xs mt-1.5 ${
-                                  isOwn ? "text-primary-100" : "text-muted-foreground"
+                                  isOwn ? "text-indigo-100" : "text-slate-500"
                                 }`}
                               >
                                 {msg.createdAt
@@ -366,7 +366,7 @@ function MessagesContent() {
                 </div>
 
                 {/* Message Input Area */}
-                <div className="p-4 border-t border-gray-200 bg-white">
+                <div className="p-4 border-t border-slate-200 bg-white">
                   <div className="flex gap-2">
                     <Input
                       value={messageBody}
@@ -391,10 +391,10 @@ function MessagesContent() {
                 </div>
               </>
             ) : (
-              <div className="flex items-center justify-center h-full text-gray-500">
+              <div className="flex items-center justify-center h-full text-slate-500">
                 <div className="text-center">
-                  <p className="text-lg font-medium mb-2">Select a conversation</p>
-                  <p className="text-sm">Choose a conversation from the list to start messaging</p>
+                  <p className="text-lg font-medium mb-2 text-slate-900">Select a conversation</p>
+                  <p className="text-sm text-slate-600">Choose a conversation from the list to start messaging</p>
                 </div>
               </div>
             )}
