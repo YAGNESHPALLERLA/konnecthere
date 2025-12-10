@@ -88,12 +88,12 @@ export function Navbar() {
           })}
         </nav>
 
-        <div className="hidden items-center gap-3 md:flex">
+        <div className="hidden items-center gap-2 md:flex">
           {status === "loading" ? (
-            <span className="text-sm text-muted-foreground">Loading…</span>
+            <span className="text-sm text-slate-600">Loading…</span>
           ) : session ? (
             <>
-              <div className="flex items-center gap-3 px-3 py-1.5 rounded-lg bg-slate-50">
+              <div className="flex items-center gap-2.5 px-3 py-1.5 rounded-lg bg-slate-50">
                 {/* Profile Picture with Upload */}
                 <ProfilePictureUpload
                   currentImage={session.user?.image}
@@ -101,18 +101,21 @@ export function Navbar() {
                   size="sm"
                   showEditButton={true}
                 />
-                <Link href="/dashboard" className="flex flex-col hover:opacity-80 transition-opacity duration-150">
-                  <span className="text-sm font-medium text-slate-900 leading-tight cursor-pointer">
+                <Link 
+                  href="/dashboard" 
+                  className="flex flex-col items-start justify-center hover:opacity-80 transition-opacity duration-150 min-w-0"
+                >
+                  <span className="text-sm font-medium text-slate-900 leading-tight cursor-pointer truncate max-w-[120px]">
                     {session.user?.name || session.user?.email}
                   </span>
                   {userRole && (
-                    <span className="text-xs font-medium text-slate-500 uppercase">
+                    <span className="text-xs font-medium text-slate-500 uppercase leading-tight">
                       {userRole}
                     </span>
                   )}
                 </Link>
               </div>
-              <Button onClick={() => signOut()} variant="outline" size="sm">
+              <Button onClick={() => signOut()} variant="outline" size="sm" className="shrink-0">
                 Sign out
               </Button>
             </>
@@ -168,7 +171,7 @@ export function Navbar() {
             {session ? (
               <>
                 <div className="mt-2 space-y-2">
-                  <div className="flex items-center gap-3 px-4 py-2 rounded-lg bg-slate-50">
+                  <div className="flex items-center gap-2.5 px-4 py-2 rounded-lg bg-slate-50">
                     {/* Profile Picture with Upload */}
                     <ProfilePictureUpload
                       currentImage={session.user?.image}
@@ -176,12 +179,15 @@ export function Navbar() {
                       size="md"
                       showEditButton={true}
                     />
-                    <Link href="/dashboard" className="flex flex-col min-w-0 flex-1 hover:opacity-80 transition-opacity duration-150">
-                      <p className="text-sm font-medium text-slate-900 truncate cursor-pointer">
+                    <Link 
+                      href="/dashboard" 
+                      className="flex flex-col items-start justify-center min-w-0 flex-1 hover:opacity-80 transition-opacity duration-150"
+                    >
+                      <p className="text-sm font-medium text-slate-900 truncate cursor-pointer leading-tight">
                         {session.user?.name || session.user?.email}
                       </p>
                       {userRole && (
-                        <p className="text-xs text-slate-500 uppercase">
+                        <p className="text-xs text-slate-500 uppercase leading-tight">
                           {userRole}
                         </p>
                       )}

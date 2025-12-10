@@ -363,13 +363,9 @@ export const authOptions: NextAuthConfig = {
           // Use token.sub for user ID (NextAuth v5 standard)
           session.user.id = (token.sub as string) || (token.id as string) || ""
           session.user.role = (token.role as "USER" | "HR" | "ADMIN") || "USER"
-          // Include image and name from token
-          if (token.image) {
-            session.user.image = token.image as string
-          }
-          if (token.name) {
-            session.user.name = token.name as string
-          }
+          // Include image and name from token (always set, even if null)
+          session.user.image = (token.image as string | null) || null
+          session.user.name = (token.name as string | null) || null
         }
         return session
       } catch (error) {

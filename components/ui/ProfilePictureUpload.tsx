@@ -37,6 +37,7 @@ export function ProfilePictureUpload({
   const { data: session, update: updateSession } = useSession()
   const [uploading, setUploading] = useState(false)
   const [preview, setPreview] = useState<string | null>(currentImage || null)
+  const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Update preview when currentImage prop changes
@@ -86,12 +87,17 @@ export function ProfilePictureUpload({
 
       const data = await res.json()
 
-      // Update preview with the new image URL
-      if (data.imageUrl) {
-        setPreview(data.imageUrl)
+      if (!data.imageUrl) {
+        throw new Error("No image URL returned from server")
       }
 
-      // Update session to reflect new image - trigger a refresh
+      // Update preview with the new image URL immediately
+      setPreview(data.imageUrl)
+
+      // Show success message
+      setMessage({ type: "success", text: "Profile picture updated successfully!" })
+
+      // Update session to reflect new image - this triggers JWT callback with trigger="update"
       await updateSession()
 
       // Call onUpdate callback if provided
@@ -99,14 +105,19 @@ export function ProfilePictureUpload({
         onUpdate()
       }
 
-      // Small delay before reload to ensure session is updated
+      // Clear message after 2 seconds, then reload
       setTimeout(() => {
+        setMessage(null)
+        // Reload the page to ensure all components get the updated session
         window.location.reload()
-      }, 1000)
+      }, 2000)
     } catch (error: any) {
       console.error("Error uploading profile picture:", error)
-      alert(error.message || "Failed to upload profile picture")
+      const errorMessage = error.message || "Failed to upload profile picture"
+      setMessage({ type: "error", text: errorMessage })
       setPreview(currentImage || null) // Revert preview on error
+      // Clear error message after 5 seconds
+      setTimeout(() => setMessage(null), 5000)
     } finally {
       setUploading(false)
       // Reset file input
@@ -131,6 +142,19 @@ export function ProfilePictureUpload({
 
   return (
     <div className={cn("relative inline-block", className)}>
+      {/* Success/Error Message */}
+      {message && (
+        <div
+          className={cn(
+            "absolute -top-12 left-1/2 -translate-x-1/2 z-50 px-3 py-2 rounded-lg text-xs font-medium shadow-lg whitespace-nowrap animate-in fade-in slide-in-from-top-2 duration-200",
+            message.type === "success"
+              ? "bg-green-50 text-green-700 border border-green-200"
+              : "bg-red-50 text-red-700 border border-red-200"
+          )}
+        >
+          {message.text}
+        </div>
+      )}
       <div className="relative group">
         {/* Profile Picture */}
         {preview ? (

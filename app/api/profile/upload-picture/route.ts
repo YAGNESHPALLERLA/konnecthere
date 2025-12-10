@@ -31,10 +31,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 })
     }
 
-    // Validate file type
-    if (!file.type.startsWith("image/")) {
+    // Validate file type - only allow common image formats
+    const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp", "image/gif"]
+    if (!allowedTypes.includes(file.type)) {
       return NextResponse.json(
-        { error: "File must be an image" },
+        { error: "File must be an image (JPEG, PNG, WebP, or GIF)" },
         { status: 400 }
       )
     }
@@ -81,14 +82,31 @@ export async function POST(req: NextRequest) {
         : `https://${BUCKET_NAME}.s3.${region}.amazonaws.com/${key}`
 
       // Update user's image in database
-      await prisma.user.update({
+      const updatedUser = await prisma.user.update({
         where: { id: userId },
         data: { image: fileUrl },
+        select: {
+          id: true,
+          image: true,
+          name: true,
+          email: true,
+        },
+      })
+
+      console.log("[PROFILE] Profile picture updated successfully:", {
+        userId,
+        imageUrl: fileUrl,
       })
 
       return NextResponse.json({
         success: true,
         imageUrl: fileUrl,
+        user: {
+          id: updatedUser.id,
+          image: updatedUser.image,
+          name: updatedUser.name,
+          email: updatedUser.email,
+        },
       })
     } catch (s3Error: any) {
       console.error("[S3] Error uploading profile picture:", s3Error)
