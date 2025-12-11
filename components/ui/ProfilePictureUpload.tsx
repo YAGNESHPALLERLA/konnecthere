@@ -162,7 +162,7 @@ export function ProfilePictureUpload({
             src={preview}
             alt={userName || "Profile"}
             className={cn(
-              "rounded-full object-cover border-2 border-border transition-opacity duration-200",
+              "rounded-full object-cover border-2 border-slate-200 transition-opacity duration-200",
               sizeClasses[size],
               uploading && "opacity-50"
             )}
@@ -171,6 +171,7 @@ export function ProfilePictureUpload({
               console.error("Failed to load profile image:", preview)
               setPreview(null)
             }}
+            crossOrigin="anonymous"
           />
         ) : (
           <div

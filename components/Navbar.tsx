@@ -93,7 +93,7 @@ export function Navbar() {
             <span className="text-sm text-slate-600">Loading…</span>
           ) : session ? (
             <>
-              <div className="flex items-center gap-2.5 px-3 py-1.5 rounded-lg bg-slate-50">
+              <div className="flex items-center gap-2 rounded-full bg-slate-50 px-3 py-1 shadow-sm">
                 {/* Profile Picture with Upload */}
                 <ProfilePictureUpload
                   currentImage={session.user?.image}
@@ -103,19 +103,19 @@ export function Navbar() {
                 />
                 <Link 
                   href="/dashboard" 
-                  className="flex flex-col items-start justify-center hover:opacity-80 transition-opacity duration-150 min-w-0"
+                  className="flex flex-col leading-tight hover:opacity-80 transition-opacity duration-150 min-w-0"
                 >
-                  <span className="text-sm font-medium text-slate-900 leading-tight cursor-pointer truncate max-w-[120px]">
+                  <span className="text-sm font-medium text-slate-900 truncate">
                     {session.user?.name || session.user?.email}
                   </span>
                   {userRole && (
-                    <span className="text-xs font-medium text-slate-500 uppercase leading-tight">
+                    <span className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
                       {userRole}
                     </span>
                   )}
                 </Link>
               </div>
-              <Button onClick={() => signOut()} variant="outline" size="sm" className="shrink-0">
+              <Button onClick={() => signOut()} variant="outline" size="sm" className="ml-2 shrink-0">
                 Sign out
               </Button>
             </>
@@ -171,7 +171,7 @@ export function Navbar() {
             {session ? (
               <>
                 <div className="mt-2 space-y-2">
-                  <div className="flex items-center gap-2.5 px-4 py-2 rounded-lg bg-slate-50">
+                  <div className="flex items-center gap-2 rounded-full bg-slate-50 px-4 py-2 shadow-sm">
                     {/* Profile Picture with Upload */}
                     <ProfilePictureUpload
                       currentImage={session.user?.image}
@@ -181,13 +181,13 @@ export function Navbar() {
                     />
                     <Link 
                       href="/dashboard" 
-                      className="flex flex-col items-start justify-center min-w-0 flex-1 hover:opacity-80 transition-opacity duration-150"
+                      className="flex flex-col leading-tight min-w-0 flex-1 hover:opacity-80 transition-opacity duration-150"
                     >
-                      <p className="text-sm font-medium text-slate-900 truncate cursor-pointer leading-tight">
+                      <p className="text-sm font-medium text-slate-900 truncate cursor-pointer">
                         {session.user?.name || session.user?.email}
                       </p>
                       {userRole && (
-                        <p className="text-xs text-slate-500 uppercase leading-tight">
+                        <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
                           {userRole}
                         </p>
                       )}

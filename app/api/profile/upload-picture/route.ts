@@ -65,6 +65,7 @@ export async function POST(req: NextRequest) {
         Key: key,
         Body: buffer,
         ContentType: file.type,
+        ACL: "public-read", // Make profile pictures publicly accessible
         ServerSideEncryption: "AES256",
         Metadata: {
           userId,
