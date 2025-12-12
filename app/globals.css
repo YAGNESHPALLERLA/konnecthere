@@ -172,4 +172,16 @@
   a.bg-slate-100 {
     color: #0f172a !important;
   }
+  
+  /* Ensure buttons with primary/indigo backgrounds keep white text */
+  button.bg-primary,
+  button.bg-indigo-600,
+  button.bg-indigo-700,
+  button[class*="bg-indigo"],
+  a.bg-primary,
+  a.bg-indigo-600,
+  a.bg-indigo-700,
+  a[class*="bg-indigo"] {
+    color: #ffffff !important;
+  }
 }
