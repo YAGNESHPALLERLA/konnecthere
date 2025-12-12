@@ -14,7 +14,7 @@ const s3Client = new S3Client({
   },
 })
 
-const BUCKET_NAME = process.env.AWS_S3_BUCKET_NAME || "konnecthere-resumes"
+const BUCKET_NAME = process.env.AWS_S3_BUCKET_NAME || "konnecthere"
 
 export async function POST(req: NextRequest) {
   try {
@@ -60,21 +60,45 @@ export async function POST(req: NextRequest) {
 
     // Upload to S3
     try {
-      const command = new PutObjectCommand({
-        Bucket: BUCKET_NAME,
-        Key: key,
-        Body: buffer,
-        ContentType: file.type,
-        ACL: "public-read", // Make profile pictures publicly accessible
-        ServerSideEncryption: "AES256",
-        Metadata: {
-          userId,
-          uploadedAt: new Date().toISOString(),
-          originalName: file.name,
-        },
-      })
-
-      await s3Client.send(command)
+      // Try with ACL first, but handle cases where bucket has ACL disabled
+      let command: PutObjectCommand
+      try {
+        command = new PutObjectCommand({
+          Bucket: BUCKET_NAME,
+          Key: key,
+          Body: buffer,
+          ContentType: file.type,
+          ACL: "public-read", // Make profile pictures publicly accessible
+          ServerSideEncryption: "AES256",
+          Metadata: {
+            userId,
+            uploadedAt: new Date().toISOString(),
+            originalName: file.name,
+          },
+        })
+        await s3Client.send(command)
+      } catch (aclError: any) {
+        // If ACL fails (bucket has ACL disabled), retry without ACL
+        // Bucket policy should handle public access instead
+        if (aclError.name === "AccessControlListNotSupported" || aclError.code === "NotImplemented") {
+          console.warn("[S3] ACL not supported, uploading without ACL (rely on bucket policy)")
+          command = new PutObjectCommand({
+            Bucket: BUCKET_NAME,
+            Key: key,
+            Body: buffer,
+            ContentType: file.type,
+            ServerSideEncryption: "AES256",
+            Metadata: {
+              userId,
+              uploadedAt: new Date().toISOString(),
+              originalName: file.name,
+            },
+          })
+          await s3Client.send(command)
+        } else {
+          throw aclError
+        }
+      }
 
       // Construct the public URL (use CDN URL if available, otherwise S3 URL)
       const region = process.env.AWS_REGION || "us-east-1"
