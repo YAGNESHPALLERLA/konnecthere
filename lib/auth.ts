@@ -195,10 +195,18 @@ export const authOptions: NextAuthConfig = {
       // Use environment-based baseUrl if available, otherwise use the provided baseUrl
       const effectiveBaseUrl = getBaseUrl()
       
+      console.log("[AUTH] Redirect callback", {
+        url,
+        baseUrl,
+        effectiveBaseUrl,
+        nextAuthUrl: process.env.NEXTAUTH_URL,
+        authUrl: process.env.AUTH_URL,
+      })
+      
       // CRITICAL: Never redirect to /api/auth/* routes - this causes infinite loops
       // Check both relative and absolute URLs
       if (url.includes("/api/auth") || url.includes("/api/auth/")) {
-        console.log("[AUTH] Redirect callback blocked redirect to /api/auth/*:", url)
+        console.warn("[AUTH] Redirect callback blocked redirect to /api/auth/*:", url)
         return effectiveBaseUrl
       }
 
