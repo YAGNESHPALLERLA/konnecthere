@@ -16,32 +16,21 @@ const config: Config = {
     },
     extend: {
       colors: {
-        // CSS Variable-based palette
-        primary: {
-          DEFAULT: "var(--accent)",
-          500: "var(--accent)",
-          600: "var(--accent-2)",
-        },
-        surface: "var(--surface)",
-        card: "var(--card)",
-        muted: {
-          DEFAULT: "var(--muted)",
-          text: "var(--muted-text)",
-          foreground: "var(--muted-text)",
-        },
-        
-        // Base backgrounds (keep for backward compatibility)
-        background: "var(--bg)",
-        foreground: "var(--text)",
+        // Base backgrounds
+        background: "#f3f4f6", // Soft warm gray for main page background
+        foreground: "#020617", // Primary text color
         
         // Surfaces / cards
-        surfaceAlt: "var(--muted)",
+        surface: {
+          DEFAULT: "#ffffff", // Primary card background
+          alt: "#f9fafb", // Subtle alternate surface
+        },
         
-        // Primary brand accent (indigo) - keep full palette
-        primaryFull: {
-          DEFAULT: "#4f46e5",
+        // Primary brand accent (indigo)
+        primary: {
+          DEFAULT: "#4f46e5", // Primary accent
           foreground: "#FFFFFF",
-          hover: "#4338ca",
+          hover: "#4338ca", // Primary accent hover
           50: "#eef2ff",
           100: "#e0e7ff",
           200: "#c7d2fe",
@@ -64,6 +53,12 @@ const config: Config = {
         destructive: {
           DEFAULT: "#ef4444",
           foreground: "#FFFFFF",
+        },
+        
+        // Muted colors
+        muted: {
+          DEFAULT: "#f9fafb", // Muted background
+          foreground: "#6b7280", // Muted text
         },
         
         // Border
@@ -122,8 +117,6 @@ const config: Config = {
       },
       boxShadow: {
         none: "none",
-        soft: "var(--soft-shadow)",
-        card: "var(--card-shadow)",
         sm: "0 1px 2px 0 rgba(0, 0, 0, 0.05)", // Cards default
         DEFAULT: "0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1)",
         md: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)", // Cards hover
@@ -133,12 +126,9 @@ const config: Config = {
       },
       transitionDuration: {
         DEFAULT: "200ms",
-        fast: "var(--fast)",
-        med: "var(--med)",
       },
       transitionTimingFunction: {
         DEFAULT: "cubic-bezier(0.4, 0, 0.2, 1)",
-        smooth: "cubic-bezier(.2,.9,.2,1)",
       },
     },
   },

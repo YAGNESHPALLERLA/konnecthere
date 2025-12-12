@@ -1,141 +1,10 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
 @import "tailwindcss";
 
-:root {
-  /* Palette - neutral + indigo/blue accent */
-  --bg: #ffffff;
-  --surface: #f7f9fb;
-  --muted: #f1f5f9;
-  --card: #ffffff;
-  --text: #0f1724;        /* very dark slate */
-  --muted-text: #475569;  /* cooler gray */
-  --accent: #4f46e5;      /* indigo-600 */
-  --accent-2: #6366f1;    /* indigo-500 */
-  --success: #10b981;
-  --danger: #ef4444;
-  --glass: rgba(255,255,255,0.7);
-
-  /* Shadows & transitions */
-  --card-shadow: 0 6px 18px rgba(16,24,40,0.06);
-  --soft-shadow: 0 4px 12px rgba(16,24,40,0.04);
-  --fast: 160ms;
-  --med: 280ms;
-}
-
-/* Ensure body uses neutral background & base typographic rules */
-html, body {
-  background: var(--bg);
-  color: var(--text);
-  font-synthesis: none;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-a {
-  color: var(--accent);
-  text-decoration: none;
-}
-
-a:hover {
-  color: var(--accent-2);
-}
-
-/* Card style & subtle lift */
-.card {
-  background: var(--card);
-  box-shadow: var(--card-shadow);
-  border-radius: 12px;
-  transition: transform var(--med) ease, box-shadow var(--med) ease;
-  will-change: transform;
-}
-
-.card:hover {
-  transform: translateY(-6px);
-  box-shadow: var(--soft-shadow);
-}
-
-/* Hero heading animation */
-.hero-heading {
-  opacity: 0;
-  transform: translateY(6px);
-  animation: heroIn 420ms cubic-bezier(.2,.9,.2,1) forwards;
-}
-
-@keyframes heroIn {
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Subtle link / button hover */
-.btn {
-  transition: transform var(--fast) ease, box-shadow var(--fast) ease, background-color var(--fast);
-}
-
-.btn:hover {
-  transform: translateY(-3px);
-  box-shadow: var(--soft-shadow);
-}
-
-/* Focus styles - visible and accessible */
-:focus {
-  outline: none;
-}
-
-:focus-visible {
-  box-shadow: 0 0 0 4px rgba(99,102,241,0.12), 0 1px 0 rgba(0,0,0,0.03);
-  border-radius: 8px;
-}
-
-/* Fix for text inside light ghost shapes: increase contrast & padding */
-.ghost {
-  background: var(--glass);
-  color: var(--text);
-  padding: 12px 18px;
-  border-radius: 14px;
-  box-shadow: var(--card-shadow);
-  line-height: 1.45;
-}
-
-/* Subtle global typography spacing */
-h1, h2, h3 {
-  line-height: 1.08;
-  margin-bottom: 0.6rem;
-}
-
-p, li {
-  line-height: 1.6;
-  color: var(--muted-text);
-}
-
-/* Custom pointer (non-blocking, only on desktop with pointer fine) */
-@media (pointer: fine) and (hover: hover) {
-  .custom-cursor {
-    position: fixed;
-    pointer-events: none;
-    width: 40px;
-    height: 24px;
-    border-radius: 20px;
-    transform: translate(-50%, -50%);
-    background: rgba(79,70,229,0.92);
-    box-shadow: 0 6px 18px rgba(79,70,229,0.12);
-    mix-blend-mode: normal;
-    transition: transform 120ms ease, width 120ms ease, height 120ms ease, background 120ms;
-    z-index: 999999;
-  }
-  .custom-cursor.small {
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
-    background: var(--accent-2);
-  }
-}
-
 @layer base {
   :root {
     color: #1e293b; /* slate-800 - better default for readability */
-    background-color: var(--bg);
+    background-color: #f3f4f6;
     font-family: "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   }
   
@@ -165,8 +34,8 @@ p, li {
     min-height: 100vh;
     margin: 0;
     padding: 0;
-    background-color: var(--bg);
-    color: var(--text);
+    background-color: #f3f4f6;
+    color: #1e293b; /* slate-800 */
     font-family: "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     line-height: 1.6;
     letter-spacing: -0.01em;
@@ -231,18 +100,18 @@ p, li {
 
   p {
     margin: 0 0 1rem 0;
-    color: var(--muted-text);
+    color: #1e293b; /* slate-800 */
   }
 
   a {
-    color: var(--accent);
+    color: #1e293b; /* slate-800 */
     text-decoration: none;
     font-weight: 500;
     transition: color 0.15s ease;
   }
 
   a:hover {
-    color: var(--accent-2);
+    color: #4f46e5;
   }
 
   button {

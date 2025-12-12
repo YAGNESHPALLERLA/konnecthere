@@ -3,7 +3,6 @@ import "./globals.css"
 import { Providers } from "./providers"
 import { Navbar } from "@/components/Navbar"
 import { Footer } from "@/components/Footer"
-import CustomCursor from "@/components/CustomCursor"
 
 export const metadata: Metadata = {
   title: "KonnectHere — Executive opportunities, distilled",
@@ -15,7 +14,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body className="flex min-h-screen flex-col bg-white text-black">
         <Providers>
-          <CustomCursor />
           <Navbar />
           <main className="flex flex-1 flex-col">{children}</main>
           <Footer />

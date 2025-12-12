@@ -84,7 +84,7 @@ export default async function Home() {
                 <Button asChild size="lg">
                   <Link href="/jobs">Browse roles</Link>
                 </Button>
-                <Button variant="ghost" asChild size="lg" className="ghost">
+                <Button variant="ghost" asChild size="lg">
                   <Link href="/auth/signup">Join the waitlist</Link>
                 </Button>
               </>
@@ -95,7 +95,7 @@ export default async function Home() {
             {highlights.map((item, index) => (
               <div 
                 key={item.label} 
-                className="card p-6"
+                className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm transition-all duration-150 hover:shadow-md hover:-translate-y-0.5 hover:border-slate-300"
                 style={{ animationDelay: `${index * 100}ms` }}
               >
                 <p className="text-4xl font-bold text-slate-900 mb-2">{item.label}</p>
@@ -129,7 +129,7 @@ export default async function Home() {
           {steps.map((step, index) => (
             <div 
               key={step.title} 
-              className="card p-6"
+              className="group rounded-xl border border-slate-200 bg-white p-6 shadow-sm transition-all duration-150 hover:shadow-md hover:-translate-y-0.5 hover:border-slate-300"
             >
               <Pill className="bg-indigo-50 text-indigo-700">Phase {index + 1}</Pill>
               <h3 className="mt-5 section-title text-slate-900">{step.title}</h3>

@@ -17,7 +17,7 @@ export function PageShell({ title, description, actions, children, className, su
         {(title || description || actions) && (
           <header className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="space-y-3">
-              {title && <h1 className="page-title hero-heading">{title}</h1>}
+              {title && <h1 className="page-title">{title}</h1>}
               {description && <p className="max-w-2xl text-lg text-slate-600 leading-relaxed">{description}</p>}
             </div>
             {actions && <div className="flex flex-wrap gap-3">{actions}</div>}
