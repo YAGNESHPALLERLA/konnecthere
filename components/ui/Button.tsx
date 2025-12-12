@@ -9,11 +9,11 @@ type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
 }
 
 const baseStyles =
-  "inline-flex items-center justify-center rounded-full font-semibold tracking-tight transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed hover:scale-[1.01] active:scale-[0.99]"
+  "btn-elevate inline-flex items-center justify-center rounded-full font-semibold tracking-tight transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed"
 const variantMap = {
-  default: "bg-indigo-600 text-white shadow-sm hover:bg-indigo-700 hover:shadow-md",
-  ghost: "border-transparent text-slate-900 hover:bg-slate-100 hover:text-slate-900",
-  outline: "border border-slate-300 bg-white text-slate-900 hover:bg-slate-50 hover:border-slate-400",
+  default: "bg-primary text-white shadow-sm hover:bg-primary-hover hover:shadow-md",
+  ghost: "border-transparent text-foreground-primary hover:bg-muted hover:text-foreground-primary",
+  outline: "border border-border bg-white text-foreground-primary hover:bg-background-primary hover:border-border-hover",
 }
 const sizeMap = {
   sm: "px-3 py-1.5 text-xs h-8",

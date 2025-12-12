@@ -16,62 +16,95 @@ const config: Config = {
     },
     extend: {
       colors: {
-        // Base backgrounds
-        background: "#f3f4f6", // Soft warm gray for main page background
-        foreground: "#020617", // Primary text color
+        // Premium Modern Grey Palette (Option 2 - Recommended)
+        // Backgrounds
+        background: {
+          primary: "#F8F9FA", // Soft grey main background
+          secondary: "#FFFFFF", // White for cards/components
+        },
+        foreground: {
+          primary: "#1D1D1F", // Near-black primary text
+          secondary: "#6E6E73", // Medium grey secondary text
+        },
         
         // Surfaces / cards
         surface: {
-          DEFAULT: "#ffffff", // Primary card background
-          alt: "#f9fafb", // Subtle alternate surface
+          DEFAULT: "#FFFFFF", // Primary card background
+          alt: "#F8F9FA", // Subtle alternate surface
+          card: "#FFFFFF", // Card surface
         },
         
-        // Primary brand accent (indigo)
+        // Primary brand accent (indigo-violet)
         primary: {
-          DEFAULT: "#4f46e5", // Primary accent
+          DEFAULT: "#6366F1", // Primary accent (indigo-500)
           foreground: "#FFFFFF",
-          hover: "#4338ca", // Primary accent hover
-          50: "#eef2ff",
-          100: "#e0e7ff",
-          200: "#c7d2fe",
-          300: "#a5b4fc",
-          400: "#818cf8",
-          500: "#6366f1",
-          600: "#4f46e5",
-          700: "#4338ca",
-          800: "#3730a3",
-          900: "#312e81",
+          hover: "#4F46E5", // Darker indigo on hover
+          active: "#4338CA", // Active state
+          50: "#EEF2FF",
+          100: "#E0E7FF",
+          200: "#C7D2FE",
+          300: "#A5B4FC",
+          400: "#818CF8",
+          500: "#6366F1",
+          600: "#4F46E5",
+          700: "#4338CA",
+          800: "#3730A3",
+          900: "#312E81",
+        },
+        
+        // Accent colors (semantic)
+        accent: {
+          DEFAULT: "#6366F1",
+          hover: "#4F46E5",
+          active: "#4338CA",
+          muted: "#EEF2FF", // Light indigo background
         },
         
         // Secondary accent (success / highlights)
         secondary: {
-          DEFAULT: "#22c55e", // Success / highlights
+          DEFAULT: "#10B981", // Emerald green
           foreground: "#FFFFFF",
         },
         
         // Destructive
         destructive: {
-          DEFAULT: "#ef4444",
+          DEFAULT: "#EF4444",
           foreground: "#FFFFFF",
         },
         
+        // Status colors
+        success: "#10B981",
+        error: "#EF4444",
+        warning: "#F59E0B",
+        
         // Muted colors
         muted: {
-          DEFAULT: "#f9fafb", // Muted background
-          foreground: "#6b7280", // Muted text
+          DEFAULT: "#F8F9FA", // Muted background
+          foreground: "#6E6E73", // Muted text
         },
         
         // Border
-        border: "#e5e7eb",
+        border: {
+          DEFAULT: "#D2D2D7", // Light grey border
+          subtle: "#D2D2D7",
+          hover: "#A1A1AA", // Darker on hover
+        },
+        
+        // Text colors
+        text: {
+          primary: "#1D1D1F",
+          secondary: "#6E6E73",
+          muted: "#9CA3AF",
+        },
         
         // Dark sections (header/footer accents)
         dark: {
-          DEFAULT: "#0f172a",
-          alt: "#0b1220",
+          DEFAULT: "#1D1D1F",
+          alt: "#0F172A",
           deep: "#020617",
         },
         
-        // Slate palette for consistency
+        // Slate palette for consistency (kept for backward compatibility)
         slate: {
           50: "#f8fafc",
           100: "#f1f5f9",
@@ -86,7 +119,7 @@ const config: Config = {
         },
         
         // Focus ring
-        ring: "#4f46e5",
+        ring: "#6366F1",
       },
       borderColor: {
         subtle: "rgba(0,0,0,0.12)",
@@ -117,18 +150,23 @@ const config: Config = {
       },
       boxShadow: {
         none: "none",
-        sm: "0 1px 2px 0 rgba(0, 0, 0, 0.05)", // Cards default
-        DEFAULT: "0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1)",
-        md: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)", // Cards hover
-        lg: "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1)",
-        xl: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)",
-        nav: "0 1px 2px 0 rgba(0, 0, 0, 0.05)", // Nav & sticky header
+        sm: "0 1px 2px 0 rgba(0, 0, 0, 0.04), 0 1px 1px 0 rgba(0, 0, 0, 0.02)", // Cards default - softer
+        DEFAULT: "0 1px 3px 0 rgba(0, 0, 0, 0.08), 0 1px 2px -1px rgba(0, 0, 0, 0.04)",
+        md: "0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.04)", // Cards hover - premium feel
+        lg: "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.05)",
+        xl: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.04)",
+        nav: "0 1px 2px 0 rgba(0, 0, 0, 0.04)", // Nav & sticky header
+        card: "0 1px 3px 0 rgba(0, 0, 0, 0.08), 0 1px 2px -1px rgba(0, 0, 0, 0.04)", // Card shadow
+        "card-hover": "0 8px 16px -4px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)", // Card hover elevation
       },
       transitionDuration: {
         DEFAULT: "200ms",
+        fast: "150ms",
+        slow: "300ms",
       },
       transitionTimingFunction: {
         DEFAULT: "cubic-bezier(0.4, 0, 0.2, 1)",
+        smooth: "cubic-bezier(0.25, 0.46, 0.45, 0.94)", // Smooth easing
       },
     },
   },
