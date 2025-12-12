@@ -51,11 +51,11 @@ export function JobsList() {
     return (
       <div className="space-y-4">
         {[1, 2, 3].map((i) => (
-          <div key={i} className="rounded-xl border border-slate-200 bg-white p-6 animate-pulse">
-            <div className="h-6 bg-slate-200 rounded w-1/3 mb-3"></div>
-            <div className="h-4 bg-slate-200 rounded w-1/2 mb-4"></div>
-            <div className="h-4 bg-slate-200 rounded w-full mb-2"></div>
-            <div className="h-4 bg-slate-200 rounded w-2/3"></div>
+          <div key={i} className="rounded-xl border border-subtle bg-white p-6 animate-pulse">
+            <div className="h-6 bg-gray-200 rounded w-1/3 mb-3"></div>
+            <div className="h-4 bg-gray-200 rounded w-1/2 mb-4"></div>
+            <div className="h-4 bg-gray-200 rounded w-full mb-2"></div>
+            <div className="h-4 bg-gray-200 rounded w-2/3"></div>
           </div>
         ))}
       </div>
@@ -64,8 +64,8 @@ export function JobsList() {
 
   if (jobs.length === 0) {
     return (
-      <div className="rounded-xl border border-slate-200 bg-white p-12 text-center">
-        <p className="text-base text-slate-600">No jobs available at the moment.</p>
+      <div className="rounded-xl border border-subtle bg-white p-12 text-center">
+        <p className="text-base text-secondary">No jobs available at the moment.</p>
       </div>
     )
   }
@@ -73,12 +73,12 @@ export function JobsList() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between mb-2">
-        <p className="text-sm font-medium text-slate-600">
+        <p className="text-sm font-medium text-secondary">
           {jobs.length} {jobs.length === 1 ? "role" : "roles"} available
         </p>
         <Link
           href="/jobs"
-          className="text-sm font-medium text-indigo-600 hover:text-indigo-700 transition-colors duration-150 flex items-center gap-1 group"
+          className="text-sm font-medium text-accent hover:text-accent-hover transition-colors duration-150 flex items-center gap-1 group"
         >
           View all <span className="group-hover:translate-x-0.5 transition-transform duration-150">→</span>
         </Link>
@@ -88,43 +88,43 @@ export function JobsList() {
           <Link
             key={job.id}
             href={`/jobs/${job.slug}`}
-            className="group block rounded-xl border border-slate-200 bg-white px-6 py-6 shadow-sm transition-all duration-150 hover:shadow-md hover:-translate-y-0.5 hover:border-slate-300"
+            className="group block rounded-xl border border-subtle bg-white px-6 py-6 shadow-sm transition-all duration-150 hover:shadow-md hover:-translate-y-0.5 hover:border-hover"
           >
             <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
               <div className="space-y-3 flex-1">
                 <div className="flex flex-wrap items-center gap-3">
-                  <h2 className="text-xl font-semibold text-slate-900 group-hover:text-indigo-600 transition-colors duration-150">
+                  <h2 className="text-xl font-semibold text-primary group-hover:text-accent transition-colors duration-150">
                     {job.title}
                   </h2>
-                  <Pill className="bg-indigo-50 text-indigo-700">
+                  <Pill className="bg-accent-light text-accent">
                     {job.company.name}
                   </Pill>
                 </div>
-                <div className="flex flex-wrap gap-2 text-sm text-slate-600">
+                <div className="flex flex-wrap gap-2 text-sm text-secondary">
                   {job.location && (
-                    <span className="px-2.5 py-1 rounded-full bg-slate-100 text-slate-700">{job.location}</span>
+                    <span className="px-2.5 py-1 rounded-full bg-accent-light text-primary">{job.location}</span>
                   )}
                   {job.remote && (
                     <span className="px-2.5 py-1 rounded-full bg-green-50 text-green-700">Remote</span>
                   )}
-                  <span className="px-2.5 py-1 rounded-full bg-slate-100 text-slate-700">
+                  <span className="px-2.5 py-1 rounded-full bg-accent-light text-primary">
                     {job.employmentType.replace("_", " ")}
                   </span>
-                  <span className="px-2.5 py-1 rounded-full bg-slate-100 text-slate-700">
+                  <span className="px-2.5 py-1 rounded-full bg-accent-light text-primary">
                     {job.experienceLevel.replace("_", " ")}
                   </span>
                   {(job.salaryMin || job.salaryMax) && (
-                    <span className="px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-700 font-medium">
+                    <span className="px-2.5 py-1 rounded-full bg-accent-light text-accent font-medium">
                       {formatSalary(job.salaryMin, job.salaryMax, job.salaryCurrency || "USD")}
                     </span>
                   )}
                 </div>
-                <p className="text-sm text-slate-600 line-clamp-2 leading-relaxed">
+                <p className="text-sm text-secondary line-clamp-2 leading-relaxed">
                   {job.description.substring(0, 220)}
                   {job.description.length > 220 ? "…" : ""}
                 </p>
               </div>
-              <div className="text-right text-xs text-slate-500 md:ml-4">
+              <div className="text-right text-xs text-muted md:ml-4">
                 {formatRelativeTime(job.createdAt)}
               </div>
             </div>

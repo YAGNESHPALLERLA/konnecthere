@@ -52,8 +52,8 @@ export default async function Home() {
   const session = await auth().catch(() => null)
 
   return (
-    <div className="bg-background text-slate-900">
-      <section className="bg-gradient-to-br from-white via-indigo-50/20 to-white">
+    <div className="bg-bg-primary text-primary">
+      <section className="bg-gradient-to-br from-white via-accent-light/20 to-white">
         <PageShell
           title={session?.user ? `Welcome back, ${session.user.name || session.user.email}` : "Work doesn't need noise"}
           description={session?.user ? "Browse all available job opportunities below." : "KonnectHere is a deliberately minimal hiring surface for people who value signal over scroll."}
@@ -95,11 +95,11 @@ export default async function Home() {
             {highlights.map((item, index) => (
               <div 
                 key={item.label} 
-                className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm transition-all duration-150 hover:shadow-md hover:-translate-y-0.5 hover:border-slate-300"
+                className="rounded-xl border border-subtle bg-white p-6 shadow-sm transition-all duration-150 hover:shadow-md hover:-translate-y-0.5 hover:border-hover"
                 style={{ animationDelay: `${index * 100}ms` }}
               >
-                <p className="text-4xl font-bold text-slate-900 mb-2">{item.label}</p>
-                <p className="text-xs font-medium text-slate-500 uppercase tracking-widest">{item.description}</p>
+                <p className="text-4xl font-bold text-primary mb-2">{item.label}</p>
+                <p className="text-xs font-medium text-muted uppercase tracking-widest">{item.description}</p>
               </div>
             ))}
           </div>
@@ -115,7 +115,7 @@ export default async function Home() {
               className="animate-in fade-in slide-in-from-bottom-4 duration-500"
               style={{ animationDelay: `${index * 100}ms` }}
             >
-              <p className="text-base text-slate-600 leading-relaxed">{pillar.copy}</p>
+              <p className="text-base text-secondary leading-relaxed">{pillar.copy}</p>
             </Card>
           ))}
         </div>
@@ -129,11 +129,11 @@ export default async function Home() {
           {steps.map((step, index) => (
             <div 
               key={step.title} 
-              className="group rounded-xl border border-slate-200 bg-white p-6 shadow-sm transition-all duration-150 hover:shadow-md hover:-translate-y-0.5 hover:border-slate-300"
+              className="group rounded-xl border border-subtle bg-white p-6 shadow-sm transition-all duration-150 hover:shadow-md hover:-translate-y-0.5 hover:border-hover"
             >
-              <Pill className="bg-indigo-50 text-indigo-700">Phase {index + 1}</Pill>
-              <h3 className="mt-5 section-title text-slate-900">{step.title}</h3>
-              <p className="mt-3 text-base text-slate-600 leading-relaxed">{step.body}</p>
+              <Pill className="bg-accent-light text-accent">Phase {index + 1}</Pill>
+              <h3 className="mt-5 section-title text-primary">{step.title}</h3>
+              <p className="mt-3 text-base text-secondary leading-relaxed">{step.body}</p>
             </div>
           ))}
         </div>
@@ -142,7 +142,7 @@ export default async function Home() {
       <PageShell subdued className="mt-4" title="Stay private, stay visible" description="No feeds. No noisy dashboards. Just a single place to manage opportunities.">
         <div className="grid gap-6 md:grid-cols-2">
           <Card title="For talent" subtitle="One profile. Infinite intros.">
-            <ul className="space-y-3 text-sm text-slate-600">
+            <ul className="space-y-3 text-sm text-secondary">
               <li>• Upload once — resumes, portfolios, and context in one link.</li>
               <li>• Control who sees compensation, references, or availability.</li>
               <li>• Track intros and feedback without digging through inboxes.</li>
@@ -152,7 +152,7 @@ export default async function Home() {
             </Button>
           </Card>
           <Card title="For teams" subtitle="A cleaner pipeline">
-            <ul className="space-y-3 text-sm text-slate-600">
+            <ul className="space-y-3 text-sm text-secondary">
               <li>• Brief stakeholders with shared notes and structured scorecards.</li>
               <li>• Search across talent, salaries, and location filters instantly.</li>
               <li>• Centralize feedback loops without adding more software.</li>
@@ -165,9 +165,9 @@ export default async function Home() {
       </PageShell>
 
       <PageShell subdued className="mt-0">
-        <div className="rounded-2xl border border-slate-200 bg-gradient-to-br from-white to-indigo-50/30 p-12 text-center shadow-sm">
-          <h2 className="text-4xl font-bold text-slate-900 mb-4">Hire or get hired with intent</h2>
-          <p className="mt-4 text-lg text-slate-600 max-w-2xl mx-auto">
+        <div className="rounded-2xl border border-subtle bg-gradient-to-br from-white to-accent-light/30 p-12 text-center shadow-sm">
+          <h2 className="text-4xl font-bold text-primary mb-4">Hire or get hired with intent</h2>
+          <p className="mt-4 text-lg text-secondary max-w-2xl mx-auto">
             KonnectHere keeps the experience simple so you can focus on the conversations that matter.
           </p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
