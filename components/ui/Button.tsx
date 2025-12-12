@@ -12,8 +12,8 @@ const baseStyles =
   "inline-flex items-center justify-center rounded-full font-semibold tracking-tight transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed hover:scale-[1.01] active:scale-[0.99]"
 const variantMap = {
   default: "bg-primary text-white shadow-sm hover:bg-primary-hover hover:shadow-md",
-  ghost: "border-transparent text-foreground hover:bg-slate-100 hover:text-foreground",
-  outline: "border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 hover:border-slate-400",
+  ghost: "border-transparent text-slate-900 hover:bg-slate-100 hover:text-slate-900",
+  outline: "border border-slate-300 bg-white text-slate-900 hover:bg-slate-50 hover:border-slate-400",
 }
 const sizeMap = {
   sm: "px-3 py-1.5 text-xs h-8",

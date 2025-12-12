@@ -119,3 +119,19 @@
     background: rgba(79, 70, 229, 0.2);
   }
 }
+
+@layer utilities {
+  /* Ensure text is visible on white/light backgrounds */
+  .text-surface {
+    color: #0f172a !important;
+  }
+  
+  /* Force dark text on white containers */
+  .bg-white *:not(.text-white):not(.text-indigo-500):not(.text-indigo-600):not(.text-indigo-700):not(.text-green-600):not(.text-green-700):not(.text-red-600):not(.text-red-700) {
+    color: #0f172a;
+  }
+  
+  .bg-slate-50 *:not(.text-white):not(.text-indigo-500):not(.text-indigo-600):not(.text-indigo-700):not(.text-green-600):not(.text-green-700):not(.text-red-600):not(.text-red-700) {
+    color: #0f172a;
+  }
+}

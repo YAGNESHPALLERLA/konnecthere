@@ -50,7 +50,7 @@ SimpleTable.Header = function TableHeader({ children, className }: { children: R
 
 SimpleTable.Cell = function TableCell({ children, className }: { children: ReactNode; className?: string }) {
   return (
-    <td className={cn("px-6 py-4 align-middle text-foreground", className)}>
+    <td className={cn("px-6 py-4 align-middle text-slate-900", className)}>
       {children}
     </td>
   )

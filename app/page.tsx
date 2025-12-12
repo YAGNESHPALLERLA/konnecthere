@@ -132,7 +132,7 @@ export default async function Home() {
               className="group rounded-xl border border-slate-200 bg-white p-6 shadow-sm transition-all duration-150 hover:shadow-md hover:-translate-y-0.5 hover:border-slate-300"
             >
               <Pill className="bg-indigo-50 text-indigo-700">Phase {index + 1}</Pill>
-              <h3 className="mt-5 section-title">{step.title}</h3>
+              <h3 className="mt-5 section-title text-slate-900">{step.title}</h3>
               <p className="mt-3 text-base text-slate-600 leading-relaxed">{step.body}</p>
             </div>
           ))}

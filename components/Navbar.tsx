@@ -60,7 +60,7 @@ export function Navbar() {
       <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-6 py-4 sm:px-8">
         <Link 
           href="/" 
-          className="text-xl font-bold tracking-tight text-foreground transition-opacity duration-200 hover:opacity-80"
+          className="text-xl font-bold tracking-tight text-slate-900 transition-opacity duration-200 hover:opacity-80"
         >
           KonnectHere
         </Link>
@@ -140,7 +140,7 @@ export function Navbar() {
           onClick={() => setOpen((prev) => !prev)}
           aria-label="Toggle navigation"
         >
-          <svg className="h-5 w-5 text-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <svg className="h-5 w-5 text-slate-900" viewBox="0 0 24 24" fill="none" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7h16M4 12h16M4 17h16" />
           </svg>
         </button>
