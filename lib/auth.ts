@@ -237,6 +237,14 @@ export const authOptions: NextAuthConfig = {
     },
     async signIn({ user, account, profile }) {
       try {
+        console.log("[AUTH] SignIn callback triggered", {
+          provider: account?.provider,
+          userId: user?.id,
+          email: user?.email,
+          hasAccount: !!account,
+          hasProfile: !!profile,
+        })
+
         // For credentials provider, user should already be validated in authorize
         if (account?.provider === "credentials") {
           if (!user?.id || !user?.email) {
@@ -286,6 +294,11 @@ export const authOptions: NextAuthConfig = {
 
         // For OAuth providers, ensure user exists in DB or create it
         if (account?.provider !== "credentials" && user?.email) {
+          console.log("[AUTH] Processing OAuth sign-in", {
+            provider: account?.provider,
+            email: user.email,
+          })
+
           const existingUser = await prisma.user.findUnique({
             where: { email: user.email }
           })
@@ -310,9 +323,17 @@ export const authOptions: NextAuthConfig = {
           }
         }
 
+        console.log("[AUTH] SignIn callback successful", {
+          provider: account?.provider,
+          userId: user?.id,
+        })
         return true
-      } catch (error) {
-        console.error("[AUTH] SignIn callback error:", error)
+      } catch (error: any) {
+        console.error("[AUTH] SignIn callback error:", {
+          error: error.message,
+          stack: process.env.NODE_ENV === "development" ? error.stack : undefined,
+          provider: account?.provider,
+        })
         return false
       }
     },
