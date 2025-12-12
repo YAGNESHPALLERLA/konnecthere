@@ -56,11 +56,11 @@ export function Navbar() {
   const links = getNavLinks()
 
   return (
-    <header className="sticky top-0 z-40 border-b border-subtle bg-white/80 backdrop-blur-md shadow-sm">
+    <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/80 backdrop-blur-md shadow-sm">
       <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-6 py-4 sm:px-8">
         <Link 
           href="/" 
-          className="text-xl font-bold tracking-tight text-primary transition-opacity duration-200 hover:opacity-80"
+          className="text-xl font-bold tracking-tight text-slate-900 transition-opacity duration-200 hover:opacity-80"
         >
           KonnectHere
         </Link>
@@ -75,13 +75,13 @@ export function Navbar() {
                 className={cn(
                   "relative px-4 py-2 text-sm font-medium tracking-tight transition-colors duration-150 rounded-lg",
                   isActive 
-                    ? "text-primary font-semibold" 
-                    : "text-secondary hover:text-accent-hover"
+                    ? "text-slate-900 font-semibold bg-slate-100" 
+                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
                 )}
               >
                 {link.label}
                 {isActive && (
-                  <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-accent rounded-full" />
+                  <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-indigo-500 rounded-full" />
                 )}
               </Link>
             )
@@ -90,10 +90,10 @@ export function Navbar() {
 
         <div className="hidden items-center gap-2 md:flex">
           {status === "loading" ? (
-            <span className="text-sm text-secondary">Loading…</span>
+            <span className="text-sm text-slate-600">Loading…</span>
           ) : session ? (
             <>
-              <div className="flex items-center gap-2 rounded-full bg-white px-3 py-1 shadow-sm">
+              <div className="flex items-center gap-2 rounded-full bg-slate-50 px-3 py-1 shadow-sm">
                 {/* Profile Picture with Upload */}
                 <ProfilePictureUpload
                   currentImage={session.user?.image}
@@ -105,11 +105,11 @@ export function Navbar() {
                   href="/dashboard" 
                   className="flex flex-col leading-tight hover:opacity-80 transition-opacity duration-150 min-w-0"
                 >
-                  <span className="text-sm font-medium text-primary truncate">
+                  <span className="text-sm font-medium text-slate-900 truncate">
                     {session.user?.name || session.user?.email}
                   </span>
                   {userRole && (
-                    <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">
+                    <span className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
                       {userRole}
                     </span>
                   )}
@@ -123,7 +123,7 @@ export function Navbar() {
             <>
               <Link 
                 href="/auth/signin" 
-                className="text-sm font-medium text-secondary transition-colors duration-150 hover:text-accent-hover"
+                className="text-sm font-medium text-slate-700 transition-colors duration-150 hover:text-slate-900"
               >
                 Sign in
               </Link>
@@ -136,18 +136,18 @@ export function Navbar() {
 
         <button
           type="button"
-          className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-subtle bg-white transition-colors duration-150 hover:bg-gray-50 md:hidden"
+          className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-300 bg-white transition-colors duration-150 hover:bg-slate-50 md:hidden"
           onClick={() => setOpen((prev) => !prev)}
           aria-label="Toggle navigation"
         >
-          <svg className="h-5 w-5 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <svg className="h-5 w-5 text-slate-900" viewBox="0 0 24 24" fill="none" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7h16M4 12h16M4 17h16" />
           </svg>
         </button>
       </div>
 
       {open && (
-        <div className="border-t border-subtle bg-white px-6 py-4 md:hidden animate-in slide-in-from-top-2 duration-200">
+        <div className="border-t border-slate-200 bg-white px-6 py-4 md:hidden animate-in slide-in-from-top-2 duration-200">
           <nav className="flex flex-col gap-2">
             {links.map((link) => {
               const isActive = link.href === "/" ? pathname === "/" : pathname.startsWith(link.href)
@@ -159,19 +159,19 @@ export function Navbar() {
                   className={cn(
                     "px-4 py-2 text-base font-medium rounded-lg transition-colors duration-150",
                     isActive 
-                      ? "text-primary bg-accent-light font-semibold" 
-                      : "text-secondary hover:bg-gray-50 hover:text-accent-hover"
+                      ? "text-slate-900 bg-slate-100 font-semibold" 
+                      : "text-slate-700 hover:bg-slate-50"
                   )}
                 >
                   {link.label}
                 </Link>
               )
             })}
-            {status === "loading" && <span className="text-sm text-muted">Loading…</span>}
+            {status === "loading" && <span className="text-sm text-muted-foreground">Loading…</span>}
             {session ? (
               <>
                 <div className="mt-2 space-y-2">
-                  <div className="flex items-center gap-2 rounded-full bg-white px-4 py-2 shadow-sm">
+                  <div className="flex items-center gap-2 rounded-full bg-slate-50 px-4 py-2 shadow-sm">
                     {/* Profile Picture with Upload */}
                     <ProfilePictureUpload
                       currentImage={session.user?.image}
@@ -183,11 +183,11 @@ export function Navbar() {
                       href="/dashboard" 
                       className="flex flex-col leading-tight min-w-0 flex-1 hover:opacity-80 transition-opacity duration-150"
                     >
-                      <p className="text-sm font-medium text-primary truncate cursor-pointer">
+                      <p className="text-sm font-medium text-slate-900 truncate cursor-pointer">
                         {session.user?.name || session.user?.email}
                       </p>
                       {userRole && (
-                        <p className="text-[11px] font-semibold uppercase tracking-wide text-muted">
+                        <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
                           {userRole}
                         </p>
                       )}
@@ -203,7 +203,7 @@ export function Navbar() {
                 <Link 
                   href="/auth/signin" 
                   onClick={() => setOpen(false)} 
-                  className="px-4 py-2 text-sm font-medium text-secondary text-center rounded-lg hover:bg-gray-50 hover:text-accent-hover transition-colors duration-150"
+                  className="px-4 py-2 text-sm font-medium text-slate-700 text-center rounded-lg hover:bg-slate-50 transition-colors duration-150"
                 >
                   Sign in
                 </Link>

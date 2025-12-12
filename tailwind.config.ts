@@ -16,56 +16,59 @@ const config: Config = {
     },
     extend: {
       colors: {
-        // New professional color palette
-        accent: {
-          DEFAULT: "#6C5CE7",
-          hover: "#5A4ED0",
-          active: "#4D3FC0",
-          light: "#ECE9FF",
-        },
-        bg: {
-          primary: "#F7F7F5",
-          secondary: "#FFFFFF",
-          strip: "#F0EFEB",
-        },
-        text: {
-          primary: "#1F2937",
-          secondary: "#4B5563",
-          muted: "#6B7280",
-        },
-        border: {
-          subtle: "#E5E7EB",
-          hover: "#DADCE2",
-        },
+        // Base backgrounds
+        background: "#f3f4f6", // Soft warm gray for main page background
+        foreground: "#020617", // Primary text color
         
-        // Keep for backward compatibility but map to new colors
-        background: "#F7F7F5",
-        foreground: "#1F2937",
-        
+        // Surfaces / cards
         surface: {
-          DEFAULT: "#FFFFFF",
-          alt: "#F0EFEB",
+          DEFAULT: "#ffffff", // Primary card background
+          alt: "#f9fafb", // Subtle alternate surface
         },
         
+        // Primary brand accent (indigo)
         primary: {
-          DEFAULT: "#6C5CE7",
+          DEFAULT: "#4f46e5", // Primary accent
           foreground: "#FFFFFF",
-          hover: "#5A4ED0",
+          hover: "#4338ca", // Primary accent hover
+          50: "#eef2ff",
+          100: "#e0e7ff",
+          200: "#c7d2fe",
+          300: "#a5b4fc",
+          400: "#818cf8",
+          500: "#6366f1",
+          600: "#4f46e5",
+          700: "#4338ca",
+          800: "#3730a3",
+          900: "#312e81",
         },
         
+        // Secondary accent (success / highlights)
         secondary: {
-          DEFAULT: "#22c55e",
+          DEFAULT: "#22c55e", // Success / highlights
           foreground: "#FFFFFF",
         },
         
+        // Destructive
         destructive: {
           DEFAULT: "#ef4444",
           foreground: "#FFFFFF",
         },
         
+        // Muted colors
         muted: {
-          DEFAULT: "#F0EFEB",
-          foreground: "#6B7280",
+          DEFAULT: "#f9fafb", // Muted background
+          foreground: "#6b7280", // Muted text
+        },
+        
+        // Border
+        border: "#e5e7eb",
+        
+        // Dark sections (header/footer accents)
+        dark: {
+          DEFAULT: "#0f172a",
+          alt: "#0b1220",
+          deep: "#020617",
         },
         
         // Slate palette for consistency
@@ -82,7 +85,8 @@ const config: Config = {
           900: "#0f172a",
         },
         
-        ring: "#6C5CE7",
+        // Focus ring
+        ring: "#4f46e5",
       },
       borderColor: {
         subtle: "rgba(0,0,0,0.12)",
