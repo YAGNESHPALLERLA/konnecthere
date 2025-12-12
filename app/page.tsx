@@ -53,7 +53,7 @@ export default async function Home() {
 
   return (
     <div className="bg-background text-slate-900">
-      <section className="border-b border-slate-200 bg-gradient-to-br from-white via-indigo-50/20 to-white">
+      <section className="bg-gradient-to-br from-white via-indigo-50/20 to-white">
         <PageShell
           title={session?.user ? `Welcome back, ${session.user.name || session.user.email}` : "Work doesn't need noise"}
           description={session?.user ? "Browse all available job opportunities below." : "KonnectHere is a deliberately minimal hiring surface for people who value signal over scroll."}
