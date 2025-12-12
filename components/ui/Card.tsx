@@ -14,7 +14,7 @@ export function Card({ title, subtitle, actions, children, className, style }: C
   return (
     <section
       className={cn(
-        "rounded-xl border border-slate-200 bg-white p-5 text-slate-900 shadow-sm transition-all duration-150 hover:shadow-md hover:-translate-y-0.5 hover:border-slate-300",
+        "card p-5",
         className
       )}
       style={style}
