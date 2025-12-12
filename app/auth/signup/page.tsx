@@ -116,7 +116,7 @@ export default function SignUpPage() {
                   id="role"
                   value={formData.role}
                   onChange={(e) => setFormData({ ...formData, role: e.target.value as any })}
-                  className="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm text-foreground transition-all duration-200 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 hover:border-slate-400"
+                  className="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 transition-all duration-200 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 hover:border-slate-400"
                 >
                   <option value="CANDIDATE">Job Seeker</option>
                   <option value="EMPLOYER">Employer</option>

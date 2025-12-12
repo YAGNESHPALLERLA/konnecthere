@@ -145,15 +145,31 @@
   }
   
   /* Force dark text on white containers - WCAG AA compliant */
-  .bg-white *:not(.text-white):not(.text-indigo-500):not(.text-indigo-600):not(.text-indigo-700):not(.text-green-600):not(.text-green-700):not(.text-red-600):not(.text-red-700):not(.text-yellow-600):not(.text-yellow-700) {
-    color: #0f172a; /* slate-900 - 4.5:1 contrast on white */
+  /* Use !important to override any conflicting styles */
+  .bg-white *:not(.text-white):not(.text-indigo-500):not(.text-indigo-600):not(.text-indigo-700):not(.text-green-600):not(.text-green-700):not(.text-red-600):not(.text-red-700):not(.text-yellow-600):not(.text-yellow-700):not([class*="text-"]) {
+    color: #0f172a !important; /* slate-900 - 4.5:1 contrast on white */
   }
   
-  .bg-slate-50 *:not(.text-white):not(.text-indigo-500):not(.text-indigo-600):not(.text-indigo-700):not(.text-green-600):not(.text-green-700):not(.text-red-600):not(.text-red-700):not(.text-yellow-600):not(.text-yellow-700) {
-    color: #0f172a; /* slate-900 - 4.5:1 contrast on slate-50 */
+  .bg-slate-50 *:not(.text-white):not(.text-indigo-500):not(.text-indigo-600):not(.text-indigo-700):not(.text-green-600):not(.text-green-700):not(.text-red-600):not(.text-red-700):not(.text-yellow-600):not(.text-yellow-700):not([class*="text-"]) {
+    color: #0f172a !important; /* slate-900 - 4.5:1 contrast on slate-50 */
   }
   
-  .bg-slate-100 *:not(.text-white):not(.text-indigo-500):not(.text-indigo-600):not(.text-indigo-700):not(.text-green-600):not(.text-green-700):not(.text-red-600):not(.text-red-700):not(.text-yellow-600):not(.text-yellow-700) {
-    color: #0f172a; /* slate-900 - ensures readability on light backgrounds */
+  .bg-slate-100 *:not(.text-white):not(.text-indigo-500):not(.text-indigo-600):not(.text-indigo-700):not(.text-green-600):not(.text-green-700):not(.text-red-600):not(.text-red-700):not(.text-yellow-600):not(.text-yellow-700):not([class*="text-"]) {
+    color: #0f172a !important; /* slate-900 - ensures readability on light backgrounds */
+  }
+  
+  /* Fix text-foreground class specifically */
+  .text-foreground {
+    color: #0f172a !important; /* slate-900 */
+  }
+  
+  /* Ensure buttons with light backgrounds have dark text */
+  button.bg-white,
+  button.bg-slate-50,
+  button.bg-slate-100,
+  a.bg-white,
+  a.bg-slate-50,
+  a.bg-slate-100 {
+    color: #0f172a !important;
   }
 }

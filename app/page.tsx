@@ -52,7 +52,7 @@ export default async function Home() {
   const session = await auth().catch(() => null)
 
   return (
-    <div className="bg-background text-foreground">
+    <div className="bg-background text-slate-900">
       <section className="border-b border-slate-200 bg-gradient-to-br from-white via-indigo-50/20 to-white">
         <PageShell
           title={session?.user ? `Welcome back, ${session.user.name || session.user.email}` : "Work doesn't need noise"}
