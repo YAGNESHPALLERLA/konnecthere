@@ -79,7 +79,7 @@
     font-size: clamp(1.5rem, 2vw, 2rem);
     font-weight: 600;
     letter-spacing: -0.02em;
-    color: #0f172a; /* slate-900 */
+    color: #0f172a !important; /* slate-900 - ensure visibility */
   }
 
   /* Section titles */

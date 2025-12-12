@@ -96,7 +96,7 @@ function SignInContent() {
     <div className="min-h-screen flex items-center justify-center bg-background py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
         <div className="text-center">
-          <h2 className="page-title mb-2">
+          <h2 className="page-title mb-2 text-slate-900">
             Sign in to your account
           </h2>
           <p className="text-base text-slate-600">
@@ -158,7 +158,7 @@ function SignInContent() {
               </div>
             </div>
 
-            <Button type="submit" disabled={loading} className="w-full" size="lg">
+            <Button type="submit" disabled={loading} className="w-full" size="lg" variant="default">
               {loading ? "Signing in..." : "Sign in"}
             </Button>
           </form>
