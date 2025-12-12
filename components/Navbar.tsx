@@ -56,11 +56,11 @@ export function Navbar() {
   const links = getNavLinks()
 
   return (
-    <header className="sticky top-0 z-40 border-b border-border bg-white/95 backdrop-blur-md shadow-nav">
+    <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/80 backdrop-blur-md shadow-sm">
       <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-6 py-4 sm:px-8">
         <Link 
           href="/" 
-          className="text-xl font-bold tracking-tight text-foreground-primary transition-opacity duration-200 hover:opacity-80"
+          className="text-xl font-bold tracking-tight text-slate-900 transition-opacity duration-200 hover:opacity-80"
         >
           KonnectHere
         </Link>
@@ -75,13 +75,13 @@ export function Navbar() {
                 className={cn(
                   "relative px-4 py-2 text-sm font-medium tracking-tight transition-colors duration-150 rounded-lg",
                   isActive 
-                    ? "text-foreground-primary font-semibold bg-accent-muted text-primary" 
-                    : "text-foreground-secondary hover:text-foreground-primary hover:bg-background-primary"
+                    ? "text-slate-900 font-semibold bg-slate-100" 
+                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
                 )}
               >
                 {link.label}
                 {isActive && (
-                  <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-primary rounded-full" />
+                  <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-indigo-500 rounded-full" />
                 )}
               </Link>
             )
@@ -90,10 +90,10 @@ export function Navbar() {
 
         <div className="hidden items-center gap-2 md:flex">
           {status === "loading" ? (
-            <span className="text-sm text-foreground-secondary">Loading…</span>
+            <span className="text-sm text-slate-600">Loading…</span>
           ) : session ? (
             <>
-              <div className="flex items-center gap-2 rounded-full bg-white border border-border px-3 py-1.5 shadow-sm">
+              <div className="flex items-center gap-2 rounded-full bg-slate-50 px-3 py-1 shadow-sm">
                 {/* Profile Picture with Upload */}
                 <ProfilePictureUpload
                   currentImage={session.user?.image}
@@ -105,11 +105,11 @@ export function Navbar() {
                   href="/dashboard" 
                   className="flex flex-col leading-tight hover:opacity-80 transition-opacity duration-150 min-w-0"
                 >
-                  <span className="text-sm font-medium text-foreground-primary truncate">
+                  <span className="text-sm font-medium text-slate-900 truncate">
                     {session.user?.name || session.user?.email}
                   </span>
                   {userRole && (
-                    <span className="text-[11px] font-semibold uppercase tracking-wide text-foreground-secondary">
+                    <span className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
                       {userRole}
                     </span>
                   )}
@@ -123,7 +123,7 @@ export function Navbar() {
             <>
               <Link 
                 href="/auth/signin" 
-                className="text-sm font-medium text-foreground-secondary transition-colors duration-150 hover:text-foreground-primary"
+                className="text-sm font-medium text-slate-700 transition-colors duration-150 hover:text-slate-900"
               >
                 Sign in
               </Link>
@@ -136,11 +136,11 @@ export function Navbar() {
 
         <button
           type="button"
-          className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-white transition-colors duration-150 hover:bg-background-primary md:hidden"
+          className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-300 bg-white transition-colors duration-150 hover:bg-slate-50 md:hidden"
           onClick={() => setOpen((prev) => !prev)}
           aria-label="Toggle navigation"
         >
-          <svg className="h-5 w-5 text-foreground-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <svg className="h-5 w-5 text-slate-900" viewBox="0 0 24 24" fill="none" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7h16M4 12h16M4 17h16" />
           </svg>
         </button>
