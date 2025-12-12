@@ -132,7 +132,7 @@ export default function JobsPage() {
               <select
                 value={filters.employmentType}
                 onChange={(event) => setFilters((prev) => ({ ...prev, employmentType: event.target.value }))}
-                className="mt-2 w-full rounded-lg border border-black/15 bg-white px-3 py-2 text-sm"
+                className="mt-2 w-full rounded-lg border border-black/15 bg-white px-3 py-2 text-sm text-slate-900"
               >
                 <option value="">Any</option>
                 {EMPLOYMENT_TYPES.map((type) => (
@@ -147,7 +147,7 @@ export default function JobsPage() {
               <select
                 value={filters.experienceLevel}
                 onChange={(event) => setFilters((prev) => ({ ...prev, experienceLevel: event.target.value }))}
-                className="mt-2 w-full rounded-lg border border-black/15 bg-white px-3 py-2 text-sm"
+                className="mt-2 w-full rounded-lg border border-black/15 bg-white px-3 py-2 text-sm text-slate-900"
               >
                 <option value="">Any</option>
                 {EXPERIENCE_LEVELS.map((level) => (
