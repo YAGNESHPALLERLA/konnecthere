@@ -230,8 +230,8 @@ function MessagesContent() {
   }
 
   return (
-    <PageShell title="Messages" description="Chat with HR, admins, and other users" className="section">
-      <div className="flex flex-col md:flex-row h-[calc(100vh-200px)] gap-3">
+    <PageShell title="Messages" description="Chat with HR, admins, and other users">
+      <div className="flex flex-col md:flex-row h-[calc(100vh-200px)] gap-4">
         {/* Conversation List - Left Column */}
         <div className="w-full md:w-80 flex-shrink-0 border-r border-slate-200 md:border-r md:border-b-0 border-b">
           <Card className="h-full p-0 overflow-hidden flex flex-col">
@@ -328,10 +328,10 @@ function MessagesContent() {
                             className={`flex ${isOwn ? "justify-end" : "justify-start"}`}
                           >
                             <div
-                              className={`max-w-[75%] md:max-w-[65%] rounded-2xl px-3 py-2 text-sm shadow-sm ui-transition ${
+                              className={`max-w-[75%] md:max-w-[65%] rounded-2xl px-3 py-2 text-sm shadow-sm transition-all duration-150 ${
                                 isOwn
                                   ? "bg-indigo-500 text-white rounded-br-sm"
-                                  : "bg-white text-slate-900 rounded-bl-sm border border-slate-200"
+                                  : "bg-slate-100 text-slate-900 rounded-bl-sm"
                               }`}
                             >
                               {!isOwn && msg.sender && (

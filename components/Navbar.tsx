@@ -57,7 +57,7 @@ export function Navbar() {
 
   return (
     <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/80 backdrop-blur-md shadow-sm">
-      <div className="mx-auto flex w-full max-w-site items-center justify-between px-4 h-14 md:h-16">
+      <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-6 py-4 sm:px-8">
         <Link 
           href="/" 
           className="text-xl font-bold tracking-tight text-foreground transition-opacity duration-200 hover:opacity-80"
@@ -73,7 +73,7 @@ export function Navbar() {
                 key={link.href}
                 href={link.href}
                 className={cn(
-                  "relative px-3 py-1.5 text-sm font-medium tracking-tight ui-transition rounded-lg",
+                  "relative px-4 py-2 text-sm font-medium tracking-tight transition-colors duration-150 rounded-lg",
                   isActive 
                     ? "text-slate-900 font-semibold bg-slate-100" 
                     : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
@@ -93,7 +93,7 @@ export function Navbar() {
             <span className="text-sm text-slate-600">Loading…</span>
           ) : session ? (
             <>
-              <div className="flex items-center gap-2 rounded-full bg-slate-50 px-2.5 py-1 shadow-sm">
+              <div className="flex items-center gap-2 rounded-full bg-slate-50 px-3 py-1 shadow-sm">
                 {/* Profile Picture with Upload */}
                 <ProfilePictureUpload
                   currentImage={session.user?.image}
@@ -103,19 +103,19 @@ export function Navbar() {
                 />
                 <Link 
                   href="/dashboard" 
-                  className="flex flex-col leading-tight hover:opacity-80 ui-transition min-w-0"
+                  className="flex flex-col leading-tight hover:opacity-80 transition-opacity duration-150 min-w-0"
                 >
-                  <span className="text-sm font-medium text-slate-900 truncate max-w-[120px]">
+                  <span className="text-sm font-medium text-slate-900 truncate">
                     {session.user?.name || session.user?.email}
                   </span>
                   {userRole && (
-                    <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+                    <span className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
                       {userRole}
                     </span>
                   )}
                 </Link>
               </div>
-              <Button onClick={() => signOut()} variant="outline" size="sm" className="shrink-0 ui-transition">
+              <Button onClick={() => signOut()} variant="outline" size="sm" className="ml-2 shrink-0">
                 Sign out
               </Button>
             </>
@@ -123,11 +123,11 @@ export function Navbar() {
             <>
               <Link 
                 href="/auth/signin" 
-                className="text-sm font-medium text-slate-700 ui-transition hover:text-slate-900"
+                className="text-sm font-medium text-slate-700 transition-colors duration-150 hover:text-slate-900"
               >
                 Sign in
               </Link>
-              <Button asChild className="ui-transition">
+              <Button asChild>
                 <Link href="/auth/signup">Join</Link>
               </Button>
             </>

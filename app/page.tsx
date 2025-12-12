@@ -53,12 +53,11 @@ export default async function Home() {
 
   return (
     <div className="bg-background text-foreground">
-      <section className="border-b border-slate-200 bg-gradient-to-br from-white via-indigo-50/20 to-white section">
-        <div className="mx-auto max-w-site px-4 py-8 md:py-12">
-          <PageShell
-            title={session?.user ? `Welcome back, ${session.user.name || session.user.email}` : "Work doesn't need noise"}
-            description={session?.user ? "Browse all available job opportunities below." : "KonnectHere is a deliberately minimal hiring surface for people who value signal over scroll."}
-            actions={
+      <section className="border-b border-slate-200 bg-gradient-to-br from-white via-indigo-50/20 to-white">
+        <PageShell
+          title={session?.user ? `Welcome back, ${session.user.name || session.user.email}` : "Work doesn't need noise"}
+          description={session?.user ? "Browse all available job opportunities below." : "KonnectHere is a deliberately minimal hiring surface for people who value signal over scroll."}
+          actions={
             session?.user ? (
               <>
                 <Button asChild size="lg">
@@ -92,32 +91,31 @@ export default async function Home() {
             )
           }
         >
-          <div className="grid gap-4 sm:grid-cols-3 animate-in fade-in slide-in-from-bottom-6 duration-700 delay-150">
+          <div className="grid gap-6 sm:grid-cols-3 animate-in fade-in slide-in-from-bottom-6 duration-700 delay-150">
             {highlights.map((item, index) => (
               <div 
                 key={item.label} 
-                className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm ui-transition hover:shadow-md hover:-translate-y-0.5 hover:border-slate-300"
+                className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm transition-all duration-150 hover:shadow-md hover:-translate-y-0.5 hover:border-slate-300"
                 style={{ animationDelay: `${index * 100}ms` }}
               >
-                <p className="text-3xl md:text-4xl font-bold text-slate-900 mb-1">{item.label}</p>
+                <p className="text-4xl font-bold text-slate-900 mb-2">{item.label}</p>
                 <p className="text-xs font-medium text-slate-500 uppercase tracking-widest">{item.description}</p>
               </div>
             ))}
           </div>
-          </PageShell>
-        </div>
+        </PageShell>
       </section>
 
-      <PageShell className="section">
-        <div className="grid gap-4 md:grid-cols-3">
+      <PageShell>
+        <div className="grid gap-6 md:grid-cols-3">
           {pillars.map((pillar, index) => (
             <Card 
               key={pillar.title} 
               title={pillar.title}
-              className="animate-in fade-in slide-in-from-bottom-4 duration-500 ui-transition"
+              className="animate-in fade-in slide-in-from-bottom-4 duration-500"
               style={{ animationDelay: `${index * 100}ms` }}
             >
-              <p className="text-sm md:text-base text-slate-600 leading-relaxed">{pillar.copy}</p>
+              <p className="text-base text-slate-600 leading-relaxed">{pillar.copy}</p>
             </Card>
           ))}
         </div>
@@ -126,24 +124,23 @@ export default async function Home() {
       <PageShell
         title="How teams use KonnectHere"
         description="Whether you're scaling a leadership bench or finding your next role, the workflow stays calm."
-        className="section"
       >
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid gap-6 md:grid-cols-3">
           {steps.map((step, index) => (
             <div 
               key={step.title} 
-              className="group rounded-xl border border-slate-200 bg-white p-5 shadow-sm ui-transition hover:shadow-md hover:-translate-y-0.5 hover:border-slate-300"
+              className="group rounded-xl border border-slate-200 bg-white p-6 shadow-sm transition-all duration-150 hover:shadow-md hover:-translate-y-0.5 hover:border-slate-300"
             >
               <Pill className="bg-indigo-50 text-indigo-700">Phase {index + 1}</Pill>
-              <h3 className="mt-4 section-title">{step.title}</h3>
-              <p className="mt-2 text-sm md:text-base text-slate-600 leading-relaxed">{step.body}</p>
+              <h3 className="mt-5 section-title">{step.title}</h3>
+              <p className="mt-3 text-base text-slate-600 leading-relaxed">{step.body}</p>
             </div>
           ))}
         </div>
       </PageShell>
 
-      <PageShell subdued className="section" title="Stay private, stay visible" description="No feeds. No noisy dashboards. Just a single place to manage opportunities.">
-        <div className="grid gap-4 md:grid-cols-2">
+      <PageShell subdued className="mt-4" title="Stay private, stay visible" description="No feeds. No noisy dashboards. Just a single place to manage opportunities.">
+        <div className="grid gap-6 md:grid-cols-2">
           <Card title="For talent" subtitle="One profile. Infinite intros.">
             <ul className="space-y-3 text-sm text-slate-600">
               <li>• Upload once — resumes, portfolios, and context in one link.</li>
@@ -167,13 +164,13 @@ export default async function Home() {
         </div>
       </PageShell>
 
-      <PageShell subdued className="section">
-        <div className="rounded-2xl border border-slate-200 bg-gradient-to-br from-white to-indigo-50/30 p-8 md:p-10 text-center shadow-sm">
-          <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mb-3">Hire or get hired with intent</h2>
-          <p className="mt-3 text-base md:text-lg text-slate-600 max-w-2xl mx-auto">
+      <PageShell subdued className="mt-0">
+        <div className="rounded-2xl border border-slate-200 bg-gradient-to-br from-white to-indigo-50/30 p-12 text-center shadow-sm">
+          <h2 className="text-4xl font-bold text-slate-900 mb-4">Hire or get hired with intent</h2>
+          <p className="mt-4 text-lg text-slate-600 max-w-2xl mx-auto">
             KonnectHere keeps the experience simple so you can focus on the conversations that matter.
           </p>
-          <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:justify-center">
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
             <Button asChild size="lg">
               <Link href="/jobs">Explore open roles</Link>
             </Button>
@@ -188,7 +185,6 @@ export default async function Home() {
       <PageShell
         title="All Open Roles"
         description="Browse all available job opportunities"
-        className="section"
       >
         <JobsList />
       </PageShell>
