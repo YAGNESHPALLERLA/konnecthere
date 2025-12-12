@@ -38,8 +38,8 @@ const columns = [
 export function Footer() {
   return (
     <footer className="border-t border-slate-200 bg-slate-50">
-      <div className="mx-auto flex w-full max-w-7xl flex-col gap-12 px-6 py-16 sm:px-8">
-        <div className="grid gap-10 md:grid-cols-4">
+      <div className="mx-auto flex w-full max-w-site flex-col gap-8 px-4 py-8 md:py-10">
+        <div className="grid gap-6 md:grid-cols-4">
           {columns.map((section) => (
             <div key={section.title} className="space-y-4">
               <h4 className="muted-label">{section.title}</h4>
@@ -48,7 +48,7 @@ export function Footer() {
                   <li key={link.href}>
                     <Link 
                       href={link.href} 
-                      className="text-slate-600 transition-colors duration-150 hover:text-slate-900"
+                      className="text-slate-600 ui-transition hover:text-slate-900"
                     >
                       {link.label}
                     </Link>
@@ -58,26 +58,26 @@ export function Footer() {
             </div>
           ))}
         </div>
-        <div className="flex flex-col gap-4 border-t border-slate-200 pt-8 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-3 border-t border-slate-200 pt-6 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm text-slate-600">
             &copy; {new Date().getFullYear()} KonnectHere. Built for modern teams.
           </p>
           <div className="flex gap-6 text-sm">
             <Link 
               href="/contact" 
-              className="text-slate-600 transition-colors duration-150 hover:text-slate-900"
+              className="text-slate-600 ui-transition hover:text-slate-900"
             >
               Contact
             </Link>
             <Link 
               href="/support" 
-              className="text-slate-600 transition-colors duration-150 hover:text-slate-900"
+              className="text-slate-600 ui-transition hover:text-slate-900"
             >
               Support
             </Link>
             <Link 
               href="/status" 
-              className="text-slate-600 transition-colors duration-150 hover:text-slate-900"
+              className="text-slate-600 ui-transition hover:text-slate-900"
             >
               System status
             </Link>

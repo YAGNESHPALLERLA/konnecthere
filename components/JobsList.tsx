@@ -64,36 +64,36 @@ export function JobsList() {
 
   if (jobs.length === 0) {
     return (
-      <div className="rounded-xl border border-slate-200 bg-white p-12 text-center">
+      <div className="rounded-xl border border-slate-200 bg-white p-8 text-center">
         <p className="text-base text-slate-600">No jobs available at the moment.</p>
       </div>
     )
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between mb-2">
+    <div className="space-y-3">
+      <div className="flex items-center justify-between mb-1">
         <p className="text-sm font-medium text-slate-600">
           {jobs.length} {jobs.length === 1 ? "role" : "roles"} available
         </p>
         <Link
           href="/jobs"
-          className="text-sm font-medium text-indigo-600 hover:text-indigo-700 transition-colors duration-150 flex items-center gap-1 group"
+          className="text-sm font-medium text-indigo-600 hover:text-indigo-700 ui-transition flex items-center gap-1 group"
         >
-          View all <span className="group-hover:translate-x-0.5 transition-transform duration-150">→</span>
+          View all <span className="group-hover:translate-x-0.5 ui-transition">→</span>
         </Link>
       </div>
-      <div className="space-y-4">
+      <div className="space-y-3">
         {jobs.map((job) => (
           <Link
             key={job.id}
             href={`/jobs/${job.slug}`}
-            className="group block rounded-xl border border-slate-200 bg-white px-6 py-6 shadow-sm transition-all duration-150 hover:shadow-md hover:-translate-y-0.5 hover:border-slate-300"
+            className="group block rounded-xl border border-slate-200 bg-white px-5 py-5 shadow-sm ui-transition hover:shadow-md hover:-translate-y-0.5 hover:border-slate-300"
           >
             <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-              <div className="space-y-3 flex-1">
-                <div className="flex flex-wrap items-center gap-3">
-                  <h2 className="text-xl font-semibold text-slate-900 group-hover:text-indigo-600 transition-colors duration-150">
+              <div className="space-y-2 flex-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h2 className="text-lg md:text-xl font-semibold text-slate-900 group-hover:text-indigo-600 ui-transition">
                     {job.title}
                   </h2>
                   <Pill className="bg-indigo-50 text-indigo-700">
@@ -132,8 +132,8 @@ export function JobsList() {
         ))}
       </div>
       {jobs.length >= 20 && (
-        <div className="pt-6 text-center">
-          <Button asChild>
+        <div className="pt-4 text-center">
+          <Button asChild className="ui-transition">
             <Link href="/jobs">View All Jobs</Link>
           </Button>
         </div>

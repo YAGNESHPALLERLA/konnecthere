@@ -14,7 +14,19 @@ const config: Config = {
       heading: ["Inter", "ui-sans-serif", "system-ui", "Helvetica Neue", "Arial", "sans-serif"],
       mono: ["IBM Plex Mono", "ui-monospace", "SFMono-Regular", "Menlo", "monospace"],
     },
+    container: {
+      center: true,
+      padding: {
+        DEFAULT: "1rem",
+        sm: "1rem",
+        lg: "2rem",
+        xl: "2rem",
+      },
+    },
     extend: {
+      maxWidth: {
+        site: "1200px",
+      },
       colors: {
         // Base backgrounds
         background: "#f3f4f6", // Soft warm gray for main page background
@@ -114,6 +126,8 @@ const config: Config = {
         8: "32px",
         9: "36px",
         10: "40px",
+        "section-lg": "3rem",
+        "section-sm": "1.5rem",
       },
       boxShadow: {
         none: "none",
