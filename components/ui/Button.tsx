@@ -9,7 +9,7 @@ type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
 }
 
 const baseStyles =
-  "inline-flex items-center justify-center rounded-full font-semibold tracking-tight transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed hover:scale-[1.01] active:scale-[0.99]"
+  "inline-flex items-center justify-center rounded-full font-semibold tracking-tight transition-all duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed hover:scale-[1.03] hover:shadow-md active:scale-[0.99]"
 const variantMap = {
   default: "bg-indigo-600 text-white shadow-sm hover:bg-indigo-700 hover:shadow-md",
   ghost: "border-transparent text-slate-900 hover:bg-slate-100 hover:text-slate-900",

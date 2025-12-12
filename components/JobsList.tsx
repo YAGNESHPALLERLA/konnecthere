@@ -88,7 +88,7 @@ export function JobsList() {
           <Link
             key={job.id}
             href={`/jobs/${job.slug}`}
-            className="group block rounded-xl border border-slate-200 bg-white px-6 py-6 shadow-sm transition-all duration-150 hover:shadow-md hover:-translate-y-0.5 hover:border-slate-300"
+            className="group block rounded-xl border border-slate-200 bg-white px-6 py-6 shadow-sm transition-all duration-200 ease-out hover:shadow-md hover:-translate-y-1 hover:border-slate-400"
           >
             <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
               <div className="space-y-3 flex-1">

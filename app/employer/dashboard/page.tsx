@@ -72,19 +72,19 @@ export default function EmployerDashboard() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white rounded-lg shadow-sm p-6 transition-all duration-200 ease-out hover:shadow-md hover:-translate-y-1 hover:border-slate-300 border border-transparent">
           <h2 className="text-lg font-semibold mb-2">Active Jobs</h2>
           <p className="text-3xl font-bold text-blue-600">
             {jobs.filter((j) => j.status === "PUBLISHED").length}
           </p>
         </div>
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white rounded-lg shadow-sm p-6 transition-all duration-200 ease-out hover:shadow-md hover:-translate-y-1 hover:border-slate-300 border border-transparent">
           <h2 className="text-lg font-semibold mb-2">Total Applications</h2>
           <p className="text-3xl font-bold text-gray-600">
             {jobs.reduce((sum, j) => sum + (j.applicationsCount || 0), 0)}
           </p>
         </div>
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white rounded-lg shadow-sm p-6 transition-all duration-200 ease-out hover:shadow-md hover:-translate-y-1 hover:border-slate-300 border border-transparent">
           <h2 className="text-lg font-semibold mb-2">Companies</h2>
           <p className="text-3xl font-bold text-gray-600">{companies.length}</p>
         </div>

@@ -139,6 +139,70 @@
 }
 
 @layer utilities {
+  /* Smooth page transitions */
+  .page-transition {
+    animation: fadeIn 150ms ease-out;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  /* Section fade-in animation */
+  .fade-in-up {
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 400ms ease-out, transform 400ms ease-out;
+  }
+
+  .fade-in-up.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Profile image hover glow */
+  .profile-image-glow {
+    transition: box-shadow 200ms ease-out;
+  }
+
+  .profile-image-glow:hover {
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+  }
+
+  /* Navbar underline slide animation */
+  .nav-underline {
+    position: relative;
+  }
+
+  .nav-underline::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background-color: currentColor;
+    transition: width 200ms ease-out, opacity 200ms ease-out;
+    opacity: 0;
+  }
+
+  .nav-underline:hover::after {
+    width: 100%;
+    opacity: 1;
+  }
+
+  .nav-underline.active::after {
+    width: 100%;
+    opacity: 1;
+  }
+}
+
+@layer utilities {
   /* Ensure text is visible on white/light backgrounds */
   .text-surface {
     color: #0f172a !important;

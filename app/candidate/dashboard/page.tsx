@@ -138,15 +138,15 @@ export default function CandidateDashboard() {
       </header>
 
       <section className="grid grid-cols-1 gap-4 md:grid-cols-3">
-        <div className="rounded-xl border bg-white p-5 shadow">
+        <div className="rounded-xl border bg-white p-5 shadow-sm transition-all duration-200 ease-out hover:shadow-md hover:-translate-y-1 hover:border-slate-300">
           <p className="text-sm text-gray-500">My applications</p>
           <p className="mt-2 text-3xl font-semibold text-blue-600">{applications.length}</p>
         </div>
-        <div className="rounded-xl border bg-white p-5 shadow">
+        <div className="rounded-xl border bg-white p-5 shadow-sm transition-all duration-200 ease-out hover:shadow-md hover:-translate-y-1 hover:border-slate-300">
           <p className="text-sm text-gray-500">Saved jobs</p>
           <p className="mt-2 text-3xl font-semibold text-gray-600">0</p>
         </div>
-        <div className="rounded-xl border bg-white p-5 shadow">
+        <div className="rounded-xl border bg-white p-5 shadow-sm transition-all duration-200 ease-out hover:shadow-md hover:-translate-y-1 hover:border-slate-300">
           <p className="text-sm text-gray-500">Job alerts</p>
           <p className="mt-2 text-3xl font-semibold text-gray-600">0</p>
         </div>

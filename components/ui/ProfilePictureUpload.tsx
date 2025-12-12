@@ -162,7 +162,7 @@ export function ProfilePictureUpload({
             src={preview}
             alt={userName || "Profile"}
             className={cn(
-              "rounded-full object-cover border-2 border-slate-200 transition-opacity duration-200",
+              "rounded-full object-cover border-2 border-slate-200 transition-all duration-200 profile-image-glow",
               sizeClasses[size],
               uploading && "opacity-50"
             )}
