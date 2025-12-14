@@ -9,6 +9,19 @@ import Link from "next/link"
 
 export const dynamic = "force-dynamic"
 
+// Helper function to format date strings (ISO YYYY-MM-DD or other formats) to readable format
+function formatDate(dateStr: string | undefined | null): string {
+  if (!dateStr) return ""
+  // If it's already in a readable format (not ISO), return as is for backward compatibility
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+    return dateStr
+  }
+  // Parse ISO date and format
+  const date = new Date(dateStr)
+  if (isNaN(date.getTime())) return dateStr
+  return date.toLocaleDateString("en-US", { year: "numeric", month: "short" })
+}
+
 export default async function UserDashboard() {
   // This will redirect to /auth/signin if not authenticated
   // Or redirect to user's own dashboard if wrong role
@@ -342,7 +355,7 @@ export default async function UserDashboard() {
                       {edu.degree && <p className="text-gray-600">{edu.degree}{edu.field && ` in ${edu.field}`}</p>}
                       {(edu.startDate || edu.endDate) && (
                         <p className="text-gray-500 text-xs">
-                          {edu.startDate} - {edu.endDate || "Present"}
+                          {formatDate(edu.startDate)} - {edu.endDate ? formatDate(edu.endDate) : "Present"}
                         </p>
                       )}
                     </div>
@@ -364,9 +377,9 @@ export default async function UserDashboard() {
                   {userDetails.experience.slice(0, 2).map((exp: any, idx: number) => (
                     <div key={idx} className="text-sm">
                       <p className="font-semibold">{exp.title} at {exp.company}</p>
-                      {(exp.startDate || exp.endDate) && (
+                      {(exp.startDate || exp.endDate || exp.current) && (
                         <p className="text-gray-500 text-xs">
-                          {exp.startDate} - {exp.current ? "Present" : exp.endDate || "Present"}
+                          {formatDate(exp.startDate)} - {exp.current ? "Present" : (exp.endDate ? formatDate(exp.endDate) : "Present")}
                         </p>
                       )}
                     </div>

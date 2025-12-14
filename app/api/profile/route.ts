@@ -78,15 +78,15 @@ const updateProfileSchema = z.object({
     school: z.string(),
     degree: z.string().optional(),
     field: z.string().optional(),
-    startDate: z.string().optional(),
-    endDate: z.string().optional(),
+    startDate: z.string().optional(), // ISO date string (YYYY-MM-DD)
+    endDate: z.string().optional(), // ISO date string (YYYY-MM-DD)
     description: z.string().optional(),
   })).optional().nullable(),
   experience: z.array(z.object({
     company: z.string(),
     title: z.string(),
-    startDate: z.string().optional(),
-    endDate: z.string().optional(),
+    startDate: z.string().optional(), // ISO date string (YYYY-MM-DD)
+    endDate: z.string().optional(), // ISO date string (YYYY-MM-DD), should be undefined if current is true
     current: z.boolean().optional(),
     description: z.string().optional(),
   })).optional().nullable(),
@@ -117,6 +117,76 @@ export async function PATCH(req: NextRequest) {
 
     const body = await req.json()
     const data = updateProfileSchema.parse(body)
+
+    // Validate and normalize dates in education and experience
+    if (data.education) {
+      for (const edu of data.education) {
+        if (edu.startDate && edu.endDate) {
+          const start = new Date(edu.startDate)
+          const end = new Date(edu.endDate)
+          if (start > end) {
+            return NextResponse.json(
+              { error: "Education start date must be before or equal to end date" },
+              { status: 400 }
+            )
+          }
+        }
+        // Ensure dates are in ISO format (YYYY-MM-DD)
+        if (edu.startDate && !/^\d{4}-\d{2}-\d{2}$/.test(edu.startDate)) {
+          const date = new Date(edu.startDate)
+          if (!isNaN(date.getTime())) {
+            edu.startDate = date.toISOString().split('T')[0]
+          }
+        }
+        if (edu.endDate && !/^\d{4}-\d{2}-\d{2}$/.test(edu.endDate)) {
+          const date = new Date(edu.endDate)
+          if (!isNaN(date.getTime())) {
+            edu.endDate = date.toISOString().split('T')[0]
+          }
+        }
+      }
+    }
+
+    if (data.experience) {
+      for (const exp of data.experience) {
+        // If current is true, clear endDate
+        if (exp.current) {
+          exp.endDate = undefined
+        }
+        if (exp.startDate && exp.endDate && !exp.current) {
+          const start = new Date(exp.startDate)
+          const end = new Date(exp.endDate)
+          if (start > end) {
+            return NextResponse.json(
+              { error: "Experience start date must be before or equal to end date" },
+              { status: 400 }
+            )
+          }
+          // End date cannot be in the future unless current is true
+          const today = new Date()
+          today.setHours(0, 0, 0, 0)
+          if (end > today) {
+            return NextResponse.json(
+              { error: "Experience end date cannot be in the future unless 'Present' is checked" },
+              { status: 400 }
+            )
+          }
+        }
+        // Ensure dates are in ISO format (YYYY-MM-DD)
+        if (exp.startDate && !/^\d{4}-\d{2}-\d{2}$/.test(exp.startDate)) {
+          const date = new Date(exp.startDate)
+          if (!isNaN(date.getTime())) {
+            exp.startDate = date.toISOString().split('T')[0]
+          }
+        }
+        if (exp.endDate && !/^\d{4}-\d{2}-\d{2}$/.test(exp.endDate)) {
+          const date = new Date(exp.endDate)
+          if (!isNaN(date.getTime())) {
+            exp.endDate = date.toISOString().split('T')[0]
+          }
+        }
+      }
+    }
 
     // Prepare update data, converting empty strings to null
     const updateData: any = {}

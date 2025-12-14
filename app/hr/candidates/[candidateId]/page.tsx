@@ -42,6 +42,34 @@ type Application = {
   }
 }
 
+// Helper function to format date strings (ISO YYYY-MM-DD or other formats) to readable format
+function formatEducationDate(dateStr: string | undefined | null): string {
+  if (!dateStr) return ""
+  // If it's already in a readable format (not ISO), return as is for backward compatibility
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+    // Try to extract year if it's a year-only string
+    const yearMatch = dateStr.match(/\d{4}/)
+    if (yearMatch) return yearMatch[0]
+    return dateStr
+  }
+  // Parse ISO date and format
+  const date = new Date(dateStr)
+  if (isNaN(date.getTime())) return dateStr
+  return date.toLocaleDateString("en-US", { year: "numeric", month: "short" })
+}
+
+function formatExperienceDate(dateStr: string | undefined | null): string {
+  if (!dateStr) return ""
+  // If it's already in a readable format (not ISO), return as is for backward compatibility
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+    return dateStr
+  }
+  // Parse ISO date and format
+  const date = new Date(dateStr)
+  if (isNaN(date.getTime())) return dateStr
+  return date.toLocaleDateString("en-US", { year: "numeric", month: "short" })
+}
+
 export default function CandidateProfilePage() {
   const params = useParams()
   const router = useRouter()
@@ -345,8 +373,7 @@ export default function CandidateProfilePage() {
                   {edu.field && <p className="text-sm text-gray-600">{edu.field}</p>}
                   {(edu.startDate || edu.endDate) && (
                     <p className="text-sm text-gray-500">
-                      {edu.startDate && new Date(edu.startDate).getFullYear()} -{" "}
-                      {edu.endDate ? new Date(edu.endDate).getFullYear() : "Present"}
+                      {formatEducationDate(edu.startDate)} - {edu.endDate ? formatEducationDate(edu.endDate) : "Present"}
                     </p>
                   )}
                 </div>
@@ -365,8 +392,7 @@ export default function CandidateProfilePage() {
                   <p className="font-medium">{exp.title} at {exp.company}</p>
                   {(exp.startDate || exp.endDate || exp.current) && (
                     <p className="text-sm text-gray-500">
-                      {exp.startDate && new Date(exp.startDate).toLocaleDateString()} -{" "}
-                      {exp.current ? "Present" : exp.endDate ? new Date(exp.endDate).toLocaleDateString() : ""}
+                      {formatExperienceDate(exp.startDate)} - {exp.current ? "Present" : (exp.endDate ? formatExperienceDate(exp.endDate) : "Present")}
                     </p>
                   )}
                   {exp.description && (

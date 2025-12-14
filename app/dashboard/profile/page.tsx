@@ -12,16 +12,16 @@ type EducationEntry = {
   school: string
   degree?: string
   field?: string
-  startDate?: string
-  endDate?: string
+  startDate?: string // ISO date string (YYYY-MM-DD)
+  endDate?: string // ISO date string (YYYY-MM-DD)
   description?: string
 }
 
 type ExperienceEntry = {
   company: string
   title: string
-  startDate?: string
-  endDate?: string
+  startDate?: string // ISO date string (YYYY-MM-DD)
+  endDate?: string // ISO date string (YYYY-MM-DD)
   current?: boolean
   description?: string
 }
@@ -61,6 +61,7 @@ export default function ProfilePage() {
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null)
   const [activeTab, setActiveTab] = useState<"basic" | "education" | "experience" | "skills" | "preferences">("basic")
+  const [dateErrors, setDateErrors] = useState<{ [key: string]: string }>({})
 
   // Form state
   const [name, setName] = useState("")
@@ -89,6 +90,65 @@ export default function ProfilePage() {
   const [certificationInput, setCertificationInput] = useState("")
   const [portfolioUrl, setPortfolioUrl] = useState("")
 
+  // Helper function to convert various date formats to YYYY-MM-DD for date inputs
+  const convertToDateInput = (dateStr: string): string => {
+    if (!dateStr) return ""
+    // If already in YYYY-MM-DD format, return as is
+    if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return dateStr
+    // Try to parse as ISO date
+    const date = new Date(dateStr)
+    if (!isNaN(date.getTime())) {
+      return date.toISOString().split('T')[0]
+    }
+    // If it's just a year (e.g., "2018"), use January 1st
+    if (/^\d{4}$/.test(dateStr)) {
+      return `${dateStr}-01-01`
+    }
+    // If it's "MMM YYYY" format (e.g., "Jan 2020"), try to parse
+    const monthYearMatch = dateStr.match(/(\w+)\s+(\d{4})/)
+    if (monthYearMatch) {
+      const monthNames = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"]
+      const month = monthNames.indexOf(monthYearMatch[1].toLowerCase().substring(0, 3))
+      if (month !== -1) {
+        return `${monthYearMatch[2]}-${String(month + 1).padStart(2, '0')}-01`
+      }
+    }
+    return ""
+  }
+
+  // Helper function to convert date input (YYYY-MM-DD) to ISO string for storage
+  const convertToISOString = (dateStr: string): string | undefined => {
+    if (!dateStr) return undefined
+    const date = new Date(dateStr)
+    if (isNaN(date.getTime())) return undefined
+    return date.toISOString().split('T')[0] // Return YYYY-MM-DD format
+  }
+
+  // Validate dates
+  const validateDates = (type: "education" | "experience", index: number, startDate?: string, endDate?: string, current?: boolean): string | null => {
+    const key = `${type}-${index}`
+    if (!startDate && !endDate) return null // Both optional
+
+    if (startDate && endDate && !current) {
+      const start = new Date(startDate)
+      const end = new Date(endDate)
+      if (start > end) {
+        return "Start date must be before or equal to end date"
+      }
+    }
+
+    if (endDate && !current && type === "experience") {
+      const end = new Date(endDate)
+      const today = new Date()
+      today.setHours(0, 0, 0, 0)
+      if (end > today) {
+        return "End date cannot be in the future unless 'Present' is checked"
+      }
+    }
+
+    return null
+  }
+
   useEffect(() => {
     fetchProfile()
   }, [session])
@@ -113,8 +173,21 @@ export default function ProfilePage() {
       setLinkedin(user.linkedin || "")
       setGithub(user.github || "")
       setTwitter(user.twitter || "")
-      setEducation((user.education as EducationEntry[]) || [])
-      setExperience((user.experience as ExperienceEntry[]) || [])
+      // Convert education dates to ISO format (YYYY-MM-DD) for date inputs
+      const educationData = ((user.education as EducationEntry[]) || []).map((edu) => ({
+        ...edu,
+        startDate: edu.startDate ? convertToDateInput(edu.startDate) : "",
+        endDate: edu.endDate ? convertToDateInput(edu.endDate) : "",
+      }))
+      setEducation(educationData)
+
+      // Convert experience dates to ISO format (YYYY-MM-DD) for date inputs
+      const experienceData = ((user.experience as ExperienceEntry[]) || []).map((exp) => ({
+        ...exp,
+        startDate: exp.startDate ? convertToDateInput(exp.startDate) : "",
+        endDate: exp.endDate && !exp.current ? convertToDateInput(exp.endDate) : "",
+      }))
+      setExperience(experienceData)
       setSkills(user.skills || [])
       setAvailability(user.availability || "")
       setSalaryExpectation(user.salaryExpectation || "")
@@ -138,8 +211,40 @@ export default function ProfilePage() {
     e.preventDefault()
     setSaving(true)
     setMessage(null)
+    setDateErrors({})
+
+    // Validate all dates
+    const errors: { [key: string]: string } = {}
+    education.forEach((edu, index) => {
+      const error = validateDates("education", index, edu.startDate, edu.endDate)
+      if (error) errors[`education-${index}`] = error
+    })
+    experience.forEach((exp, index) => {
+      const error = validateDates("experience", index, exp.startDate, exp.endDate, exp.current)
+      if (error) errors[`experience-${index}`] = error
+    })
+
+    if (Object.keys(errors).length > 0) {
+      setDateErrors(errors)
+      setMessage({ type: "error", text: "Please fix date validation errors before saving." })
+      setSaving(false)
+      return
+    }
 
     try {
+      // Convert date inputs to ISO strings for storage
+      const educationData = education.map((edu) => ({
+        ...edu,
+        startDate: convertToISOString(edu.startDate || ""),
+        endDate: convertToISOString(edu.endDate || ""),
+      }))
+
+      const experienceData = experience.map((exp) => ({
+        ...exp,
+        startDate: convertToISOString(exp.startDate || ""),
+        endDate: exp.current ? undefined : convertToISOString(exp.endDate || ""),
+      }))
+
       const res = await fetch("/api/profile", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -153,8 +258,8 @@ export default function ProfilePage() {
           linkedin: linkedin || null,
           github: github || null,
           twitter: twitter || null,
-          education: education.length > 0 ? education : null,
-          experience: experience.length > 0 ? experience : null,
+          education: educationData.length > 0 ? educationData : null,
+          experience: experienceData.length > 0 ? experienceData : null,
           skills: skills.length > 0 ? skills : null,
           availability: availability || null,
           salaryExpectation: salaryExpectation || null,
@@ -196,6 +301,13 @@ export default function ProfilePage() {
     const updated = [...education]
     updated[index] = { ...updated[index], [field]: value }
     setEducation(updated)
+    // Clear error for this entry
+    const errorKey = `education-${index}`
+    if (dateErrors[errorKey]) {
+      const newErrors = { ...dateErrors }
+      delete newErrors[errorKey]
+      setDateErrors(newErrors)
+    }
   }
 
   const addExperience = () => {
@@ -209,7 +321,18 @@ export default function ProfilePage() {
   const updateExperience = (index: number, field: keyof ExperienceEntry, value: string | boolean) => {
     const updated = [...experience]
     updated[index] = { ...updated[index], [field]: value }
+    // If "current" is checked, clear endDate
+    if (field === "current" && value === true) {
+      updated[index].endDate = ""
+    }
     setExperience(updated)
+    // Clear error for this entry
+    const errorKey = `experience-${index}`
+    if (dateErrors[errorKey]) {
+      const newErrors = { ...dateErrors }
+      delete newErrors[errorKey]
+      setDateErrors(newErrors)
+    }
   }
 
   const addSkill = () => {
@@ -549,17 +672,34 @@ export default function ProfilePage() {
                       value={edu.field || ""}
                       onChange={(e) => updateEducation(index, "field", e.target.value)}
                     />
-                    <Input
-                      placeholder="Start Date (e.g., 2018)"
-                      value={edu.startDate || ""}
-                      onChange={(e) => updateEducation(index, "startDate", e.target.value)}
-                    />
-                    <Input
-                      placeholder="End Date (e.g., 2022)"
-                      value={edu.endDate || ""}
-                      onChange={(e) => updateEducation(index, "endDate", e.target.value)}
-                    />
+                    <div>
+                      <label htmlFor={`edu-start-${index}`} className="block text-sm font-medium text-gray-700 mb-1">
+                        Start Date
+                      </label>
+                      <Input
+                        id={`edu-start-${index}`}
+                        type="date"
+                        value={edu.startDate || ""}
+                        onChange={(e) => updateEducation(index, "startDate", e.target.value)}
+                        className={dateErrors[`education-${index}`] ? "border-red-500" : ""}
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor={`edu-end-${index}`} className="block text-sm font-medium text-gray-700 mb-1">
+                        End Date
+                      </label>
+                      <Input
+                        id={`edu-end-${index}`}
+                        type="date"
+                        value={edu.endDate || ""}
+                        onChange={(e) => updateEducation(index, "endDate", e.target.value)}
+                        className={dateErrors[`education-${index}`] ? "border-red-500" : ""}
+                      />
+                    </div>
                   </div>
+                  {dateErrors[`education-${index}`] && (
+                    <p className="text-sm text-red-600">{dateErrors[`education-${index}`]}</p>
+                  )}
                   <textarea
                     placeholder="Description (optional)"
                     value={edu.description || ""}
@@ -607,17 +747,31 @@ export default function ProfilePage() {
                       onChange={(e) => updateExperience(index, "title", e.target.value)}
                       required
                     />
-                    <Input
-                      placeholder="Start Date (e.g., Jan 2020)"
-                      value={exp.startDate || ""}
-                      onChange={(e) => updateExperience(index, "startDate", e.target.value)}
-                    />
-                    <Input
-                      placeholder="End Date (e.g., Dec 2022)"
-                      value={exp.endDate || ""}
-                      onChange={(e) => updateExperience(index, "endDate", e.target.value)}
-                      disabled={exp.current}
-                    />
+                    <div>
+                      <label htmlFor={`exp-start-${index}`} className="block text-sm font-medium text-gray-700 mb-1">
+                        Start Date
+                      </label>
+                      <Input
+                        id={`exp-start-${index}`}
+                        type="date"
+                        value={exp.startDate || ""}
+                        onChange={(e) => updateExperience(index, "startDate", e.target.value)}
+                        className={dateErrors[`experience-${index}`] ? "border-red-500" : ""}
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor={`exp-end-${index}`} className="block text-sm font-medium text-gray-700 mb-1">
+                        End Date
+                      </label>
+                      <Input
+                        id={`exp-end-${index}`}
+                        type="date"
+                        value={exp.endDate || ""}
+                        onChange={(e) => updateExperience(index, "endDate", e.target.value)}
+                        disabled={exp.current}
+                        className={dateErrors[`experience-${index}`] ? "border-red-500" : ""}
+                      />
+                    </div>
                   </div>
                   <div className="flex items-center gap-2">
                     <input
@@ -628,9 +782,12 @@ export default function ProfilePage() {
                       className="rounded border-gray-300"
                     />
                     <label htmlFor={`current-${index}`} className="text-sm text-gray-700">
-                      I currently work here
+                      Present (I currently work here)
                     </label>
                   </div>
+                  {dateErrors[`experience-${index}`] && (
+                    <p className="text-sm text-red-600">{dateErrors[`experience-${index}`]}</p>
+                  )}
                   <textarea
                     placeholder="Description of your role and achievements"
                     value={exp.description || ""}
