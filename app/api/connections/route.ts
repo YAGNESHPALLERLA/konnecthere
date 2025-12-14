@@ -193,9 +193,8 @@ export const POST = asyncHandler(async (req: NextRequest) => {
       },
       {
         // Transaction timeout: 10 seconds
+        maxWait: 10000,
         timeout: 10000,
-        // Note: isolationLevel may not be supported in all Prisma versions
-        // Remove if causing issues
       }
     )
 
@@ -356,13 +355,33 @@ export const POST = asyncHandler(async (req: NextRequest) => {
       console.error("[CONNECTION_CREATE] Prisma error:", {
         code: error.code,
         message: error.message,
+        stack: error.stack,
         userId,
         receiverId,
+        meta: (error as any).meta,
       })
-      // Return specific error message instead of generic one
+      
+      // Provide more specific error messages based on Prisma error code
+      let errorMessage = "Failed to create connection. Please try again."
+      let statusCode = 500
+      
+      if (error.code === "P2003") {
+        errorMessage = "Invalid user reference. Please refresh and try again."
+        statusCode = 400
+      } else if (error.code === "P2014") {
+        errorMessage = "Invalid connection data. Please try again."
+        statusCode = 400
+      } else if (error.code === "P2025") {
+        errorMessage = "Connection not found. Please refresh and try again."
+        statusCode = 404
+      } else if (error.code === "P2034") {
+        errorMessage = "Transaction conflict. Please try again."
+        statusCode = 409
+      }
+      
       return NextResponse.json(
-        { error: "Failed to create connection. Please try again." },
-        { status: 500 }
+        { error: errorMessage },
+        { status: statusCode }
       )
     }
 
