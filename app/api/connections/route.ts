@@ -324,7 +324,7 @@ export const POST = asyncHandler(async (req: NextRequest) => {
     // Handle database connection errors specifically
     if (error?.code === "P1001" || error?.code === "P1008" || error?.code === "P1017") {
       // Database connection errors
-      console.error("Database connection error creating connection:", {
+      console.error("[CONNECTION_CREATE] Database connection error:", {
         code: error.code,
         message: error.message,
         userId,
@@ -336,25 +336,60 @@ export const POST = asyncHandler(async (req: NextRequest) => {
       )
     }
 
-    // Handle other Prisma errors
-    if (error?.code && error.code.startsWith("P")) {
-      console.error("Prisma error creating connection:", {
+    // Handle transaction timeout
+    if (error?.code === "P2024" || error?.message?.includes("timeout")) {
+      console.error("[CONNECTION_CREATE] Transaction timeout:", {
         code: error.code,
         message: error.message,
         userId,
         receiverId,
       })
       return NextResponse.json(
+        { error: "Request timed out. Please try again." },
+        { status: 504 }
+      )
+    }
+
+    // Handle other Prisma errors
+    if (error?.code && typeof error.code === "string" && error.code.startsWith("P")) {
+      console.error("[CONNECTION_CREATE] Prisma error:", {
+        code: error.code,
+        message: error.message,
+        userId,
+        receiverId,
+      })
+      // Return specific error message instead of generic one
+      return NextResponse.json(
         { error: "Failed to create connection. Please try again." },
         { status: 500 }
       )
     }
 
+    // Handle database query errors
+    if (error?.message && (
+      error.message.includes("database") || 
+      error.message.includes("connection") ||
+      error.message.includes("timeout") ||
+      error.message.includes("Prisma")
+    )) {
+      console.error("[CONNECTION_CREATE] Database error:", {
+        message: error.message,
+        code: error?.code,
+        userId,
+        receiverId,
+      })
+      return NextResponse.json(
+        { error: "Database error. Please try again in a moment." },
+        { status: 503 }
+      )
+    }
+
     // Log unexpected errors for debugging
-    console.error("Unexpected error creating connection:", {
+    console.error("[CONNECTION_CREATE] Unexpected error:", {
       message: error?.message,
       stack: error?.stack,
       code: error?.code,
+      name: error?.name,
       userId,
       receiverId,
     })
