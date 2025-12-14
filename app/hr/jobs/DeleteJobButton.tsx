@@ -36,13 +36,12 @@ export function DeleteJobButton({ jobId, jobTitle }: DeleteJobButtonProps) {
         if (typeof window !== "undefined") {
           const { showToast } = await import("@/lib/toast")
           showToast("Job deleted successfully", "success")
-          // Trigger refresh of jobs list if function exists
+          // Trigger refresh of jobs list - this will immediately update the UI
           if ((window as any).refreshHRJobs) {
             (window as any).refreshHRJobs()
-          } else {
-            // Fallback to router refresh
-            router.refresh()
           }
+          // Also refresh router to ensure server state is updated
+          router.refresh()
         }
         setShowConfirm(false)
         setDeleting(false)

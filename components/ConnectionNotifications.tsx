@@ -82,9 +82,20 @@ export function ConnectionNotifications() {
         const data = await res.json()
         // Show message from API response, not hardcoded
         const message = data?.message || (action === "accept" ? "Connection accepted" : "Connection rejected")
-        showToast(message, action === "accept" ? "success" : "info")
+        if (action === "accept") {
+          showToast("Connection accepted! You can now message this user.", "success")
+        } else {
+          showToast("Connection request rejected", "info")
+        }
         // Remove from list
         setRequests((prev) => prev.filter((r) => r.id !== connectionId))
+        // Refresh the page to update connection states everywhere
+        if (action === "accept") {
+          // Small delay to let the toast show
+          setTimeout(() => {
+            window.location.reload()
+          }, 1000)
+        }
       } else {
         const errorData = await res.json().catch(() => ({ error: "Failed to respond" }))
         showToast(errorData?.error || "Failed to respond to connection request", "error")

@@ -340,9 +340,13 @@ export default function KonnectPage() {
         // Show message from API response, not hardcoded
         const message = responseData?.message || (status === "ACCEPTED" ? "Connection accepted" : "Connection rejected")
         if (status === "ACCEPTED") {
-          showToast(`${message}! You can now message this user.`, "success")
+          showToast("Connection accepted! You can now message this user.", "success")
+          // Refresh connection statuses to update button to "Message"
+          await fetchConnectionStatuses()
         } else {
-          showToast(message, "info")
+          showToast("Connection request rejected", "info")
+          // Refresh connection statuses
+          await fetchConnectionStatuses()
         }
         // Refresh to ensure consistency
         await fetchConnectionStatuses()
