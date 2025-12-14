@@ -101,16 +101,43 @@ export const POST = asyncHandler(async (req: NextRequest) => {
     )
   }
 
-  // Verify receiver user exists
-  const receiver = await prisma.user.findUnique({
-    where: { id: receiverId },
-    select: { id: true },
+  // Verify receiver user exists and is active
+  const receiver = await prisma.user.findFirst({
+    where: { 
+      id: receiverId,
+      deletedAt: null, // Only allow connecting to non-deleted users
+    },
+    select: { id: true, status: true },
   })
 
   if (!receiver) {
+    console.error("[CONNECTION_CREATE] Receiver user not found or deleted:", {
+      receiverId,
+      userId,
+    })
     return NextResponse.json(
       { error: "User not found" },
       { status: 404 }
+    )
+  }
+
+  // Verify requester user exists and is active
+  const requester = await prisma.user.findFirst({
+    where: { 
+      id: userId,
+      deletedAt: null,
+    },
+    select: { id: true },
+  })
+
+  if (!requester) {
+    console.error("[CONNECTION_CREATE] Requester user not found or deleted:", {
+      userId,
+      receiverId,
+    })
+    return NextResponse.json(
+      { error: "Your account is not active. Please contact support." },
+      { status: 403 }
     )
   }
 
@@ -163,6 +190,11 @@ export const POST = asyncHandler(async (req: NextRequest) => {
         }
 
         // Create connection request
+        console.log("[CONNECTION_CREATE] Creating new connection in transaction:", {
+          requesterId: userId,
+          receiverId,
+        })
+        
         const connection = await tx.connection.create({
           data: {
             requesterId: userId,
@@ -189,6 +221,11 @@ export const POST = asyncHandler(async (req: NextRequest) => {
           },
         })
 
+        console.log("[CONNECTION_CREATE] Connection created successfully:", {
+          connectionId: connection.id,
+          status: connection.status,
+        })
+
         return connection
       },
       {
@@ -198,8 +235,25 @@ export const POST = asyncHandler(async (req: NextRequest) => {
       }
     )
 
+    console.log("[CONNECTION_CREATE] Transaction completed successfully:", {
+      connectionId: result.id,
+      status: result.status,
+    })
+    
     return NextResponse.json({ connection: result }, { status: 201 })
   } catch (error: any) {
+    // Log the error immediately for debugging
+    console.error("[CONNECTION_CREATE] Error caught in try-catch:", {
+      errorType: error?.constructor?.name,
+      errorMessage: error?.message,
+      errorCode: error?.code,
+      errorName: error?.name,
+      stack: error?.stack,
+      userId,
+      receiverId,
+      fullError: error,
+    })
+    
     // Handle custom errors from transaction
     if (error.message === "ALREADY_CONNECTED") {
       // Fetch the existing connection to return it
