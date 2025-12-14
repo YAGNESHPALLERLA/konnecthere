@@ -541,7 +541,7 @@ export default function KonnectPage() {
                         connections[user.id]?.status === "SELF" ? null : (
                           <Button
                             onClick={() => handleKonnect(user.id)}
-                            disabled={connecting === user.id || !userId}
+                            disabled={connecting === user.id || !user.id}
                             variant="outline"
                             className="w-full"
                             size="sm"
