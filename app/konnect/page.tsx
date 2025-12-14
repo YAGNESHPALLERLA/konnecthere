@@ -537,16 +537,18 @@ export default function KonnectPage() {
 
                     {/* Konnect and Message Buttons */}
                     <div className="flex flex-col gap-2 mt-2">
-                      {!connections[user.id] || connections[user.id].status === "NONE" ? (
-                        <Button
-                          onClick={() => handleKonnect(user.id)}
-                          disabled={connecting === user.id}
-                          variant="outline"
-                          className="w-full"
-                          size="sm"
-                        >
-                          {connecting === user.id ? "Connecting..." : "Konnect"}
-                        </Button>
+                      {!connections[user.id] || connections[user.id].status === "NONE" || connections[user.id].status === "SELF" ? (
+                        connections[user.id]?.status === "SELF" ? null : (
+                          <Button
+                            onClick={() => handleKonnect(user.id)}
+                            disabled={connecting === user.id || !userId}
+                            variant="outline"
+                            className="w-full"
+                            size="sm"
+                          >
+                            {connecting === user.id ? "Connecting..." : "Konnect"}
+                          </Button>
+                        )
                       ) : connections[user.id].status === "REQUESTED" || (connections[user.id].status === "PENDING" && connections[user.id].isRequester) ? (
                         <Button
                           disabled
@@ -554,7 +556,7 @@ export default function KonnectPage() {
                           className="w-full"
                           size="sm"
                         >
-                          Requested
+                          Pending
                         </Button>
                       ) : connections[user.id].status === "RECEIVED" || (connections[user.id].status === "PENDING" && !connections[user.id].isRequester) ? (
                         <>
