@@ -87,16 +87,23 @@ export default function KonnectPage() {
 
   const fetchConnectionStatuses = async () => {
     if (!session?.user || users.length === 0) return
+    
     const statuses: Record<string, { status: "NONE" | "PENDING" | "ACCEPTED" | "REJECTED" | "REQUESTED" | "RECEIVED" | "SELF"; isRequester: boolean; connectionId: string | null }> = {}
+    let hasErrors = false
     
     // Fetch statuses with better error handling
-    await Promise.all(
+    // Use Promise.allSettled to prevent one failure from stopping all requests
+    const results = await Promise.allSettled(
       users.map(async (user) => {
         if (!user?.id) {
-          return
+          return { userId: user?.id, success: false }
         }
         try {
-          const res = await fetch(`/api/connections/status/${user.id}`)
+          const res = await fetch(`/api/connections/status/${user.id}`, {
+            // Add timeout to prevent hanging requests
+            signal: AbortSignal.timeout(5000), // 5 second timeout
+          })
+          
           if (res.ok) {
             const data = await res.json()
             const currentUserId = (session.user as any)?.id
@@ -106,7 +113,7 @@ export default function KonnectPage() {
                 isRequester: false,
                 connectionId: null,
               }
-              return
+              return { userId: user.id, success: true }
             }
             
             if (data.status === "SELF") {
@@ -135,26 +142,43 @@ export default function KonnectPage() {
                 connectionId: null,
               }
             }
+            return { userId: user.id, success: true }
           } else {
-            // If API returns error, default to NONE status
-            console.warn(`Failed to fetch connection status for user ${user.id}: ${res.status}`)
+            // If API returns error, default to NONE status (silently)
+            // Don't log or show error for individual status fetches
             statuses[user.id] = {
               status: "NONE",
               isRequester: false,
               connectionId: null,
             }
+            return { userId: user.id, success: false }
           }
-        } catch (error) {
-          console.error(`Error fetching connection status for user ${user.id}:`, error)
-          // Default to NONE on any error to prevent UI crashes
+        } catch (error: any) {
+          // Silently handle errors - don't show toast for individual status fetches
+          // This prevents spam when many users are on the page
+          if (error.name !== "AbortError") {
+            // Only log non-timeout errors
+            console.warn(`Error fetching connection status for user ${user.id}:`, error.message)
+          }
           statuses[user.id] = {
             status: "NONE",
             isRequester: false,
             connectionId: null,
           }
+          hasErrors = true
+          return { userId: user.id, success: false }
         }
       })
     )
+    
+    // Only show error toast if ALL requests failed (likely a network/server issue)
+    const failedCount = results.filter(r => r.status === "rejected" || (r.status === "fulfilled" && !r.value.success)).length
+    if (failedCount === users.length && users.length > 0) {
+      // All requests failed - show a single error message
+      console.error("All connection status requests failed")
+      // Don't show toast here - let individual operations show errors
+    }
+    
     setConnections(statuses)
   }
 

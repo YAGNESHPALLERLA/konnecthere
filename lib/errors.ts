@@ -69,26 +69,42 @@ export function handleError(error: unknown): NextResponse {
     let userMessage = errorMessage
     let statusCode = 500
     
-    if (process.env.NODE_ENV === "production") {
-      // Handle Prisma error codes
-      if (prismaCode === "P2002") {
-        // Unique constraint violation
-        userMessage = "This action cannot be completed. The connection may already exist."
-        statusCode = 409
-      } else if (prismaCode === "P2025") {
-        // Record not found
-        userMessage = "The item was not found. It may have been deleted."
-        statusCode = 404
-      } else if (errorMessage.includes("Prisma") || errorMessage.includes("database") || errorMessage.includes("P")) {
+    // Handle Prisma error codes (both production and development)
+    if (prismaCode === "P2002") {
+      // Unique constraint violation
+      userMessage = "This action cannot be completed. The connection may already exist."
+      statusCode = 409
+    } else if (prismaCode === "P2025") {
+      // Record not found
+      userMessage = "The item was not found. It may have been deleted."
+      statusCode = 404
+    } else if (prismaCode === "P1001" || prismaCode === "P1008") {
+      // Database connection errors
+      userMessage = "Database connection error. Please try again in a moment."
+      statusCode = 503 // Service Unavailable
+    } else if (prismaCode === "P2003") {
+      // Foreign key constraint violation
+      userMessage = "Invalid reference. The related item may not exist."
+      statusCode = 400
+    } else if (errorMessage.includes("Prisma") || errorMessage.includes("database") || errorMessage.includes("P")) {
+      // Only show generic database error in production, show more details in dev
+      if (process.env.NODE_ENV === "production") {
         userMessage = "Database error. Please try again."
-      } else if (errorMessage.includes("validation") || errorMessage.includes("Invalid")) {
-        userMessage = errorMessage // Keep validation errors as-is
-        statusCode = 400
-      } else if (errorMessage.includes("Unique constraint")) {
-        userMessage = "This action cannot be completed. The item may already exist."
-        statusCode = 409
       } else {
+        userMessage = `Database error: ${errorMessage}`
+      }
+    } else if (errorMessage.includes("validation") || errorMessage.includes("Invalid")) {
+      userMessage = errorMessage // Keep validation errors as-is
+      statusCode = 400
+    } else if (errorMessage.includes("Unique constraint")) {
+      userMessage = "This action cannot be completed. The item may already exist."
+      statusCode = 409
+    } else {
+      // Only show generic message in production
+      if (process.env.NODE_ENV === "production") {
         userMessage = "An unexpected error occurred. Please try again."
+      } else {
+        userMessage = errorMessage
       }
     }
     
@@ -121,5 +137,3 @@ export function asyncHandler(
     }
   }
 }
-
-

@@ -39,6 +39,8 @@ export const GET = asyncHandler(async (
     })
   }
 
+  // Wrap in try-catch to handle database errors gracefully
+  // This prevents asyncHandler from showing generic error messages
   try {
     const connection = await prisma.connection.findFirst({
       where: {
@@ -66,12 +68,20 @@ export const GET = asyncHandler(async (
         receiverId: connection.receiverId,
       },
     })
-  } catch (dbError) {
-    console.error("Database error fetching connection status:", dbError)
+  } catch (dbError: any) {
+    // Log error for debugging but don't expose to user
+    console.error("Database error fetching connection status:", {
+      error: dbError?.message,
+      code: dbError?.code,
+      userId: otherUserId,
+    })
+    
     // Return NONE status on database errors to prevent UI crashes
+    // This is a graceful degradation - the UI will show "Konnect" button
     return NextResponse.json({
       status: "NONE",
       connection: null,
+      error: false, // Flag to indicate this is a graceful error, not a failure
     })
   }
 })
