@@ -549,70 +549,18 @@ export default function KonnectPage() {
                       </div>
                     )}
 
-                    {/* Konnect and Message Buttons */}
+                    {/* Message Button - Always available for everyone */}
                     <div className="flex flex-col gap-2 mt-2">
-                      {!connections[user.id] || connections[user.id].status === "NONE" || connections[user.id].status === "SELF" ? (
-                        connections[user.id]?.status === "SELF" ? null : (
-                          <Button
-                            onClick={() => handleKonnect(user.id)}
-                            disabled={connecting === user.id || !user.id}
-                            variant="outline"
-                            className="w-full"
-                            size="sm"
-                          >
-                            {connecting === user.id ? "Connecting..." : "Konnect"}
-                          </Button>
-                        )
-                      ) : connections[user.id].status === "REQUESTED" || (connections[user.id].status === "PENDING" && connections[user.id].isRequester) ? (
+                      {connections[user.id]?.status === "SELF" ? null : (
                         <Button
-                          disabled
-                          variant="outline"
+                          onClick={() => handleMessage(user.id)}
+                          disabled={messaging === user.id || !user.id}
                           className="w-full"
                           size="sm"
                         >
-                          Pending
+                          {messaging === user.id ? "Connecting..." : "Message"}
                         </Button>
-                      ) : connections[user.id].status === "RECEIVED" || (connections[user.id].status === "PENDING" && !connections[user.id].isRequester) ? (
-                        <>
-                          <Button
-                            onClick={() => handleAcceptReject(user.id, "ACCEPTED")}
-                            disabled={connecting === user.id}
-                            className="w-full"
-                            size="sm"
-                          >
-                            {connecting === user.id ? "Processing..." : "Accept"}
-                          </Button>
-                          <Button
-                            onClick={() => handleAcceptReject(user.id, "REJECTED")}
-                            disabled={connecting === user.id}
-                            variant="outline"
-                            className="w-full"
-                            size="sm"
-                          >
-                            Reject
-                          </Button>
-                        </>
-                      ) : connections[user.id].status === "ACCEPTED" ? (
-                        <>
-                          <Button
-                            onClick={() => handleMessage(user.id)}
-                            disabled={messaging === user.id}
-                            className="w-full"
-                            size="sm"
-                          >
-                            {messaging === user.id ? "Connecting..." : "Message"}
-                          </Button>
-                        </>
-                      ) : connections[user.id].status === "REJECTED" ? (
-                        <Button
-                          disabled
-                          variant="outline"
-                          className="w-full bg-red-50 text-red-700"
-                          size="sm"
-                        >
-                          Rejected
-                        </Button>
-                      ) : null}
+                      )}
                     </div>
                   </div>
                 </div>
