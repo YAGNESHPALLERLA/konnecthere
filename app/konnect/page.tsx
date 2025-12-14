@@ -260,8 +260,10 @@ export default function KonnectPage() {
           // Server errors
           console.error("Connection request error:", {
             status: res.status,
+            statusText: res.statusText,
             errorData,
             errorMessage,
+            fullResponse: await res.clone().text().catch(() => "Could not read response"),
           })
           // Show the specific error message from API, or a generic one
           const displayMessage = errorMessage || "Server error. Please try again later."
