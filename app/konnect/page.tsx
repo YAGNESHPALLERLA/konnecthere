@@ -593,14 +593,16 @@ export default function KonnectPage() {
                           </Button>
                         </>
                       ) : connections[user.id].status === "ACCEPTED" ? (
-                        <Button
-                          onClick={() => handleMessage(user.id)}
-                          disabled={messaging === user.id}
-                          className="w-full"
-                          size="sm"
-                        >
-                          {messaging === user.id ? "Connecting..." : "Message"}
-                        </Button>
+                        <>
+                          <Button
+                            onClick={() => handleMessage(user.id)}
+                            disabled={messaging === user.id}
+                            className="w-full"
+                            size="sm"
+                          >
+                            {messaging === user.id ? "Connecting..." : "Message"}
+                          </Button>
+                        </>
                       ) : connections[user.id].status === "REJECTED" ? (
                         <Button
                           disabled

@@ -18,48 +18,14 @@ export const GET = asyncHandler(async (req) => {
 
   const userId = (session.user as any).id
 
-  // Get all accepted connections for this user
-  const acceptedConnections = await prisma.connection.findMany({
-    where: {
-      status: "ACCEPTED",
-      OR: [
-        { requesterId: userId },
-        { receiverId: userId },
-      ],
-    },
-    select: {
-      requesterId: true,
-      receiverId: true,
-    },
-  })
-
-  // Extract connected user IDs
-  const connectedUserIds = acceptedConnections.map((conn) =>
-    conn.requesterId === userId ? conn.receiverId : conn.requesterId
-  )
-
-  // Only show conversations with accepted connections
-  // Filter conversations where all participants are either the current user or a connected user
+  // Show all conversations for the user (no connection requirement)
   const conversations = await prisma.conversation.findMany({
     where: {
-      AND: [
-        {
       participants: {
         some: {
           userId: session.user.id,
         },
       },
-        },
-        {
-          participants: {
-            every: {
-              userId: {
-                in: [userId, ...connectedUserIds],
-              },
-            },
-          },
-        },
-      ],
     },
     include: {
       participants: {
@@ -166,24 +132,7 @@ export const POST = asyncHandler(async (req) => {
     )
   }
 
-  // Check if users are connected (accepted connection)
-  const connection = await prisma.connection.findFirst({
-    where: {
-      status: "ACCEPTED",
-      OR: [
-        { requesterId: userId, receiverId: targetUserId },
-        { requesterId: targetUserId, receiverId: userId },
-      ],
-    },
-  })
-
-  if (!connection) {
-    return NextResponse.json(
-      { error: "You must be connected to message this user" },
-      { status: 403 }
-    )
-  }
-
+  // Allow messaging without connection requirement
   // Check if conversation already exists
   const existing = await prisma.conversation.findFirst({
     where: {

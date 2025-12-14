@@ -57,24 +57,7 @@ export const POST = asyncHandler(async (req) => {
     )
   }
 
-  // Check if users are connected (accepted connection)
-  const connection = await prisma.connection.findFirst({
-    where: {
-      status: "ACCEPTED",
-      OR: [
-        { requesterId: userId, receiverId: otherParticipant.userId },
-        { requesterId: otherParticipant.userId, receiverId: userId },
-      ],
-    },
-  })
-
-  if (!connection && (session.user as any).role !== "ADMIN") {
-    return NextResponse.json(
-      { error: "You must be connected to message this user" },
-      { status: 403 }
-    )
-  }
-
+  // Allow messaging without connection requirement
   // Create message
   const message = await prisma.message.create({
     data: {
