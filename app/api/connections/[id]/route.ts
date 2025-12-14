@@ -11,52 +11,56 @@ const updateConnectionSchema = z.object({
 })
 
 // GET - Get connection status between current user and another user
-export async function GET(
+export const GET = asyncHandler(async (
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
-) {
-  try {
-    const session = await auth()
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
-
-    const userId = (session.user as any).id
-    const { id: otherUserId } = await params
-
-    const connection = await prisma.connection.findFirst({
-      where: {
-        OR: [
-          { requesterId: userId, receiverId: otherUserId },
-          { requesterId: otherUserId, receiverId: userId },
-        ],
-      },
-      include: {
-        requester: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            image: true,
-          },
-        },
-        receiver: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            image: true,
-          },
-        },
-      },
-    })
-
-    return NextResponse.json({ connection: connection || null })
-  } catch (error) {
-    console.error("Error fetching connection:", error)
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+) => {
+  const session = await auth()
+  if (!session?.user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
-}
+
+  const userId = (session.user as any)?.id
+  if (!userId) {
+    return NextResponse.json({ error: "User ID not found" }, { status: 401 })
+  }
+
+  const resolvedParams = await params
+  const otherUserId = resolvedParams?.id
+
+  if (!otherUserId) {
+    return NextResponse.json({ error: "User ID is required" }, { status: 400 })
+  }
+
+  const connection = await prisma.connection.findFirst({
+    where: {
+      OR: [
+        { requesterId: userId, receiverId: otherUserId },
+        { requesterId: otherUserId, receiverId: userId },
+      ],
+    },
+    include: {
+      requester: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          image: true,
+        },
+      },
+      receiver: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          image: true,
+        },
+      },
+    },
+  })
+
+  return NextResponse.json({ connection: connection || null })
+})
 
 // PATCH - Accept or reject a connection request
 export const PATCH = asyncHandler(async (

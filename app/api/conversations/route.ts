@@ -153,6 +153,19 @@ export const POST = asyncHandler(async (req) => {
     )
   }
 
+  // Verify target user exists
+  const targetUser = await prisma.user.findUnique({
+    where: { id: targetUserId },
+    select: { id: true },
+  })
+
+  if (!targetUser) {
+    return NextResponse.json(
+      { error: "User not found" },
+      { status: 404 }
+    )
+  }
+
   // Check if users are connected (accepted connection)
   const connection = await prisma.connection.findFirst({
     where: {

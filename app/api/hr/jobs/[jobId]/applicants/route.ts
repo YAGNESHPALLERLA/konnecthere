@@ -36,8 +36,11 @@ export const GET = asyncHandler(async (
   }
 
   // Get the job and verify HR has access
-  const job = await prisma.job.findUnique({
-    where: { id: jobId },
+  const job = await prisma.job.findFirst({
+    where: { 
+      id: jobId,
+      deletedAt: null, // Only show non-deleted jobs
+    },
     include: {
       company: {
         select: {
