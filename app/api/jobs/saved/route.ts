@@ -22,7 +22,12 @@ export async function GET(req: NextRequest) {
 
     const [savedJobs, total] = await Promise.all([
       prisma.savedJob.findMany({
-        where: { userId },
+        where: { 
+          userId,
+          job: {
+            deletedAt: null, // Only show non-deleted jobs
+          },
+        },
         include: {
           job: {
             include: {
@@ -42,12 +47,20 @@ export async function GET(req: NextRequest) {
         take: limit,
       }),
       prisma.savedJob.count({
-        where: { userId },
+        where: { 
+          userId,
+          job: {
+            deletedAt: null, // Only count non-deleted jobs
+          },
+        },
       }),
     ])
 
+    // Filter out any saved jobs where the job itself is deleted (extra safety check)
+    const validSavedJobs = savedJobs.filter((sj) => sj.job && !sj.job.deletedAt)
+
     return NextResponse.json({
-      savedJobs: savedJobs.map((sj) => ({
+      savedJobs: validSavedJobs.map((sj) => ({
         id: sj.id,
         createdAt: sj.createdAt,
         job: sj.job,

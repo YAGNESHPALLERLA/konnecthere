@@ -7,6 +7,7 @@ import { PageShell } from "@/components/layouts/PageShell"
 import { Button } from "@/components/ui/Button"
 import { Card } from "@/components/ui/Card"
 import Link from "next/link"
+import { showToast } from "@/lib/toast"
 
 type Candidate = {
   id: string
@@ -84,6 +85,12 @@ export default function CandidateProfilePage() {
   const [loading, setLoading] = useState(true)
   const [updatingStatus, setUpdatingStatus] = useState(false)
   const [applicationStatus, setApplicationStatus] = useState<string>("")
+  const [connectionStatus, setConnectionStatus] = useState<{
+    status: "PENDING" | "ACCEPTED" | "REJECTED" | null
+    isRequester: boolean
+    connectionId: string | null
+  } | null>(null)
+  const [connecting, setConnecting] = useState(false)
 
   useEffect(() => {
     if (sessionStatus === "unauthenticated") {
@@ -98,6 +105,7 @@ export default function CandidateProfilePage() {
         return
       }
       fetchData()
+      fetchConnectionStatus()
     }
   }, [session, sessionStatus, router, candidateId, applicationId])
 
@@ -141,15 +149,114 @@ export default function CandidateProfilePage() {
         if (application) {
           setApplication({ ...application, status: newStatus })
         }
-        alert("Application status updated successfully!")
+        showToast("Application status updated successfully!", "success")
       } else {
         throw new Error("Failed to update status")
       }
     } catch (error) {
       console.error("Error updating status:", error)
-      alert("Failed to update application status")
+      showToast("Failed to update application status", "error")
     } finally {
       setUpdatingStatus(false)
+    }
+  }
+
+  const fetchConnectionStatus = async () => {
+    if (!candidateId || !session?.user) return
+    try {
+      const res = await fetch(`/api/connections/status/${candidateId}`)
+      if (res.ok) {
+        const data = await res.json()
+        if (data.connection) {
+          const currentUserId = (session.user as any).id
+          setConnectionStatus({
+            status: data.connection.status,
+            isRequester: data.connection.requesterId === currentUserId,
+            connectionId: data.connection.id,
+          })
+        } else {
+          setConnectionStatus(null)
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching connection status:", error)
+    }
+  }
+
+  const handleKonnect = async () => {
+    if (!candidateId || connecting) return
+    setConnecting(true)
+    try {
+      const res = await fetch("/api/connections", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ receiverId: candidateId }),
+      })
+      if (res.ok) {
+        const data = await res.json()
+        setConnectionStatus({
+          status: "PENDING",
+          isRequester: true,
+          connectionId: data.connection.id,
+        })
+        showToast("Connection request sent", "success")
+      } else {
+        const error = await res.json()
+        showToast(error.error || "Failed to send connection request", "error")
+      }
+    } catch (error) {
+      console.error("Error sending connection request:", error)
+      showToast("Failed to send connection request", "error")
+    } finally {
+      setConnecting(false)
+    }
+  }
+
+  const handleAcceptConnection = async () => {
+    if (!connectionStatus?.connectionId || connecting) return
+    setConnecting(true)
+    try {
+      const res = await fetch(`/api/connections/${connectionStatus.connectionId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "ACCEPTED" }),
+      })
+      if (res.ok) {
+        setConnectionStatus((prev) => prev ? { ...prev, status: "ACCEPTED" } : null)
+        showToast("Connection accepted", "success")
+      } else {
+        const error = await res.json()
+        showToast(error.error || "Failed to accept connection", "error")
+      }
+    } catch (error) {
+      console.error("Error accepting connection:", error)
+      showToast("Failed to accept connection", "error")
+    } finally {
+      setConnecting(false)
+    }
+  }
+
+  const handleRejectConnection = async () => {
+    if (!connectionStatus?.connectionId || connecting) return
+    setConnecting(true)
+    try {
+      const res = await fetch(`/api/connections/${connectionStatus.connectionId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "REJECTED" }),
+      })
+      if (res.ok) {
+        setConnectionStatus((prev) => prev ? { ...prev, status: "REJECTED" } : null)
+        showToast("Connection rejected", "info")
+      } else {
+        const error = await res.json()
+        showToast(error.error || "Failed to reject connection", "error")
+      }
+    } catch (error) {
+      console.error("Error rejecting connection:", error)
+      showToast("Failed to reject connection", "error")
+    } finally {
+      setConnecting(false)
     }
   }
 
@@ -405,20 +512,60 @@ export default function CandidateProfilePage() {
         )}
 
         {/* Actions */}
-        {application && (
-          <Card className="p-6">
-            <div className="flex gap-4">
-              <Link href={`/messages?userId=${candidate.id}&jobId=${application.job.id}`}>
-                <Button>Send Message</Button>
+        <Card className="p-6">
+          <div className="flex flex-col gap-3">
+            {/* Konnect Button */}
+            {connectionStatus?.status === "ACCEPTED" ? null : connectionStatus?.status === "PENDING" ? (
+              <div className="flex gap-2">
+                {connectionStatus.isRequester ? (
+                  <Button disabled variant="outline" className="w-full">
+                    Requested
+                  </Button>
+                ) : (
+                  <>
+                    <Button
+                      onClick={handleAcceptConnection}
+                      disabled={connecting}
+                      className="flex-1"
+                    >
+                      {connecting ? "Accepting..." : "Accept Connection"}
+                    </Button>
+                    <Button
+                      onClick={handleRejectConnection}
+                      disabled={connecting}
+                      variant="outline"
+                      className="flex-1"
+                    >
+                      {connecting ? "Rejecting..." : "Reject"}
+                    </Button>
+                  </>
+                )}
+              </div>
+            ) : (
+              <Button
+                onClick={handleKonnect}
+                disabled={connecting || !candidate}
+                variant="outline"
+                className="w-full"
+              >
+                {connecting ? "Connecting..." : "Konnect"}
+              </Button>
+            )}
+
+            {/* Message Button - Only show if connected */}
+            {connectionStatus?.status === "ACCEPTED" && application && (
+              <Link href={`/messages?userId=${candidate.id}&jobId=${application.job.id}`} className="w-full">
+                <Button className="w-full">Send Message</Button>
               </Link>
-              {jobId && (
-                <Link href={`/hr/jobs/${jobId}/applicants`}>
-                  <Button variant="outline">Back to Applicants</Button>
-                </Link>
-              )}
-            </div>
-          </Card>
-        )}
+            )}
+
+            {jobId && (
+              <Link href={`/hr/jobs/${jobId}/applicants`}>
+                <Button variant="outline" className="w-full">Back to Applicants</Button>
+              </Link>
+            )}
+          </div>
+        </Card>
       </div>
     </PageShell>
   )

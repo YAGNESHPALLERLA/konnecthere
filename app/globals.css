@@ -200,6 +200,46 @@
     width: 100%;
     opacity: 1;
   }
+
+  /* Minimal button hover animation */
+  .btn-hover {
+    transition: transform 150ms ease-out, box-shadow 150ms ease-out;
+  }
+
+  .btn-hover:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+
+  .btn-hover:active {
+    transform: translateY(0);
+  }
+
+  /* Minimal card hover animation */
+  .card-hover {
+    transition: transform 180ms ease-out, box-shadow 180ms ease-out;
+  }
+
+  .card-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  }
+
+  /* Page section fade-in */
+  .section-fade {
+    animation: fadeInUp 300ms ease-out;
+  }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
 }
 
 @layer utilities {

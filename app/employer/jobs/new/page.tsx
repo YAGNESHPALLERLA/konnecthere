@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useSession } from "next-auth/react"
+import { showToast } from "@/lib/toast"
 
 export default function NewJobPage() {
   const router = useRouter()
@@ -59,14 +60,15 @@ export default function NewJobPage() {
 
       if (res.ok) {
         const job = await res.json()
+        showToast("Job created successfully", "success")
         router.push(`/employer/jobs/${job.id}`)
       } else {
         const error = await res.json()
-        alert(error.error || "Failed to create job")
+        showToast(error.error || "Failed to create job", "error")
       }
     } catch (error) {
       console.error("Error creating job:", error)
-      alert("An error occurred")
+      showToast("An error occurred while creating the job", "error")
     } finally {
       setLoading(false)
     }

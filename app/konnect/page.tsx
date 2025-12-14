@@ -9,6 +9,7 @@ import { Card } from "@/components/ui/Card"
 import { Input } from "@/components/ui/Input"
 import { Pill } from "@/components/ui/Pill"
 import Link from "next/link"
+import { showToast } from "@/lib/toast"
 
 type User = {
   id: string
@@ -33,6 +34,8 @@ export default function KonnectPage() {
   const [debouncedSearch, setDebouncedSearch] = useState("")
   const [roleFilter, setRoleFilter] = useState<string>("ALL")
   const [messaging, setMessaging] = useState<string | null>(null)
+  const [connections, setConnections] = useState<Record<string, { status: "NONE" | "PENDING" | "ACCEPTED" | "REJECTED" | "REQUESTED" | "RECEIVED" | "SELF"; isRequester: boolean; connectionId: string | null }>>({})
+  const [connecting, setConnecting] = useState<string | null>(null)
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -56,6 +59,13 @@ export default function KonnectPage() {
     }
   }, [status, debouncedSearch, roleFilter])
 
+  // Fetch connection statuses for all users
+  useEffect(() => {
+    if (status === "authenticated" && users.length > 0) {
+      fetchConnectionStatuses()
+    }
+  }, [status, users])
+
   const fetchUsers = async () => {
     setLoading(true)
     try {
@@ -75,6 +85,214 @@ export default function KonnectPage() {
     }
   }
 
+  const fetchConnectionStatuses = async () => {
+    if (!session?.user || users.length === 0) return
+    const statuses: Record<string, { status: "NONE" | "PENDING" | "ACCEPTED" | "REJECTED" | "REQUESTED" | "RECEIVED" | "SELF"; isRequester: boolean; connectionId: string | null }> = {}
+    
+    // Fetch statuses with better error handling
+    await Promise.all(
+      users.map(async (user) => {
+        if (!user?.id) {
+          return
+        }
+        try {
+          const res = await fetch(`/api/connections/status/${user.id}`)
+          if (res.ok) {
+            const data = await res.json()
+            const currentUserId = (session.user as any)?.id
+            if (!currentUserId) {
+              statuses[user.id] = {
+                status: "NONE",
+                isRequester: false,
+                connectionId: null,
+              }
+              return
+            }
+            
+            if (data.status === "SELF") {
+              statuses[user.id] = {
+                status: "SELF",
+                isRequester: false,
+                connectionId: null,
+              }
+            } else if (data.connection) {
+              const connStatus = data.connection.status
+              const isRequester = data.connection.requesterId === currentUserId
+              // Map PENDING to REQUESTED/RECEIVED for UI
+              let uiStatus: "NONE" | "PENDING" | "ACCEPTED" | "REJECTED" | "REQUESTED" | "RECEIVED" | "SELF" = connStatus
+              if (connStatus === "PENDING") {
+                uiStatus = isRequester ? "REQUESTED" : "RECEIVED"
+              }
+              statuses[user.id] = {
+                status: uiStatus,
+                isRequester,
+                connectionId: data.connection.id,
+              }
+            } else {
+              statuses[user.id] = {
+                status: data.status || "NONE",
+                isRequester: false,
+                connectionId: null,
+              }
+            }
+          } else {
+            // If API returns error, default to NONE status
+            console.warn(`Failed to fetch connection status for user ${user.id}: ${res.status}`)
+            statuses[user.id] = {
+              status: "NONE",
+              isRequester: false,
+              connectionId: null,
+            }
+          }
+        } catch (error) {
+          console.error(`Error fetching connection status for user ${user.id}:`, error)
+          // Default to NONE on any error to prevent UI crashes
+          statuses[user.id] = {
+            status: "NONE",
+            isRequester: false,
+            connectionId: null,
+          }
+        }
+      })
+    )
+    setConnections(statuses)
+  }
+
+  const handleKonnect = async (userId: string) => {
+    if (connecting || !userId) return
+    setConnecting(userId)
+    try {
+      const res = await fetch("/api/connections", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ receiverId: userId }),
+      })
+      
+      if (res.ok) {
+        const data = await res.json()
+        // Update local state
+        setConnections((prev) => ({
+          ...prev,
+          [userId]: {
+            status: "REQUESTED",
+            isRequester: true,
+            connectionId: data.connection?.id || null,
+          },
+        }))
+        // Refresh connection statuses to ensure consistency
+        await fetchConnectionStatuses()
+      } else {
+        let errorData
+        try {
+          errorData = await res.json()
+        } catch {
+          errorData = { error: `Failed to send connection request (${res.status})` }
+        }
+        
+        const errorMessage = errorData?.error || `Failed to send connection request (${res.status})`
+        
+        // Handle specific error cases
+        if (res.status === 409) {
+          // Already exists or pending - refresh status silently (no toast)
+          await fetchConnectionStatuses()
+          return
+        } else if (res.status === 400) {
+          // Bad request - show specific error only if it's not a duplicate
+          if (!errorMessage.toLowerCase().includes("already") && 
+              !errorMessage.toLowerCase().includes("pending") &&
+              !errorMessage.toLowerCase().includes("connected")) {
+            showToast(errorMessage, "error")
+          } else {
+            // Silently refresh for "already" type errors
+            await fetchConnectionStatuses()
+          }
+        } else if (res.status === 404) {
+          // User not found
+          showToast("User not found. Please refresh the page.", "error")
+        } else if (res.status >= 500) {
+          // Server errors
+          console.error("Connection request error:", errorData)
+          showToast(errorMessage || "Server error. Please try again later.", "error")
+        } else {
+          // Other client errors
+          console.error("Connection request error:", errorData)
+          showToast(errorMessage || "Failed to send connection request. Please try again.", "error")
+        }
+      }
+    } catch (error) {
+      console.error("Error sending connection request:", error)
+      showToast("Network error. Please check your connection and try again.", "error")
+    } finally {
+      setConnecting(null)
+    }
+  }
+
+  const handleAcceptReject = async (userId: string, status: "ACCEPTED" | "REJECTED") => {
+    if (connecting || !userId) return
+    setConnecting(userId)
+    try {
+      // Find the connection ID for this user
+      let connectionId = connections[userId]?.connectionId
+      
+      // If not found in local state, fetch from API
+      if (!connectionId) {
+        const res = await fetch("/api/connections")
+        if (res.ok) {
+          const data = await res.json()
+          const currentUserId = (session?.user as any)?.id
+          const foundConn = data.connections?.find(
+            (c: any) => 
+              c.receiverId === currentUserId && 
+              c.requesterId === userId && 
+              c.status === "PENDING"
+          )
+          connectionId = foundConn?.id
+        }
+      }
+      
+      if (!connectionId) {
+        showToast("Connection request not found. Please refresh the page.", "error")
+        setConnecting(null)
+        return
+      }
+
+      const updateRes = await fetch(`/api/connections/${connectionId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status }),
+      })
+      
+      if (updateRes.ok) {
+        // Update local state immediately
+        setConnections((prev) => ({
+          ...prev,
+          [userId]: {
+            status: status,
+            isRequester: false,
+            connectionId: connectionId,
+          },
+        }))
+        // Show success message
+        showToast(
+          status === "ACCEPTED" 
+            ? "Connection accepted! You can now message this user." 
+            : "Connection request rejected.",
+          status === "ACCEPTED" ? "success" : "info"
+        )
+        // Refresh to ensure consistency
+        await fetchConnectionStatuses()
+      } else {
+        const errorData = await updateRes.json().catch(() => ({ error: `Failed to ${status.toLowerCase()} connection` }))
+        showToast(errorData?.error || `Failed to ${status.toLowerCase()} connection`, "error")
+      }
+    } catch (error) {
+      console.error(`Error ${status.toLowerCase()} connection:`, error)
+      showToast(`Failed to ${status.toLowerCase()} connection. Please try again.`, "error")
+    } finally {
+      setConnecting(null)
+    }
+  }
+
   const handleMessage = async (userId: string) => {
     setMessaging(userId)
     try {
@@ -90,11 +308,12 @@ export default function KonnectPage() {
         // Redirect to messages page with conversation ID
         router.push(`/messages?id=${data.conversation.id}`)
       } else {
-        throw new Error("Failed to create conversation")
+        const error = await res.json()
+        throw new Error(error.error || "Failed to create conversation")
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error creating conversation:", error)
-      alert("Failed to start conversation. Please try again.")
+      showToast(error.message || "Failed to start conversation. Please try again.", "error")
     } finally {
       setMessaging(null)
     }
@@ -261,15 +480,67 @@ export default function KonnectPage() {
                       </div>
                     )}
 
-                    {/* Message Button */}
-                    <Button
-                      onClick={() => handleMessage(user.id)}
-                      disabled={messaging === user.id}
-                      className="w-full mt-2"
-                      size="sm"
-                    >
-                      {messaging === user.id ? "Connecting..." : "Message"}
-                    </Button>
+                    {/* Konnect and Message Buttons */}
+                    <div className="flex flex-col gap-2 mt-2">
+                      {!connections[user.id] || connections[user.id].status === "NONE" ? (
+                        <Button
+                          onClick={() => handleKonnect(user.id)}
+                          disabled={connecting === user.id}
+                          variant="outline"
+                          className="w-full"
+                          size="sm"
+                        >
+                          {connecting === user.id ? "Connecting..." : "Konnect"}
+                        </Button>
+                      ) : connections[user.id].status === "REQUESTED" || (connections[user.id].status === "PENDING" && connections[user.id].isRequester) ? (
+                        <Button
+                          disabled
+                          variant="outline"
+                          className="w-full"
+                          size="sm"
+                        >
+                          Requested
+                        </Button>
+                      ) : connections[user.id].status === "RECEIVED" || (connections[user.id].status === "PENDING" && !connections[user.id].isRequester) ? (
+                        <>
+                          <Button
+                            onClick={() => handleAcceptReject(user.id, "ACCEPTED")}
+                            disabled={connecting === user.id}
+                            className="w-full"
+                            size="sm"
+                          >
+                            {connecting === user.id ? "Processing..." : "Accept"}
+                          </Button>
+                          <Button
+                            onClick={() => handleAcceptReject(user.id, "REJECTED")}
+                            disabled={connecting === user.id}
+                            variant="outline"
+                            className="w-full"
+                            size="sm"
+                          >
+                            Reject
+                          </Button>
+                        </>
+                      ) : connections[user.id].status === "ACCEPTED" ? (
+                        <Button
+                          onClick={() => handleMessage(user.id)}
+                          disabled={messaging === user.id}
+                          className="w-full"
+                          size="sm"
+                        >
+                          {messaging === user.id ? "Connecting..." : "Message"}
+                        </Button>
+                      ) : connections[user.id].status === "REJECTED" ? (
+                        <Button
+                          disabled
+                          variant="outline"
+                          className="w-full bg-red-50 text-red-700"
+                          size="sm"
+                        >
+                          Rejected
+                        </Button>
+                      ) : null}
+                    </div>
                   </div>
                 </div>
               </Card>

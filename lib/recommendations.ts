@@ -148,6 +148,7 @@ export async function getJobRecommendationsForUser(
     prisma.job.findMany({
       where: {
         status: "PUBLISHED",
+        deletedAt: null, // Only recommend non-deleted jobs
         applications: {
           none: { userId },
         },

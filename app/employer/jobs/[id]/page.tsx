@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react"
 import { useParams } from "next/navigation"
 import Link from "next/link"
+import { showToast } from "@/lib/toast"
 
 const STATUS_OPTIONS = ["PENDING", "REVIEWED", "SHORTLISTED", "REJECTED", "HIRED"]
 
@@ -121,8 +122,9 @@ export default function EmployerJobDetailPage() {
         throw new Error(body.error || "Failed to update status")
       }
       await loadJob()
+      showToast("Application status updated successfully", "success")
     } catch (err: any) {
-      alert(err.message)
+      showToast(err.message || "Failed to update status", "error")
     }
   }
 
@@ -136,7 +138,7 @@ export default function EmployerJobDetailPage() {
       }
       window.open(data.url, "_blank")
     } catch (err: any) {
-      alert(err.message)
+      showToast(err.message || "Failed to download resume", "error")
     }
   }
 
@@ -155,9 +157,9 @@ export default function EmployerJobDetailPage() {
       setMessageAppId(null)
       setMessageSubject("")
       setMessageBody("")
-      alert("Message sent")
+      showToast("Message sent successfully", "success")
     } catch (err: any) {
-      alert(err.message)
+      showToast(err.message || "Failed to send message", "error")
     }
   }
 

@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/Input"
 import { Label } from "@/components/ui/Label"
 import { Textarea } from "@/components/ui/Textarea"
 import Link from "next/link"
+import { showToast } from "@/lib/toast"
 
 type Company = {
   id: string
@@ -75,7 +76,7 @@ export default function CreateJobPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!formData.companyId || !formData.title || !formData.description) {
-      alert("Please fill in all required fields")
+      showToast("Please fill in all required fields", "error")
       return
     }
 
@@ -99,10 +100,11 @@ export default function CreateJobPage() {
       }
 
       const job = await res.json()
+      showToast("Job created successfully", "success")
       router.push(`/hr/jobs/${job.id}?created=true`)
     } catch (error: any) {
       console.error("Error creating job:", error)
-      alert(error.message || "Failed to create job. Please try again.")
+      showToast(error.message || "Failed to create job. Please try again.", "error")
     } finally {
       setLoading(false)
     }

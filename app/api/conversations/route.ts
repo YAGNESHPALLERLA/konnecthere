@@ -16,13 +16,50 @@ export const GET = asyncHandler(async (req) => {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
+  const userId = (session.user as any).id
+
+  // Get all accepted connections for this user
+  const acceptedConnections = await prisma.connection.findMany({
+    where: {
+      status: "ACCEPTED",
+      OR: [
+        { requesterId: userId },
+        { receiverId: userId },
+      ],
+    },
+    select: {
+      requesterId: true,
+      receiverId: true,
+    },
+  })
+
+  // Extract connected user IDs
+  const connectedUserIds = acceptedConnections.map((conn) =>
+    conn.requesterId === userId ? conn.receiverId : conn.requesterId
+  )
+
+  // Only show conversations with accepted connections
+  // Filter conversations where all participants are either the current user or a connected user
   const conversations = await prisma.conversation.findMany({
     where: {
+      AND: [
+        {
       participants: {
         some: {
           userId: session.user.id,
         },
       },
+        },
+        {
+          participants: {
+            every: {
+              userId: {
+                in: [userId, ...connectedUserIds],
+              },
+            },
+          },
+        },
+      ],
     },
     include: {
       participants: {
@@ -105,13 +142,32 @@ export const POST = asyncHandler(async (req) => {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
+  const userId = (session.user as any).id
   const body = await req.json()
-  const { userId } = createConversationSchema.parse(body)
+  const { userId: targetUserId } = createConversationSchema.parse(body)
 
-  if (userId === session.user.id) {
+  if (targetUserId === userId) {
     return NextResponse.json(
       { error: "Cannot create conversation with yourself" },
       { status: 400 }
+    )
+  }
+
+  // Check if users are connected (accepted connection)
+  const connection = await prisma.connection.findFirst({
+    where: {
+      status: "ACCEPTED",
+      OR: [
+        { requesterId: userId, receiverId: targetUserId },
+        { requesterId: targetUserId, receiverId: userId },
+      ],
+    },
+  })
+
+  if (!connection) {
+    return NextResponse.json(
+      { error: "You must be connected to message this user" },
+      { status: 403 }
     )
   }
 
@@ -121,7 +177,7 @@ export const POST = asyncHandler(async (req) => {
       participants: {
         every: {
           userId: {
-            in: [session.user.id, userId],
+            in: [userId, targetUserId],
           },
         },
       },
@@ -136,8 +192,8 @@ export const POST = asyncHandler(async (req) => {
     const participantIds = existing.participants.map((p) => p.userId)
     if (
       participantIds.length === 2 &&
-      participantIds.includes(session.user.id) &&
-      participantIds.includes(userId)
+      participantIds.includes(userId) &&
+      participantIds.includes(targetUserId)
     ) {
       return NextResponse.json({ conversation: existing })
     }
@@ -148,8 +204,8 @@ export const POST = asyncHandler(async (req) => {
     data: {
       participants: {
         create: [
-          { userId: session.user.id },
           { userId },
+          { userId: targetUserId },
         ],
       },
     },

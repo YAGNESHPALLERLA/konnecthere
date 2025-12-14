@@ -4,6 +4,7 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { useSession } from "next-auth/react"
 import Link from "next/link"
+import { showToast } from "@/lib/toast"
 
 export default function EmployerOnboardingPage() {
   const router = useRouter()
@@ -30,14 +31,15 @@ export default function EmployerOnboardingPage() {
       })
 
       if (res.ok) {
+        showToast("Company created successfully", "success")
         router.push("/employer/dashboard")
       } else {
         const error = await res.json()
-        alert(error.error || "Failed to create company")
+        showToast(error.error || "Failed to create company", "error")
       }
     } catch (error) {
       console.error("Error creating company:", error)
-      alert("An error occurred")
+      showToast("An error occurred", "error")
     } finally {
       setLoading(false)
     }

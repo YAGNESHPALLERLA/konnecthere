@@ -7,6 +7,7 @@ import { PageShell } from "@/components/layouts/PageShell"
 import { Button } from "@/components/ui/Button"
 import { Card } from "@/components/ui/Card"
 import Link from "next/link"
+import { showToast } from "@/lib/toast"
 
 type Job = {
   id: string
@@ -47,6 +48,9 @@ export default function HRJobDetailPage() {
   const [job, setJob] = useState<Job | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [updating, setUpdating] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
   useEffect(() => {
     if (sessionStatus === "unauthenticated") {
@@ -79,6 +83,55 @@ export default function HRJobDetailPage() {
       setError(err.message || "Failed to load job")
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleUpdateStatus = async (newStatus: "DRAFT" | "PUBLISHED" | "CLOSED" | "ARCHIVED") => {
+    if (!job || updating) return
+    setUpdating(true)
+    try {
+      const res = await fetch(`/api/jobs/${jobId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: newStatus }),
+      })
+      if (res.ok) {
+        const updated = await res.json()
+        setJob(updated)
+        showToast("Job status updated successfully", "success")
+      } else {
+        const error = await res.json()
+        showToast(error.error || "Failed to update job status", "error")
+      }
+    } catch (error) {
+      console.error("Error updating job:", error)
+      showToast("Failed to update job status", "error")
+    } finally {
+      setUpdating(false)
+    }
+  }
+
+  const handleDelete = async () => {
+    if (!job || deleting) return
+    setDeleting(true)
+    try {
+      const res = await fetch(`/api/jobs/${jobId}`, {
+        method: "DELETE",
+      })
+      if (res.ok) {
+        showToast("Job deleted successfully", "success")
+        router.push("/hr/jobs")
+      } else {
+        const error = await res.json()
+        showToast(error.error || "Failed to delete job", "error")
+        setDeleting(false)
+        setShowDeleteConfirm(false)
+      }
+    } catch (error) {
+      console.error("Error deleting job:", error)
+      showToast("Failed to delete job", "error")
+      setDeleting(false)
+      setShowDeleteConfirm(false)
     }
   }
 
@@ -205,6 +258,96 @@ export default function HRJobDetailPage() {
             </div>
           </Card>
         )}
+
+        {/* Job Management Actions */}
+        <Card className="p-6">
+          <h2 className="text-lg font-semibold mb-4">Job Management</h2>
+          <div className="space-y-4">
+            {/* Status Management */}
+            <div>
+              <p className="text-sm text-gray-600 mb-2">Change Status</p>
+              <div className="flex flex-wrap gap-2">
+                {job.status !== "PUBLISHED" && (
+                  <Button
+                    onClick={() => handleUpdateStatus("PUBLISHED")}
+                    disabled={updating}
+                    variant="outline"
+                    size="sm"
+                  >
+                    {updating ? "Publishing..." : "Publish"}
+                  </Button>
+                )}
+                {job.status !== "CLOSED" && (
+                  <Button
+                    onClick={() => handleUpdateStatus("CLOSED")}
+                    disabled={updating}
+                    variant="outline"
+                    size="sm"
+                  >
+                    {updating ? "Closing..." : "Close Job"}
+                  </Button>
+                )}
+                {job.status !== "DRAFT" && (
+                  <Button
+                    onClick={() => handleUpdateStatus("DRAFT")}
+                    disabled={updating}
+                    variant="outline"
+                    size="sm"
+                  >
+                    {updating ? "Saving..." : "Save as Draft"}
+                  </Button>
+                )}
+                {job.status !== "ARCHIVED" && (
+                  <Button
+                    onClick={() => handleUpdateStatus("ARCHIVED")}
+                    disabled={updating}
+                    variant="outline"
+                    size="sm"
+                  >
+                    {updating ? "Archiving..." : "Archive"}
+                  </Button>
+                )}
+              </div>
+            </div>
+
+            {/* Delete Job */}
+            <div className="border-t pt-4">
+              <p className="text-sm text-gray-600 mb-2">Danger Zone</p>
+              {!showDeleteConfirm ? (
+                <Button
+                  onClick={() => setShowDeleteConfirm(true)}
+                  variant="outline"
+                  className="bg-red-50 text-red-700 border-red-200 hover:bg-red-100"
+                >
+                  Delete Job
+                </Button>
+              ) : (
+                <div className="flex gap-2 items-center">
+                  <p className="text-sm text-red-600">Are you sure? This action cannot be undone.</p>
+                  <Button
+                    onClick={handleDelete}
+                    disabled={deleting}
+                    className="bg-red-600 text-white hover:bg-red-700"
+                    size="sm"
+                  >
+                    {deleting ? "Deleting..." : "Confirm Delete"}
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      setShowDeleteConfirm(false)
+                      setDeleting(false)
+                    }}
+                    disabled={deleting}
+                    variant="outline"
+                    size="sm"
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              )}
+            </div>
+          </div>
+        </Card>
 
         {/* Actions */}
         <Card className="p-6">

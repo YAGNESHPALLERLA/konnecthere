@@ -30,8 +30,11 @@ export async function POST(
     }
 
     const { id } = await params
-    const job = await prisma.job.findUnique({
-      where: { id },
+    const job = await prisma.job.findFirst({
+      where: { 
+        id,
+        deletedAt: null, // Only allow sharing non-deleted jobs
+      },
       include: {
         company: {
           select: { id: true, name: true, slug: true, ownerId: true },

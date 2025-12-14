@@ -51,9 +51,12 @@ export async function POST(
     }
     const { id: jobId } = await params
 
-    // Verify job exists
-    const job = await prisma.job.findUnique({
-      where: { id: jobId },
+    // Verify job exists and is not deleted
+    const job = await prisma.job.findFirst({
+      where: { 
+        id: jobId,
+        deletedAt: null, // Only allow saving non-deleted jobs
+      },
     })
 
     if (!job) {

@@ -20,6 +20,8 @@ export const POST = asyncHandler(async (req) => {
   const body = await req.json()
   const { conversationId, body: messageBody } = createMessageSchema.parse(body)
 
+  const userId = (session.user as any).id
+
   // Verify user is a participant
   const conversation = await prisma.conversation.findUnique({
     where: { id: conversationId },
@@ -36,11 +38,41 @@ export const POST = asyncHandler(async (req) => {
   }
 
   const isParticipant = conversation.participants.some(
-    (p) => p.userId === session.user.id
+    (p) => p.userId === userId
   )
 
-  if (!isParticipant && session.user.role !== "ADMIN") {
+  if (!isParticipant && (session.user as any).role !== "ADMIN") {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 })
+  }
+
+  // Get the other participant
+  const otherParticipant = conversation.participants.find(
+    (p) => p.userId !== userId
+  )
+
+  if (!otherParticipant) {
+    return NextResponse.json(
+      { error: "Invalid conversation" },
+      { status: 400 }
+    )
+  }
+
+  // Check if users are connected (accepted connection)
+  const connection = await prisma.connection.findFirst({
+    where: {
+      status: "ACCEPTED",
+      OR: [
+        { requesterId: userId, receiverId: otherParticipant.userId },
+        { requesterId: otherParticipant.userId, receiverId: userId },
+      ],
+    },
+  })
+
+  if (!connection && (session.user as any).role !== "ADMIN") {
+    return NextResponse.json(
+      { error: "You must be connected to message this user" },
+      { status: 403 }
+    )
   }
 
   // Create message

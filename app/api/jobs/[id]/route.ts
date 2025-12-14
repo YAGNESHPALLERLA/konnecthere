@@ -3,6 +3,7 @@ import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import { z } from "zod"
 import { syncJobToAlgolia, removeJobFromAlgolia } from "@/lib/algolia"
+import { asyncHandler } from "@/lib/errors"
 
 export const runtime = "nodejs"
 
@@ -160,51 +161,52 @@ export async function PATCH(
   }
 }
 
-export async function DELETE(
+export const DELETE = asyncHandler(async (
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
-) {
-  try {
-    const session = await auth()
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
-
-    const { id } = await params
-
-    const job = await prisma.job.findFirst({
-      where: { 
-        id,
-        deletedAt: null, // Only show non-deleted jobs
-      },
-      include: {
-        company: {
-          select: { ownerId: true },
-        },
-      },
-    })
-
-    if (!job) {
-      return NextResponse.json({ error: "Job not found" }, { status: 404 })
-    }
-
-    const hasAccess = await canManageJob(job.companyId, session)
-    if (!hasAccess) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 })
-    }
-
-    // Soft delete instead of hard delete
-    await prisma.job.update({
-      where: { id },
-      data: { deletedAt: new Date() },
-    })
-    removeJobFromAlgolia(id).catch((err) =>
-      console.error("Failed to remove job from search index:", err)
-    )
-
-    return NextResponse.json({ success: true })
-  } catch (error) {
-    console.error("Error deleting job:", error)
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+) => {
+  const session = await auth()
+  if (!session?.user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
-}
+
+  const resolvedParams = await params
+  const id = resolvedParams?.id
+
+  if (!id) {
+    return NextResponse.json({ error: "Job ID is required" }, { status: 400 })
+  }
+
+  const job = await prisma.job.findFirst({
+    where: { 
+      id,
+      deletedAt: null, // Only show non-deleted jobs
+    },
+    include: {
+      company: {
+        select: { ownerId: true, hrId: true },
+      },
+    },
+  })
+
+  if (!job) {
+    return NextResponse.json({ error: "Job not found" }, { status: 404 })
+  }
+
+  const hasAccess = await canManageJob(job.companyId, session)
+  if (!hasAccess) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 })
+  }
+
+  // Permanently delete the job (cascade deletes will handle related records)
+  await prisma.job.delete({
+    where: { id },
+  })
+  
+  // Remove from Algolia search index
+  removeJobFromAlgolia(id).catch((err) =>
+    console.error("Failed to remove job from search index:", err)
+  )
+
+  return NextResponse.json({ success: true, message: "Job deleted successfully" }, { status: 200 })
+})

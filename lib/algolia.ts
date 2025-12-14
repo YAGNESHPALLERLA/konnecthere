@@ -147,18 +147,23 @@ export async function syncJobToAlgolia(jobId: string) {
   const job = await getJobWithCompany(jobId)
   if (!job) return null
 
-  await upsertSearchIndex(job)
-
   if (!isAlgoliaEnabled()) return null
   const client = getAlgoliaClient()
   if (!client) return null
 
   const indexName = process.env.ALGOLIA_INDEX_NAME!
 
-  if (job.status !== 'PUBLISHED') {
-    await client.deleteObject({ indexName, objectID: jobId })
+  // If job is deleted or not published, remove from Algolia
+  if (job.deletedAt || job.status !== 'PUBLISHED') {
+    await client.deleteObject({ indexName, objectID: jobId }).catch(() => {
+      // Ignore errors if object doesn't exist in Algolia
+    })
+    // Also remove from search index
+    await prisma.searchIndex.deleteMany({ where: { jobId } }).catch(() => {})
     return null
   }
+
+  await upsertSearchIndex(job)
 
   const record = mapJobToAlgolia(job)
   await client.saveObject({ indexName, body: record })
@@ -187,7 +192,10 @@ export async function removeJobFromAlgolia(jobId: string) {
 
 export async function syncAllJobsToAlgolia() {
   const jobs = await prisma.job.findMany({
-    where: { status: 'PUBLISHED' },
+    where: { 
+      status: 'PUBLISHED',
+      deletedAt: null, // Only sync non-deleted jobs
+    },
     include: {
       company: {
         select: {

@@ -23,9 +23,12 @@ export async function POST(req: NextRequest) {
     const body = await req.json()
     const data = createApplicationSchema.parse(body)
 
-    // Verify job exists and is published
-    const job = await prisma.job.findUnique({
-      where: { id: data.jobId },
+    // Verify job exists, is published, and not deleted
+    const job = await prisma.job.findFirst({
+      where: { 
+        id: data.jobId,
+        deletedAt: null, // Only allow applying to non-deleted jobs
+      },
       include: {
         company: {
           include: {

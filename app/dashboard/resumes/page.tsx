@@ -6,6 +6,7 @@ import { PageShell } from "@/components/layouts/PageShell"
 import { Button } from "@/components/ui/Button"
 import { Card } from "@/components/ui/Card"
 import Link from "next/link"
+import { showToast } from "@/lib/toast"
 
 type Resume = {
   id: string
@@ -57,12 +58,12 @@ export default function ResumesPage() {
       ]
       
       if (!allowedTypes.includes(selectedFile.type)) {
-        alert("Please upload a PDF, DOC, or DOCX file")
+        showToast("Please upload a PDF, DOC, or DOCX file", "error")
         return
       }
       
       if (selectedFile.size > 10 * 1024 * 1024) {
-        alert("File size must be less than 10MB")
+        showToast("File size must be less than 10MB", "error")
         return
       }
       
@@ -111,7 +112,7 @@ export default function ResumesPage() {
       const resume = await uploadRes.json()
       console.log("Resume uploaded successfully:", resume)
 
-      alert("Resume uploaded successfully!")
+      showToast("Resume uploaded successfully!", "success")
       setFile(null)
       // Reset file input
       const fileInput = document.getElementById("resume-upload") as HTMLInputElement
@@ -120,7 +121,7 @@ export default function ResumesPage() {
     } catch (error: any) {
       console.error("Error uploading resume:", error)
       const errorMessage = error.message || "Failed to upload resume. Please try again."
-      alert(errorMessage)
+      showToast(errorMessage, "error")
     } finally {
       setUploading(false)
     }
@@ -136,10 +137,13 @@ export default function ResumesPage() {
       })
       if (res.ok) {
         setResumes(resumes.filter((r) => r.id !== resumeId))
+        showToast("Resume deleted successfully", "success")
+      } else {
+        showToast("Failed to delete resume", "error")
       }
     } catch (error) {
       console.error("Error deleting resume:", error)
-      alert("Failed to delete resume")
+      showToast("Failed to delete resume", "error")
     } finally {
       setDeleting(null)
     }

@@ -103,10 +103,16 @@ export default function ApplyPage() {
       setResumes([...resumes, newResume])
       setSelectedResume(newResume.id)
       setFile(null)
-      alert("Resume uploaded successfully!")
+      if (typeof window !== "undefined") {
+        const { showToast } = await import("@/lib/toast")
+        showToast("Resume uploaded successfully!", "success")
+      }
     } catch (error: any) {
       console.error("Error uploading resume:", error)
-      alert(error.message || "Failed to upload resume")
+      if (typeof window !== "undefined") {
+        const { showToast } = await import("@/lib/toast")
+        showToast(error.message || "Failed to upload resume", "error")
+      }
     } finally {
       setUploading(false)
     }
@@ -115,7 +121,10 @@ export default function ApplyPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!job || !selectedResume) {
-      alert("Please select a resume")
+      if (typeof window !== "undefined") {
+        const { showToast } = await import("@/lib/toast")
+        showToast("Please select a resume", "error")
+      }
       return
     }
 
@@ -132,14 +141,24 @@ export default function ApplyPage() {
       })
 
       if (res.ok) {
+        if (typeof window !== "undefined") {
+          const { showToast } = await import("@/lib/toast")
+          showToast("Application submitted successfully!", "success")
+        }
         router.push(`/candidate/dashboard?applied=true`)
       } else {
         const error = await res.json()
-        alert(error.error || "Failed to submit application")
+        if (typeof window !== "undefined") {
+          const { showToast } = await import("@/lib/toast")
+          showToast(error.error || "Failed to submit application", "error")
+        }
       }
     } catch (error) {
       console.error("Error submitting application:", error)
-      alert("An error occurred")
+      if (typeof window !== "undefined") {
+        const { showToast } = await import("@/lib/toast")
+        showToast("An error occurred", "error")
+      }
     } finally {
       setApplying(false)
     }

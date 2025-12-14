@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma"
 import { z } from "zod"
 import { slugify } from "@/lib/utils"
 import { syncJobToAlgolia } from "@/lib/algolia"
+import { asyncHandler } from "@/lib/errors"
 
 export const runtime = "nodejs"
 
@@ -99,57 +100,78 @@ export async function POST(req: NextRequest) {
 /**
  * Get jobs for companies managed by the current HR user
  */
-export async function GET(req: NextRequest) {
-  try {
-    const session = await auth()
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
-
-    const userRole = (session.user as any).role
-    const userId = (session.user as any).id
-
-    if (userRole !== "HR" && userRole !== "ADMIN") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 })
-    }
-
-    // Get companies managed by this HR user
-    const companies = await prisma.company.findMany({
-      where: userRole === "ADMIN" ? {} : { hrId: userId },
-      select: { id: true },
-    })
-
-    const companyIds = companies.map((c) => c.id)
-
-    if (companyIds.length === 0) {
-      return NextResponse.json({ jobs: [] })
-    }
-
-    const jobs = await prisma.job.findMany({
-      where: {
-        companyId: { in: companyIds },
-      },
-      include: {
-        company: {
-          select: {
-            id: true,
-            name: true,
-            slug: true,
-          },
-        },
-        _count: {
-          select: {
-            applications: true,
-          },
-        },
-      },
-      orderBy: { createdAt: "desc" },
-    })
-
-    return NextResponse.json({ jobs })
-  } catch (error) {
-    console.error("Error fetching HR jobs:", error)
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+export const GET = asyncHandler(async (req: NextRequest) => {
+  const session = await auth()
+  if (!session?.user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
-}
+
+  const userRole = (session.user as any).role
+  const userId = (session.user as any).id
+
+  if (!userId) {
+    return NextResponse.json({ error: "User ID not found" }, { status: 401 })
+  }
+
+  if (userRole !== "HR" && userRole !== "ADMIN") {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 })
+  }
+
+  // Get filter parameters
+  const { searchParams } = new URL(req.url)
+  const status = searchParams.get("status")
+  const location = searchParams.get("location")
+  const employmentType = searchParams.get("employmentType")
+
+  // Get companies managed by this HR user
+  const companies = await prisma.company.findMany({
+    where: userRole === "ADMIN" ? {} : { hrId: userId },
+    select: { id: true },
+  })
+
+  const companyIds = companies.map((c) => c.id)
+
+  if (companyIds.length === 0) {
+    return NextResponse.json({ jobs: [] })
+  }
+
+  // Build where clause with filters
+  const where: any = {
+    companyId: { in: companyIds },
+    deletedAt: null, // Filter out deleted jobs
+  }
+
+  if (status) {
+    where.status = status
+  }
+
+  if (location) {
+    where.location = { contains: location, mode: "insensitive" }
+  }
+
+  if (employmentType) {
+    where.employmentType = employmentType
+  }
+
+  const jobs = await prisma.job.findMany({
+    where,
+    include: {
+      company: {
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+        },
+      },
+      _count: {
+        select: {
+          applications: true,
+        },
+      },
+    },
+    orderBy: { createdAt: "desc" },
+  })
+
+  return NextResponse.json({ jobs })
+})
 

@@ -45,8 +45,12 @@ export default function JobApplicantsPage() {
   const [job, setJob] = useState<Job | null>(null)
   const [applications, setApplications] = useState<Application[]>([])
   const [loading, setLoading] = useState(true)
-  const [statusFilter, setStatusFilter] = useState<string>("ALL")
-  const [searchQuery, setSearchQuery] = useState("")
+  const [filters, setFilters] = useState({
+    status: "",
+    experienceLevel: "",
+    location: "",
+    skills: "",
+  })
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -62,13 +66,21 @@ export default function JobApplicantsPage() {
       }
       fetchData()
     }
-  }, [session, status, router, jobId])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session, status, router, jobId, filters.status, filters.experienceLevel, filters.location, filters.skills])
 
   const fetchData = async () => {
     try {
+      setLoading(true)
+      const params = new URLSearchParams()
+      if (filters.status) params.append("status", filters.status)
+      if (filters.experienceLevel) params.append("experienceLevel", filters.experienceLevel)
+      if (filters.location) params.append("location", filters.location)
+      if (filters.skills) params.append("skills", filters.skills)
+
       const [jobRes, appsRes] = await Promise.all([
         fetch(`/api/jobs/${jobId}`),
-        fetch(`/api/hr/jobs/${jobId}/applicants`),
+        fetch(`/api/hr/jobs/${jobId}/applicants?${params.toString()}`),
       ])
 
       if (jobRes.ok) {
@@ -87,6 +99,12 @@ export default function JobApplicantsPage() {
     }
   }
 
+  useEffect(() => {
+    if (status === "authenticated") {
+      fetchData()
+    }
+  }, [filters, status])
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case "SHORTLISTED":
@@ -102,14 +120,8 @@ export default function JobApplicantsPage() {
     }
   }
 
-  const filteredApplications = applications.filter((app) => {
-    const matchesStatus = statusFilter === "ALL" || app.status === statusFilter
-    const matchesSearch =
-      searchQuery === "" ||
-      app.user.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      app.user.email.toLowerCase().includes(searchQuery.toLowerCase())
-    return matchesStatus && matchesSearch
-  })
+  // Applications are already filtered by backend, no need for client-side filtering
+  const filteredApplications = applications
 
   if (status === "loading" || loading) {
     return (
@@ -158,23 +170,17 @@ export default function JobApplicantsPage() {
 
         {/* Filters */}
         <Card className="p-6">
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex-1">
-              <input
-                type="text"
-                placeholder="Search by name or email..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-black focus:border-black"
-              />
-            </div>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Application Status
+              </label>
               <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-black focus:border-black"
+                value={filters.status}
+                onChange={(e) => setFilters({ ...filters, status: e.target.value })}
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-black focus:border-black"
               >
-                <option value="ALL">All Statuses</option>
+                <option value="">All Statuses</option>
                 <option value="PENDING">Pending</option>
                 <option value="REVIEWED">Reviewed</option>
                 <option value="SHORTLISTED">Shortlisted</option>
@@ -182,7 +188,58 @@ export default function JobApplicantsPage() {
                 <option value="HIRED">Hired</option>
               </select>
             </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Experience Level
+              </label>
+              <select
+                value={filters.experienceLevel}
+                onChange={(e) => setFilters({ ...filters, experienceLevel: e.target.value })}
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-black focus:border-black"
+              >
+                <option value="">All Levels</option>
+                <option value="ENTRY">Entry</option>
+                <option value="MID_LEVEL">Mid Level</option>
+                <option value="SENIOR">Senior</option>
+                <option value="EXECUTIVE">Executive</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Location
+              </label>
+              <input
+                type="text"
+                placeholder="Filter by location..."
+                value={filters.location}
+                onChange={(e) => setFilters({ ...filters, location: e.target.value })}
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-black focus:border-black"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Skills
+              </label>
+              <input
+                type="text"
+                placeholder="Filter by skills (comma-separated)..."
+                value={filters.skills}
+                onChange={(e) => setFilters({ ...filters, skills: e.target.value })}
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-black focus:border-black"
+              />
+            </div>
           </div>
+          {(filters.status || filters.experienceLevel || filters.location || filters.skills) && (
+            <div className="mt-4">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setFilters({ status: "", experienceLevel: "", location: "", skills: "" })}
+              >
+                Clear Filters
+              </Button>
+            </div>
+          )}
         </Card>
 
         {/* Applications Table */}

@@ -9,8 +9,11 @@ export async function GET(
 ) {
   try {
     const { slug } = await params
-    const job = await prisma.job.findUnique({
-      where: { slug },
+    const job = await prisma.job.findFirst({
+      where: { 
+        slug,
+        deletedAt: null, // Only show non-deleted jobs
+      },
       include: {
         company: {
           select: {
