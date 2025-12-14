@@ -217,8 +217,16 @@ export default function KonnectPage() {
       } else {
         let errorData
         try {
-          errorData = await res.json()
-        } catch {
+          // Read response as text first, then parse JSON
+          const responseText = await res.text()
+          try {
+            errorData = JSON.parse(responseText)
+          } catch {
+            // If not JSON, use the text as error message
+            errorData = { error: responseText || `Failed to send connection request (${res.status})` }
+          }
+        } catch (readError) {
+          console.error("Failed to read error response:", readError)
           errorData = { error: `Failed to send connection request (${res.status})` }
         }
         
@@ -263,7 +271,6 @@ export default function KonnectPage() {
             statusText: res.statusText,
             errorData,
             errorMessage,
-            fullResponse: await res.clone().text().catch(() => "Could not read response"),
           })
           // Show the specific error message from API, or a generic one
           const displayMessage = errorMessage || "Server error. Please try again later."
