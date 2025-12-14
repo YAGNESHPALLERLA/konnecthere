@@ -264,9 +264,10 @@ export const POST = asyncHandler(async (req: NextRequest) => {
           },
         },
       })
+      // Return success with existing connection if already pending (idempotent)
       return NextResponse.json(
-        { error: "Connection request already pending", connection: existing },
-        { status: 409 }
+        { connection: existing, message: "Connection request already pending" },
+        { status: 200 }
       )
     }
 

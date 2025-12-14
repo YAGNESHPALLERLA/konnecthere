@@ -218,12 +218,16 @@ export default function KonnectPage() {
         const errorMessage = errorData?.error || `Failed to send connection request (${res.status})`
         
         // Handle specific error cases
+        if (res.status === 200 && errorMessage.toLowerCase().includes("already pending")) {
+          // Already pending - treat as success (idempotent)
+          showToast("Connection request already pending", "info")
+          await fetchConnectionStatuses()
+          return
+        }
         if (res.status === 409) {
-          // Already exists or pending - show appropriate message
+          // Already exists or connected - show appropriate message
           if (errorMessage.toLowerCase().includes("already connected")) {
             showToast("Already connected to this user", "info")
-          } else if (errorMessage.toLowerCase().includes("pending")) {
-            showToast("Connection request already pending", "info")
           } else {
             showToast(errorMessage, "info")
           }
@@ -297,10 +301,12 @@ export default function KonnectPage() {
         return
       }
 
-      const updateRes = await fetch(`/api/connections/${connectionId}`, {
-        method: "PATCH",
+      // Use the new respond endpoint
+      const action = status === "ACCEPTED" ? "accept" : "reject"
+      const updateRes = await fetch("/api/connections/respond", {
+        method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status }),
+        body: JSON.stringify({ connectionId, action }),
       })
       
       if (updateRes.ok) {
@@ -314,17 +320,16 @@ export default function KonnectPage() {
           },
         }))
         // Show success message
-        showToast(
-          status === "ACCEPTED" 
-            ? "Connection accepted! You can now message this user." 
-            : "Connection request rejected.",
-          status === "ACCEPTED" ? "success" : "info"
-        )
+        if (status === "ACCEPTED") {
+          showToast("Connection accepted! You can now message this user.", "success")
+        } else {
+          showToast("Connection request rejected.", "info")
+        }
         // Refresh to ensure consistency
         await fetchConnectionStatuses()
       } else {
-        const errorData = await updateRes.json().catch(() => ({ error: `Failed to ${status.toLowerCase()} connection` }))
-        showToast(errorData?.error || `Failed to ${status.toLowerCase()} connection`, "error")
+        const errorData = await updateRes.json().catch(() => ({ error: `Failed to ${action} connection` }))
+        showToast(errorData?.error || `Failed to ${action} connection`, "error")
       }
     } catch (error) {
       console.error(`Error ${status.toLowerCase()} connection:`, error)
