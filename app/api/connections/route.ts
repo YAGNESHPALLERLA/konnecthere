@@ -119,83 +119,83 @@ export const POST = asyncHandler(async (req: NextRequest) => {
   try {
     const result = await prisma.$transaction(
       async (tx) => {
-      // Check if connection already exists (any status) - check both directions
-      const existing = await tx.connection.findFirst({
-        where: {
-          OR: [
-            { requesterId: userId, receiverId },
-            { requesterId: receiverId, receiverId: userId },
-          ],
-        },
-        include: {
-          requester: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-              image: true,
+        // Check if connection already exists (any status) - check both directions
+        const existing = await tx.connection.findFirst({
+          where: {
+            OR: [
+              { requesterId: userId, receiverId },
+              { requesterId: receiverId, receiverId: userId },
+            ],
+          },
+          include: {
+            requester: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                image: true,
+              },
+            },
+            receiver: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                image: true,
+              },
             },
           },
-          receiver: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-              image: true,
-            },
-          },
-        },
-      })
-
-      if (existing) {
-        // If already accepted, return error
-        if (existing.status === "ACCEPTED") {
-          throw new Error("ALREADY_CONNECTED")
-        }
-        // If pending, return the existing request
-        if (existing.status === "PENDING") {
-          throw new Error("ALREADY_PENDING")
-        }
-        // If rejected, allow creating a new request (delete old one first)
-        await tx.connection.delete({
-          where: { id: existing.id },
         })
-      }
 
-      // Create connection request
-      const connection = await tx.connection.create({
-        data: {
-          requesterId: userId,
-          receiverId,
-          status: "PENDING",
-        },
-        include: {
-          requester: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-              image: true,
+        if (existing) {
+          // If already accepted, return error
+          if (existing.status === "ACCEPTED") {
+            throw new Error("ALREADY_CONNECTED")
+          }
+          // If pending, return the existing request
+          if (existing.status === "PENDING") {
+            throw new Error("ALREADY_PENDING")
+          }
+          // If rejected, allow creating a new request (delete old one first)
+          await tx.connection.delete({
+            where: { id: existing.id },
+          })
+        }
+
+        // Create connection request
+        const connection = await tx.connection.create({
+          data: {
+            requesterId: userId,
+            receiverId,
+            status: "PENDING",
+          },
+          include: {
+            requester: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                image: true,
+              },
+            },
+            receiver: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                image: true,
+              },
             },
           },
-          receiver: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-              image: true,
-            },
-          },
-        },
-      })
+        })
 
-      return connection
+        return connection
       },
       {
         // Transaction timeout: 10 seconds
         timeout: 10000,
-        // Isolation level for better error handling
-        isolationLevel: "ReadCommitted",
+        // Note: isolationLevel may not be supported in all Prisma versions
+        // Remove if causing issues
       }
     )
 
@@ -385,7 +385,7 @@ export const POST = asyncHandler(async (req: NextRequest) => {
       )
     }
 
-    // Log unexpected errors for debugging
+    // Log unexpected errors for debugging with full details
     console.error("[CONNECTION_CREATE] Unexpected error:", {
       message: error?.message,
       stack: error?.stack,
@@ -393,9 +393,17 @@ export const POST = asyncHandler(async (req: NextRequest) => {
       name: error?.name,
       userId,
       receiverId,
+      error: JSON.stringify(error, Object.getOwnPropertyNames(error)),
     })
     
-    // Re-throw other errors to be handled by asyncHandler
-    throw error
+    // For unexpected errors, return a user-friendly message instead of re-throwing
+    // This prevents generic 500 errors from asyncHandler
+    return NextResponse.json(
+      { 
+        error: "An unexpected error occurred while creating the connection. Please try again.",
+        details: process.env.NODE_ENV === "development" ? error?.message : undefined,
+      },
+      { status: 500 }
+    )
   }
 })

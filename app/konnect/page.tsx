@@ -258,13 +258,14 @@ export default function KonnectPage() {
           showToast("Database connection error. Please try again in a moment.", "error")
         } else if (res.status >= 500) {
           // Server errors
-          console.error("Connection request error:", errorData)
-          // Check if it's a database error message
-          if (errorMessage.toLowerCase().includes("database")) {
-            showToast("Database error. Please try again in a moment.", "error")
-          } else {
-            showToast(errorMessage || "Server error. Please try again later.", "error")
-          }
+          console.error("Connection request error:", {
+            status: res.status,
+            errorData,
+            errorMessage,
+          })
+          // Show the specific error message from API, or a generic one
+          const displayMessage = errorMessage || "Server error. Please try again later."
+          showToast(displayMessage, "error")
         } else {
           // Other client errors
           console.error("Connection request error:", errorData)
