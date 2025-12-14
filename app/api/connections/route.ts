@@ -262,8 +262,13 @@ export const POST = asyncHandler(async (req: NextRequest) => {
       fullError: error,
     })
     
+    // Check if error is already a NextResponse (shouldn't happen, but be safe)
+    if (error instanceof NextResponse) {
+      return error
+    }
+    
     // Handle custom errors from transaction
-    if (error.message === "ALREADY_CONNECTED") {
+    if (error?.message === "ALREADY_CONNECTED") {
       // Fetch the existing connection to return it
       const existing = await prisma.connection.findFirst({
         where: {
@@ -297,7 +302,7 @@ export const POST = asyncHandler(async (req: NextRequest) => {
       )
     }
 
-    if (error.message === "ALREADY_PENDING") {
+    if (error?.message === "ALREADY_PENDING") {
       // Fetch the existing connection to return it
       const existing = await prisma.connection.findFirst({
         where: {
