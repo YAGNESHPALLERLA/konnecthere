@@ -230,7 +230,6 @@ export const POST = asyncHandler(async (req: NextRequest) => {
       },
       {
         // Transaction timeout: 10 seconds
-        maxWait: 10000,
         timeout: 10000,
       }
     )
