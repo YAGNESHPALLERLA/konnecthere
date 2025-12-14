@@ -115,6 +115,7 @@ export const POST = asyncHandler(async (req: NextRequest) => {
   }
 
   // Use a transaction to atomically check and create connection
+  // This prevents race conditions and ensures data consistency
   try {
     const result = await prisma.$transaction(async (tx) => {
       // Check if connection already exists (any status) - check both directions
@@ -316,4 +317,3 @@ export const POST = asyncHandler(async (req: NextRequest) => {
     throw error
   }
 })
-

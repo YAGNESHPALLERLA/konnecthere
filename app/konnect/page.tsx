@@ -179,6 +179,8 @@ export default function KonnectPage() {
             connectionId: data.connection?.id || null,
           },
         }))
+        // Show success message
+        showToast("Connection request sent successfully", "success")
         // Refresh connection statuses to ensure consistency
         await fetchConnectionStatuses()
       } else {
@@ -193,7 +195,14 @@ export default function KonnectPage() {
         
         // Handle specific error cases
         if (res.status === 409) {
-          // Already exists or pending - refresh status silently (no toast)
+          // Already exists or pending - show appropriate message
+          if (errorMessage.toLowerCase().includes("already connected")) {
+            showToast("Already connected to this user", "info")
+          } else if (errorMessage.toLowerCase().includes("pending")) {
+            showToast("Connection request already pending", "info")
+          } else {
+            showToast(errorMessage, "info")
+          }
           await fetchConnectionStatuses()
           return
         } else if (res.status === 400) {
