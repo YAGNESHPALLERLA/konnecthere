@@ -242,10 +242,18 @@ export default function KonnectPage() {
         } else if (res.status === 404) {
           // User not found
           showToast("User not found. Please refresh the page.", "error")
+        } else if (res.status === 503) {
+          // Service unavailable (database connection error)
+          showToast("Database connection error. Please try again in a moment.", "error")
         } else if (res.status >= 500) {
           // Server errors
           console.error("Connection request error:", errorData)
-          showToast(errorMessage || "Server error. Please try again later.", "error")
+          // Check if it's a database error message
+          if (errorMessage.toLowerCase().includes("database")) {
+            showToast("Database error. Please try again in a moment.", "error")
+          } else {
+            showToast(errorMessage || "Server error. Please try again later.", "error")
+          }
         } else {
           // Other client errors
           console.error("Connection request error:", errorData)

@@ -117,7 +117,8 @@ export const POST = asyncHandler(async (req: NextRequest) => {
   // Use a transaction to atomically check and create connection
   // This prevents race conditions and ensures data consistency
   try {
-    const result = await prisma.$transaction(async (tx) => {
+    const result = await prisma.$transaction(
+      async (tx) => {
       // Check if connection already exists (any status) - check both directions
       const existing = await tx.connection.findFirst({
         where: {
@@ -189,7 +190,14 @@ export const POST = asyncHandler(async (req: NextRequest) => {
       })
 
       return connection
-    })
+      },
+      {
+        // Transaction timeout: 10 seconds
+        timeout: 10000,
+        // Isolation level for better error handling
+        isolationLevel: "ReadCommitted",
+      }
+    )
 
     return NextResponse.json({ connection: result }, { status: 201 })
   } catch (error: any) {
@@ -312,6 +320,44 @@ export const POST = asyncHandler(async (req: NextRequest) => {
         { status: 409 }
       )
     }
+    
+    // Handle database connection errors specifically
+    if (error?.code === "P1001" || error?.code === "P1008" || error?.code === "P1017") {
+      // Database connection errors
+      console.error("Database connection error creating connection:", {
+        code: error.code,
+        message: error.message,
+        userId,
+        receiverId,
+      })
+      return NextResponse.json(
+        { error: "Database connection error. Please try again in a moment." },
+        { status: 503 }
+      )
+    }
+
+    // Handle other Prisma errors
+    if (error?.code && error.code.startsWith("P")) {
+      console.error("Prisma error creating connection:", {
+        code: error.code,
+        message: error.message,
+        userId,
+        receiverId,
+      })
+      return NextResponse.json(
+        { error: "Failed to create connection. Please try again." },
+        { status: 500 }
+      )
+    }
+
+    // Log unexpected errors for debugging
+    console.error("Unexpected error creating connection:", {
+      message: error?.message,
+      stack: error?.stack,
+      code: error?.code,
+      userId,
+      receiverId,
+    })
     
     // Re-throw other errors to be handled by asyncHandler
     throw error
