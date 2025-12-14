@@ -80,11 +80,9 @@ export function ConnectionNotifications() {
 
       if (res.ok) {
         const data = await res.json()
-        if (action === "accept") {
-          showToast("Connection accepted", "success")
-        } else {
-          showToast("Connection request rejected", "info")
-        }
+        // Show message from API response, not hardcoded
+        const message = data?.message || (action === "accept" ? "Connection accepted" : "Connection rejected")
+        showToast(message, action === "accept" ? "success" : "info")
         // Remove from list
         setRequests((prev) => prev.filter((r) => r.id !== connectionId))
       } else {

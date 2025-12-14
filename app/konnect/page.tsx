@@ -194,17 +194,24 @@ export default function KonnectPage() {
       
       if (res.ok) {
         const data = await res.json()
-        // Update local state
-        setConnections((prev) => ({
-          ...prev,
-          [userId]: {
-            status: "REQUESTED",
-            isRequester: true,
-            connectionId: data.connection?.id || null,
-          },
-        }))
-        // Show success message
-        showToast("Connection request sent successfully", "success")
+        // Only show success if we actually got a connection back
+        if (data.connection) {
+          // Update local state
+          setConnections((prev) => ({
+            ...prev,
+            [userId]: {
+              status: "REQUESTED",
+              isRequester: true,
+              connectionId: data.connection.id,
+            },
+          }))
+          // Show success message only from API response
+          const message = data.message || "Connection request sent successfully"
+          showToast(message, res.status === 201 ? "success" : "info")
+        } else {
+          // If no connection but status is OK, refresh to get current state
+          await fetchConnectionStatuses()
+        }
         // Refresh connection statuses to ensure consistency
         await fetchConnectionStatuses()
       } else {
@@ -310,6 +317,7 @@ export default function KonnectPage() {
       })
       
       if (updateRes.ok) {
+        const responseData = await updateRes.json()
         // Update local state immediately
         setConnections((prev) => ({
           ...prev,
@@ -319,11 +327,12 @@ export default function KonnectPage() {
             connectionId: connectionId,
           },
         }))
-        // Show success message
+        // Show message from API response, not hardcoded
+        const message = responseData?.message || (status === "ACCEPTED" ? "Connection accepted" : "Connection rejected")
         if (status === "ACCEPTED") {
-          showToast("Connection accepted! You can now message this user.", "success")
+          showToast(`${message}! You can now message this user.`, "success")
         } else {
-          showToast("Connection request rejected.", "info")
+          showToast(message, "info")
         }
         // Refresh to ensure consistency
         await fetchConnectionStatuses()
