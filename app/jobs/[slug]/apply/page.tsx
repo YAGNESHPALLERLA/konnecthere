@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { useSession } from "next-auth/react"
 import Link from "next/link"
+import { showToast } from "@/lib/toast"
 
 export default function ApplyPage() {
   const params = useParams()
@@ -60,12 +61,12 @@ export default function ApplyPage() {
       ]
       
       if (!allowedTypes.includes(selectedFile.type)) {
-        alert("Please upload a PDF, DOC, or DOCX file")
+        showToast("Please upload a PDF, DOC, or DOCX file", "error")
         return
       }
       
       if (selectedFile.size > 10 * 1024 * 1024) {
-        alert("File size must be less than 10MB")
+        showToast("File size must be less than 10MB", "error")
         return
       }
       
