@@ -101,8 +101,39 @@ export const POST = asyncHandler(async (req: NextRequest) => {
     },
   })
 
-  // Note: Conversations are created on-demand when users message each other
-  // No need to auto-create here for open messaging system
+  // If accepted, create a conversation between the two users
+  if (action === "accept") {
+    // Check if conversation already exists
+    const existingConversation = await prisma.conversation.findFirst({
+      where: {
+        participants: {
+          every: {
+            userId: {
+              in: [updated.requesterId, updated.receiverId],
+            },
+          },
+        },
+      },
+      include: {
+        participants: true,
+      },
+    })
+
+    // Only create if it doesn't exist
+    if (!existingConversation) {
+      // Create conversation
+      await prisma.conversation.create({
+        data: {
+          participants: {
+            create: [
+              { userId: updated.requesterId },
+              { userId: updated.receiverId },
+            ],
+          },
+        },
+      })
+    }
+  }
 
   return NextResponse.json({ 
     connection: updated,

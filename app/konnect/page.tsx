@@ -493,7 +493,7 @@ export default function KonnectPage() {
                     </div>
                   )}
 
-                  {/* User Info */}
+                  {/* User Info - Minimal: Name and Email only */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-2 mb-2">
                       <div className="min-w-0">
@@ -507,51 +507,9 @@ export default function KonnectPage() {
                       <Pill>{getRoleLabel(user.role)}</Pill>
                     </div>
 
-                    {user.currentTitle && (
-                      <p className="text-sm font-medium text-gray-800 mb-1">
-                        {user.currentTitle}
-                      </p>
-                    )}
-
-                    {user.location && (
-                      <p className="text-xs text-gray-500 mb-2">
-                        📍 {user.location}
-                      </p>
-                    )}
-
-                    {user.yearsOfExperience !== null && (
-                      <p className="text-xs text-gray-500 mb-2">
-                        {user.yearsOfExperience} years of experience
-                      </p>
-                    )}
-
-                    {user.bio && (
-                      <p className="text-sm text-gray-600 line-clamp-2 mb-3">
-                        {user.bio}
-                      </p>
-                    )}
-
-                    {user.skills && user.skills.length > 0 && (
-                      <div className="flex flex-wrap gap-1 mb-3">
-                        {user.skills.slice(0, 3).map((skill, idx) => (
-                          <span
-                            key={idx}
-                            className="text-xs px-2 py-1 bg-gray-100 rounded-full"
-                          >
-                            {skill}
-                          </span>
-                        ))}
-                        {user.skills.length > 3 && (
-                          <span className="text-xs px-2 py-1 text-gray-500">
-                            +{user.skills.length - 3}
-                          </span>
-                        )}
-                      </div>
-                    )}
-
-                    {/* Message Button - Always available (open messaging) */}
-                    <div className="flex flex-col gap-2 mt-2">
-                      {connections[user.id]?.status === "SELF" ? null : (
+                    {/* Connection Status Buttons */}
+                    <div className="flex flex-col gap-2 mt-3">
+                      {connections[user.id]?.status === "SELF" ? null : connections[user.id]?.status === "ACCEPTED" ? (
                         <Button
                           onClick={() => handleMessage(user.id)}
                           disabled={messaging === user.id || !user.id}
@@ -559,6 +517,44 @@ export default function KonnectPage() {
                           size="sm"
                         >
                           {messaging === user.id ? "Connecting..." : "Message"}
+                        </Button>
+                      ) : connections[user.id]?.status === "REQUESTED" ? (
+                        <Button
+                          disabled
+                          className="w-full"
+                          size="sm"
+                          variant="outline"
+                        >
+                          Pending
+                        </Button>
+                      ) : connections[user.id]?.status === "RECEIVED" ? (
+                        <div className="flex gap-2">
+                          <Button
+                            onClick={() => handleAcceptReject(user.id, "ACCEPTED")}
+                            disabled={connecting === user.id}
+                            className="flex-1"
+                            size="sm"
+                          >
+                            {connecting === user.id ? "Processing..." : "Accept"}
+                          </Button>
+                          <Button
+                            onClick={() => handleAcceptReject(user.id, "REJECTED")}
+                            disabled={connecting === user.id}
+                            className="flex-1"
+                            size="sm"
+                            variant="outline"
+                          >
+                            Reject
+                          </Button>
+                        </div>
+                      ) : (
+                        <Button
+                          onClick={() => handleKonnect(user.id)}
+                          disabled={connecting === user.id || !user.id}
+                          className="w-full"
+                          size="sm"
+                        >
+                          {connecting === user.id ? "Sending..." : "Konnect"}
                         </Button>
                       )}
                     </div>

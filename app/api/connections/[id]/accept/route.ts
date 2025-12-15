@@ -79,6 +79,37 @@ export const POST = asyncHandler(async (
     },
   })
 
+  // Create a conversation between the two users
+  const existingConversation = await prisma.conversation.findFirst({
+    where: {
+      participants: {
+        every: {
+          userId: {
+            in: [updated.requesterId, updated.receiverId],
+          },
+        },
+      },
+    },
+    include: {
+      participants: true,
+    },
+  })
+
+  // Only create if it doesn't exist
+  if (!existingConversation) {
+    // Create conversation
+    await prisma.conversation.create({
+      data: {
+        participants: {
+          create: [
+            { userId: updated.requesterId },
+            { userId: updated.receiverId },
+          ],
+        },
+      },
+    })
+  }
+
   return NextResponse.json({ 
     connection: updated,
     message: "Connection accepted",

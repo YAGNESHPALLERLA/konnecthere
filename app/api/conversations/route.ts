@@ -58,9 +58,35 @@ export const GET = asyncHandler(async (req) => {
     orderBy: { updatedAt: "desc" },
   })
 
-  // Calculate unread counts - show all conversations (no connection requirement)
-  const conversationsWithUnread = await Promise.all(
+  // Filter conversations to only show those with ACCEPTED connections
+  const conversationsWithConnections = await Promise.all(
     allConversations.map(async (conv) => {
+      const otherParticipant = conv.participants.find(
+        (p) => p.userId !== session.user.id
+      )
+      
+      if (!otherParticipant) return null
+
+      // Check if there's an ACCEPTED connection
+      const connection = await prisma.connection.findFirst({
+        where: {
+          OR: [
+            { requesterId: session.user.id, receiverId: otherParticipant.userId, status: "ACCEPTED" },
+            { requesterId: otherParticipant.userId, receiverId: session.user.id, status: "ACCEPTED" },
+          ],
+        },
+      })
+
+      return connection ? conv : null
+    })
+  )
+
+  // Filter out nulls (conversations without accepted connections)
+  const validConversations = conversationsWithConnections.filter((conv) => conv !== null) as typeof allConversations
+
+  // Calculate unread counts - only for conversations with accepted connections
+  const conversationsWithUnread = await Promise.all(
+    validConversations.map(async (conv) => {
       const unreadCount = await prisma.message.count({
         where: {
           conversationId: conv.id,
@@ -132,7 +158,23 @@ export const POST = asyncHandler(async (req) => {
     )
   }
 
-  // Allow messaging without connection requirement (open messaging)
+  // Check if users have an ACCEPTED connection
+  const connection = await prisma.connection.findFirst({
+    where: {
+      OR: [
+        { requesterId: userId, receiverId: targetUserId, status: "ACCEPTED" },
+        { requesterId: targetUserId, receiverId: userId, status: "ACCEPTED" },
+      ],
+    },
+  })
+
+  if (!connection) {
+    return NextResponse.json(
+      { error: "You must be connected to message this user. Send a connection request first." },
+      { status: 403 }
+    )
+  }
+
   // Check if conversation already exists
   const existing = await prisma.conversation.findFirst({
     where: {
