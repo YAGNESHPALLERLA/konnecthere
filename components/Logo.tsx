@@ -26,7 +26,6 @@ export function Logo({
       height={height || 64}
       className={className}
       priority
-      style={{ height: 'auto', width: 'auto' }}
     />
   ) : (
     <Image
