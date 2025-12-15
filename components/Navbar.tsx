@@ -94,7 +94,6 @@ export function Navbar() {
             <span className="text-sm text-slate-600">Loading…</span>
           ) : session ? (
             <>
-              <ConnectionBell />
               <div className="flex items-center gap-2 rounded-full bg-slate-50 px-3 py-1 shadow-sm">
                 {/* Profile Picture with Upload */}
                 <ProfilePictureUpload

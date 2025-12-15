@@ -58,33 +58,9 @@ export const GET = asyncHandler(async (req) => {
     orderBy: { updatedAt: "desc" },
   })
 
-  // Filter conversations to only include those with ACCEPTED connections
-  const conversationsWithAcceptedConnections = await Promise.all(
+  // Calculate unread counts - show all conversations (no connection requirement)
+  const conversationsWithUnread = await Promise.all(
     allConversations.map(async (conv) => {
-      const otherParticipant = conv.participants.find(
-        (p) => p.userId !== session.user.id
-      )
-
-      if (!otherParticipant) {
-        return null
-      }
-
-      // Check if there's an ACCEPTED connection between the two users
-      const connection = await prisma.connection.findFirst({
-        where: {
-          status: "ACCEPTED",
-          OR: [
-            { requesterId: userId, receiverId: otherParticipant.userId },
-            { requesterId: otherParticipant.userId, receiverId: userId },
-          ],
-        },
-      })
-
-      // Only include conversations with accepted connections
-      if (!connection) {
-        return null
-      }
-
       const unreadCount = await prisma.message.count({
         where: {
           conversationId: conv.id,
@@ -94,6 +70,10 @@ export const GET = asyncHandler(async (req) => {
           },
         },
       })
+
+      const otherParticipant = conv.participants.find(
+        (p) => p.userId !== session.user.id
+      )
 
       return {
         id: conv.id,
@@ -106,21 +86,18 @@ export const GET = asyncHandler(async (req) => {
             }
           : null,
         unreadCount,
-        participant: {
-          id: otherParticipant.user.id,
-          name: otherParticipant.user.name,
-          email: otherParticipant.user.email,
-          image: otherParticipant.user.image,
-          role: otherParticipant.user.role,
-        },
+        participant: otherParticipant
+          ? {
+              id: otherParticipant.user.id,
+              name: otherParticipant.user.name,
+              email: otherParticipant.user.email,
+              image: otherParticipant.user.image,
+              role: otherParticipant.user.role,
+            }
+          : null,
       }
     })
   )
-
-  // Filter out null values (conversations without accepted connections)
-  const conversationsWithUnread = conversationsWithAcceptedConnections.filter(
-    (conv) => conv !== null
-  ) as typeof conversationsWithAcceptedConnections[0][]
 
   return NextResponse.json({ conversations: conversationsWithUnread })
 })
@@ -155,24 +132,7 @@ export const POST = asyncHandler(async (req) => {
     )
   }
 
-  // Check if there's an ACCEPTED connection between the two users
-  const connection = await prisma.connection.findFirst({
-    where: {
-      status: "ACCEPTED",
-      OR: [
-        { requesterId: userId, receiverId: targetUserId },
-        { requesterId: targetUserId, receiverId: userId },
-      ],
-    },
-  })
-
-  if (!connection) {
-    return NextResponse.json(
-      { error: "You must be connected to message this user. Send a connection request first." },
-      { status: 403 }
-    )
-  }
-
+  // Allow messaging without connection requirement (open messaging)
   // Check if conversation already exists
   const existing = await prisma.conversation.findFirst({
     where: {
