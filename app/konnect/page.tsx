@@ -552,7 +552,7 @@ export default function KonnectPage() {
         {isMessagingMode && (
           <div className="flex flex-col md:flex-row h-[calc(100vh-300px)] gap-4">
             {/* Left Panel: Conversation List - Shows ONLY users with existing conversations */}
-            <Card className="w-full md:w-80 flex-shrink-0 h-full max-h-[calc(100vh-260px)] flex flex-col p-0 overflow-hidden">
+            <Card className="w-full md:w-80 flex-shrink-0 h-full flex flex-col p-0 overflow-hidden">
               <div className="p-4 border-b border-slate-200">
                 <h2 className="section-title mb-3">Chats</h2>
                 <Input
@@ -562,7 +562,7 @@ export default function KonnectPage() {
                   className="w-full"
                 />
               </div>
-              <div className="flex-1 overflow-y-auto p-2">
+              <div className="flex-1 max-h-[70vh] overflow-y-auto p-2">
                 {filteredConversations.length === 0 ? (
                   <div className="p-4 text-center text-slate-600 text-sm">
                     No conversations yet. Click on a user card to start messaging.
