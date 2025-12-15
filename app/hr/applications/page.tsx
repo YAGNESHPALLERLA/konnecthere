@@ -172,13 +172,6 @@ export default async function HRApplicationsPage() {
                             Review
                           </Button>
                         </Link>
-                        <Link
-                          href={`/messages?applicationId=${app.id}`}
-                        >
-                          <Button variant="ghost" size="sm">
-                            Message
-                          </Button>
-                        </Link>
                       </div>
                     </Table.Cell>
                   </Table.Row>

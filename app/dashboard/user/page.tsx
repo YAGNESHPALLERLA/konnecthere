@@ -424,9 +424,9 @@ export default async function UserDashboard() {
           <Link href="/jobs">
             <Button>Browse Jobs</Button>
           </Link>
-          <Link href="/messages">
+          <Link href="/konnect">
             <Button variant="outline">
-              Messages
+              Konnect
               {unreadCount > 0 && (
                 <span className="ml-2 rounded-full bg-black px-2 py-1 text-xs font-medium text-white">
                   {unreadCount}
@@ -491,13 +491,6 @@ export default async function UserDashboard() {
                         <Link href={`/jobs/${app.job.slug}`}>
                           <Button variant="ghost" size="sm">
                             View
-                          </Button>
-                        </Link>
-                        <Link
-                          href={`/messages?jobId=${app.job.id}`}
-                        >
-                          <Button variant="ghost" size="sm">
-                            Message
                           </Button>
                         </Link>
                       </div>

@@ -316,11 +316,6 @@ export default function JobApplicantsPage() {
                             View Profile
                           </Button>
                         </Link>
-                        <Link href={`/messages?userId=${app.user.id}&jobId=${jobId}`}>
-                          <Button variant="ghost" size="sm">
-                            Message
-                          </Button>
-                        </Link>
                       </div>
                     </Table.Cell>
                   </Table.Row>

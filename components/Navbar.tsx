@@ -7,7 +7,6 @@ import { useSession, signOut } from "next-auth/react"
 import { Button } from "@/components/ui/Button"
 import { ProfilePictureUpload } from "@/components/ui/ProfilePictureUpload"
 import { Logo } from "@/components/Logo"
-import { ConnectionBell } from "@/components/ConnectionBell"
 import { cn } from "@/lib/utils"
 
 export function Navbar() {
@@ -26,11 +25,10 @@ export function Navbar() {
 
     if (!session) return baseLinks
 
-    // Add Konnect and Messages for all authenticated users
+    // Add Konnect for all authenticated users (messaging is inside Konnect)
     const authenticatedLinks = [
       ...baseLinks,
       { href: "/konnect", label: "Konnect" },
-      { href: "/messages", label: "Messages" },
     ]
 
     // Add Dashboard link - will redirect to role-specific dashboard
@@ -94,7 +92,6 @@ export function Navbar() {
             <span className="text-sm text-slate-600">Loading…</span>
           ) : session ? (
             <>
-              <ConnectionBell />
               <div className="flex items-center gap-2 rounded-full bg-slate-50 px-3 py-1 shadow-sm">
                 {/* Profile Picture with Upload */}
                 <ProfilePictureUpload
@@ -173,9 +170,6 @@ export function Navbar() {
             {session ? (
               <>
                 <div className="mt-2 space-y-2">
-                  <div className="flex items-center justify-center mb-2">
-                    <ConnectionBell />
-                  </div>
                   <div className="flex items-center gap-2 rounded-full bg-slate-50 px-4 py-2 shadow-sm">
                     {/* Profile Picture with Upload */}
                     <ProfilePictureUpload

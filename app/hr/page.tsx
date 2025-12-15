@@ -110,9 +110,6 @@ export default async function HRDashboard() {
           <Link href="/hr/jobs">
             <Button variant="outline">View All Jobs</Button>
           </Link>
-          <Link href="/messages">
-            <Button variant="outline">Messages</Button>
-          </Link>
         </div>
 
         {/* Recent Applications */}
@@ -151,13 +148,6 @@ export default async function HRDashboard() {
                       <Link href={`/hr/applications/${app.id}`}>
                         <Button variant="ghost" size="sm">
                           View
-                        </Button>
-                      </Link>
-                      <Link
-                        href={`/messages?userId=${app.user.id}&jobId=${app.job.id}`}
-                      >
-                        <Button variant="ghost" size="sm">
-                          Message
                         </Button>
                       </Link>
                     </div>

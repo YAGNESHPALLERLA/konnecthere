@@ -91,11 +91,6 @@ export default async function ApplicationsPage() {
                             View Job
                           </Button>
                         </Link>
-                        <Link href={`/messages?jobId=${app.job.id}`}>
-                          <Button variant="ghost" size="sm">
-                            Message
-                          </Button>
-                        </Link>
                       </div>
                     </Table.Cell>
                   </Table.Row>

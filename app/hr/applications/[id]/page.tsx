@@ -209,14 +209,6 @@ export default async function HRApplicationDetailPage({
             <Card className="p-6">
               <h2 className="text-xl font-bold mb-4">Actions</h2>
               <div className="space-y-3">
-                <Link
-                  href={`/messages?userId=${application.user.id}&jobId=${application.job.id}`}
-                  className="block"
-                >
-                  <Button className="w-full" variant="outline">
-                    Message Candidate
-                  </Button>
-                </Link>
                 <Link href={`/jobs/${application.job.slug}`} className="block">
                   <Button className="w-full" variant="outline">
                     View Job Posting

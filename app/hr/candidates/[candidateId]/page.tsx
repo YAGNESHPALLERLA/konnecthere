@@ -552,13 +552,6 @@ export default function CandidateProfilePage() {
               </Button>
             )}
 
-            {/* Message Button - Only show if connected */}
-            {connectionStatus?.status === "ACCEPTED" && application && (
-              <Link href={`/messages?userId=${candidate.id}&jobId=${application.job.id}`} className="w-full">
-                <Button className="w-full">Send Message</Button>
-              </Link>
-            )}
-
             {jobId && (
               <Link href={`/hr/jobs/${jobId}/applicants`}>
                 <Button variant="outline" className="w-full">Back to Applicants</Button>

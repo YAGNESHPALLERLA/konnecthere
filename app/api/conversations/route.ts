@@ -132,23 +132,6 @@ export const POST = asyncHandler(async (req) => {
     )
   }
 
-  // Check if users have an ACCEPTED connection
-  const connection = await prisma.connection.findFirst({
-    where: {
-      OR: [
-        { requesterId: userId, receiverId: targetUserId, status: "ACCEPTED" },
-        { requesterId: targetUserId, receiverId: userId, status: "ACCEPTED" },
-      ],
-    },
-  })
-
-  if (!connection) {
-    return NextResponse.json(
-      { error: "You must be connected to message this user. Send a connection request first." },
-      { status: 403 }
-    )
-  }
-
   // Check if conversation already exists
   const existing = await prisma.conversation.findFirst({
     where: {

@@ -268,9 +268,9 @@ export default async function HRDashboard() {
           <Link href="/hr/applications">
             <Button variant="outline">View All Applications</Button>
           </Link>
-          <Link href="/messages">
+          <Link href="/konnect">
             <Button variant="outline">
-              Messages
+              Konnect
               {unreadCount > 0 && (
                 <span className="ml-2 rounded-full bg-black px-2 py-1 text-xs font-medium text-white">
                   {unreadCount}
@@ -407,13 +407,6 @@ export default async function HRDashboard() {
                         <Link href={`/hr/applications/${app.id}`}>
                           <Button variant="ghost" size="sm">
                             Review
-                          </Button>
-                        </Link>
-                        <Link
-                          href={`/messages?applicationId=${app.id}`}
-                        >
-                          <Button variant="ghost" size="sm">
-                            Message
                           </Button>
                         </Link>
                       </div>

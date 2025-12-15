@@ -82,11 +82,9 @@ export default async function AdminConversationsPage() {
                         {new Date(conv.updatedAt).toLocaleDateString()}
                       </Table.Cell>
                       <Table.Cell>
-                        <Link href={`/messages?id=${conv.id}`}>
-                          <Button variant="ghost" size="sm">
-                            View
-                          </Button>
-                        </Link>
+                        <Button variant="ghost" size="sm" disabled>
+                          View
+                        </Button>
                       </Table.Cell>
                     </Table.Row>
                   )
