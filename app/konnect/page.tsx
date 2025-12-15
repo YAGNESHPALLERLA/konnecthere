@@ -1,14 +1,12 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import { useSession } from "next-auth/react"
-import { useRouter } from "next/navigation"
 import { PageShell } from "@/components/layouts/PageShell"
 import { Button } from "@/components/ui/Button"
 import { Card } from "@/components/ui/Card"
 import { Input } from "@/components/ui/Input"
 import { Pill } from "@/components/ui/Pill"
-import Link from "next/link"
 import { showToast } from "@/lib/toast"
 
 type User = {
@@ -17,38 +15,63 @@ type User = {
   email: string
   image: string | null
   role: string
-  currentTitle: string | null
-  location: string | null
-  bio: string | null
-  skills: string[]
-  yearsOfExperience: number | null
+}
+
+interface Conversation {
+  id: string
+  updatedAt: string
+  lastMessage: {
+    body: string
+    sender: {
+      id: string
+      name: string | null
+      email: string
+    }
+    createdAt: string
+  } | null
+  unreadCount: number
+  participant: {
+    id: string
+    name: string | null
+    email: string
+    image: string | null
+    role: string
+  } | null
+}
+
+interface Message {
+  id: string
+  body: string
+  senderId: string
+  sender: {
+    id: string
+    name: string | null
+    email: string
+    image: string | null
+  }
   createdAt: string
+  readAt: string | null
 }
 
 export default function KonnectPage() {
   const { data: session, status } = useSession()
-  const router = useRouter()
+  const [isMessagingMode, setIsMessagingMode] = useState(false)
   const [users, setUsers] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
   const [debouncedSearch, setDebouncedSearch] = useState("")
   const [roleFilter, setRoleFilter] = useState<string>("ALL")
-  const [messaging, setMessaging] = useState<string | null>(null)
+  
   // Conversations & chat state
-  const [conversations, setConversations] = useState<any[]>([])
-  const [filteredConversations, setFilteredConversations] = useState<any[]>([])
+  const [conversations, setConversations] = useState<Conversation[]>([])
+  const [filteredConversations, setFilteredConversations] = useState<Conversation[]>([])
   const [conversationSearch, setConversationSearch] = useState("")
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null)
-  const [messages, setMessages] = useState<any[]>([])
+  const [messages, setMessages] = useState<Message[]>([])
   const [messageBody, setMessageBody] = useState("")
   const [sending, setSending] = useState(false)
-
-  useEffect(() => {
-    if (status === "unauthenticated") {
-      router.push("/auth/signin?callbackUrl=/konnect")
-      return
-    }
-  }, [status, router])
+  const [loadingMessages, setLoadingMessages] = useState(false)
+  const messagesEndRef = useRef<HTMLDivElement>(null)
 
   // Debounce search
   useEffect(() => {
@@ -58,19 +81,24 @@ export default function KonnectPage() {
     return () => clearTimeout(timer)
   }, [searchQuery])
 
-  // Fetch users
+  // Fetch users (only in discovery mode)
   useEffect(() => {
-    if (status === "authenticated") {
+    if (status === "authenticated" && !isMessagingMode) {
       fetchUsers()
     }
-  }, [status, debouncedSearch, roleFilter])
+  }, [status, debouncedSearch, roleFilter, isMessagingMode])
 
-  // Fetch conversations (for sidebar) when authenticated
+  // Fetch conversations (always, for sidebar)
   useEffect(() => {
     if (status === "authenticated") {
       fetchConversations()
     }
   }, [status])
+
+  // Auto-scroll to bottom when new messages arrive
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
+  }, [messages])
 
   const fetchUsers = async () => {
     setLoading(true)
@@ -83,39 +111,22 @@ export default function KonnectPage() {
       if (res.ok) {
         const data = await res.json()
         setUsers(data.users || [])
-      }
-    } catch (error) {
-      console.error("Error fetching users:", error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const handleMessage = async (userId: string) => {
-    setMessaging(userId)
-    try {
-      // Create or get conversation
-      const res = await fetch("/api/conversations", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId }),
-      })
-
-      if (res.ok) {
-        const data = await res.json()
-        const conversationId = data.conversation.id
-        setSelectedConversation(conversationId)
-        await fetchMessages(conversationId)
-        await fetchConversations()
       } else {
-        const error = await res.json()
-        throw new Error(error.error || "Failed to create conversation")
+        const errorData = await res.json().catch(() => ({}))
+        console.error("[KONNECT] Failed to fetch users:", {
+          status: res.status,
+          error: errorData,
+        })
+        showToast("Failed to load users. Please try again.", "error")
       }
     } catch (error: any) {
-      console.error("Error creating conversation:", error)
-      showToast(error.message || "Failed to start conversation. Please try again.", "error")
+      console.error("[KONNECT] Error fetching users:", {
+        message: error?.message,
+        stack: error?.stack,
+      })
+      showToast("Network error. Please check your connection.", "error")
     } finally {
-      setMessaging(null)
+      setLoading(false)
     }
   }
 
@@ -127,48 +138,80 @@ export default function KonnectPage() {
         const convs = data.conversations || []
         setConversations(convs)
         setFilteredConversations(convs)
-        if (convs.length > 0 && !selectedConversation) {
+        
+        // Auto-select first conversation if in messaging mode and none selected
+        if (isMessagingMode && convs.length > 0 && !selectedConversation) {
           setSelectedConversation(convs[0].id)
         }
+      } else {
+        const errorData = await res.json().catch(() => ({}))
+        console.error("[KONNECT] Failed to fetch conversations:", {
+          status: res.status,
+          error: errorData,
+        })
+        showToast("Failed to load conversations. Please try again.", "error")
       }
-    } catch (error) {
-      console.error("Error fetching conversations:", error)
+    } catch (error: any) {
+      console.error("[KONNECT] Error fetching conversations:", {
+        message: error?.message,
+        stack: error?.stack,
+      })
+      showToast("Network error. Please check your connection.", "error")
     }
   }
 
   const fetchMessages = async (conversationId: string) => {
+    if (!conversationId) return
+    
+    setLoadingMessages(true)
     try {
       const res = await fetch(`/api/conversations/${conversationId}`)
       if (res.ok) {
         const data = await res.json()
         const messagesArray = Array.isArray(data.messages)
-          ? data.messages.filter((msg: any) => msg && msg.id && msg.body && msg.senderId && msg.sender)
+          ? data.messages
+              .filter((msg: any) => msg && msg.id && msg.body && msg.senderId && msg.sender)
+              .sort((a: any, b: any) => {
+                // Sort by createdAt ascending (oldest first)
+                return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+              })
           : []
         setMessages(messagesArray)
-        await fetchConversations()
+        await fetchConversations() // Refresh to update unread counts
       } else {
         const errorData = await res.json().catch(() => ({}))
-        console.error("Failed to fetch messages:", res.status, res.statusText, errorData)
+        console.error("[KONNECT] Failed to fetch messages:", {
+          status: res.status,
+          statusText: res.statusText,
+          error: errorData,
+        })
+        showToast("Failed to load messages. Please try again.", "error")
         setMessages([])
       }
-    } catch (error) {
-      console.error("Error fetching messages:", error)
+    } catch (error: any) {
+      console.error("[KONNECT] Error fetching messages:", {
+        message: error?.message,
+        stack: error?.stack,
+      })
+      showToast("Network error. Please check your connection.", "error")
       setMessages([])
+    } finally {
+      setLoadingMessages(false)
     }
   }
 
-  // Poll messages for selected conversation
+  // Poll messages for selected conversation (fallback if WebSocket not available)
   useEffect(() => {
-    if (selectedConversation && status === "authenticated") {
+    if (selectedConversation && status === "authenticated" && isMessagingMode) {
       fetchMessages(selectedConversation)
       const interval = setInterval(() => {
         fetchMessages(selectedConversation)
-      }, 3000)
+      }, 3000) // Poll every 3 seconds
       return () => clearInterval(interval)
     } else {
       setMessages([])
     }
-  }, [selectedConversation, status])
+  }, [selectedConversation, status, isMessagingMode])
 
   // Filter conversations based on sidebar search
   useEffect(() => {
@@ -177,13 +220,51 @@ export default function KonnectPage() {
       return
     }
     const query = conversationSearch.toLowerCase().trim()
-    const filtered = conversations.filter((conv: any) => {
+    const filtered = conversations.filter((conv) => {
       const name = conv.participant?.name?.toLowerCase() || ""
       const email = conv.participant?.email?.toLowerCase() || ""
       return name.includes(query) || email.includes(query)
     })
     setFilteredConversations(filtered)
   }, [conversationSearch, conversations])
+
+  const handleStartConversation = async (userId: string) => {
+    if (!session?.user) return
+
+    try {
+      const res = await fetch("/api/conversations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId }),
+      })
+
+      if (res.ok) {
+        const data = await res.json()
+        const conversationId = data.conversation.id
+        
+        // Switch to messaging mode and select the conversation
+        setIsMessagingMode(true)
+        setSelectedConversation(conversationId)
+        await fetchMessages(conversationId)
+        await fetchConversations()
+        showToast("Conversation started", "success")
+      } else {
+        const errorData = await res.json().catch(() => ({}))
+        const errorMessage = errorData?.error || `Failed to start conversation (${res.status})`
+        console.error("[KONNECT] Failed to create conversation:", {
+          status: res.status,
+          error: errorData,
+        })
+        showToast(errorMessage, "error")
+      }
+    } catch (error: any) {
+      console.error("[KONNECT] Error creating conversation:", {
+        message: error?.message,
+        stack: error?.stack,
+      })
+      showToast("Network error. Please check your connection.", "error")
+    }
+  }
 
   const sendMessage = async () => {
     if (!messageBody.trim() || !selectedConversation || sending) return
@@ -203,9 +284,21 @@ export default function KonnectPage() {
         setMessageBody("")
         await fetchMessages(selectedConversation)
         await fetchConversations()
+      } else {
+        const errorData = await res.json().catch(() => ({}))
+        const errorMessage = errorData?.error || `Failed to send message (${res.status})`
+        console.error("[KONNECT] Failed to send message:", {
+          status: res.status,
+          error: errorData,
+        })
+        showToast(errorMessage, "error")
       }
-    } catch (error) {
-      console.error("Error sending message:", error)
+    } catch (error: any) {
+      console.error("[KONNECT] Error sending message:", {
+        message: error?.message,
+        stack: error?.stack,
+      })
+      showToast("Network error. Please check your connection.", "error")
     } finally {
       setSending(false)
     }
@@ -236,7 +329,11 @@ export default function KonnectPage() {
     }
   }
 
-  if (status === "loading" || loading) {
+  const currentConversation = filteredConversations.find(
+    (c) => c.id === selectedConversation
+  )
+
+  if (status === "loading" || (loading && !isMessagingMode)) {
     return (
       <PageShell title="Konnect" description="Connect with members">
         <div className="text-center py-12">
@@ -256,96 +353,62 @@ export default function KonnectPage() {
       description="Browse and connect with members of the KonnectHere community"
     >
       <div className="space-y-6">
-        {/* Search and Filters */}
+        {/* Header with Search, Filters, and Message Toggle */}
         <Card className="p-6">
-          <div className="space-y-4">
-            <Input
-              label="Search"
-              placeholder="Search by name or email..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div className="flex-1 space-y-4">
+              <Input
+                label="Search"
+                placeholder="Search by name or email..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                disabled={isMessagingMode}
+              />
 
-            <div className="flex flex-wrap gap-4 items-center">
-              <label className="text-sm font-medium text-black">
-                Filter by Role:
-              </label>
-              <div className="flex gap-2">
-                {["ALL", "USER", "HR", "ADMIN"].map((role) => (
-                  <button
-                    key={role}
-                    onClick={() => setRoleFilter(role)}
-                    className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                      roleFilter === role
-                        ? "bg-black text-white"
-                        : "bg-gray-100 text-black hover:bg-gray-200"
-                    }`}
-                  >
-                    {role === "ALL" ? "All" : getRoleLabel(role)}
-                  </button>
-                ))}
+              <div className="flex flex-wrap gap-4 items-center">
+                <label className="text-sm font-medium text-black">
+                  Filter by Role:
+                </label>
+                <div className="flex gap-2">
+                  {["ALL", "USER", "HR", "ADMIN"].map((role) => (
+                    <button
+                      key={role}
+                      onClick={() => setRoleFilter(role)}
+                      disabled={isMessagingMode}
+                      className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                        roleFilter === role
+                          ? "bg-black text-white"
+                          : "bg-gray-100 text-black hover:bg-gray-200"
+                      } ${isMessagingMode ? "opacity-50 cursor-not-allowed" : ""}`}
+                    >
+                      {role === "ALL" ? "All" : getRoleLabel(role)}
+                    </button>
+                  ))}
+                </div>
               </div>
+            </div>
+
+            {/* Message Toggle Button */}
+            <div className="flex items-center gap-2">
+              <Button
+                onClick={() => {
+                  setIsMessagingMode(!isMessagingMode)
+                  if (!isMessagingMode && conversations.length > 0 && !selectedConversation) {
+                    setSelectedConversation(conversations[0].id)
+                  }
+                }}
+                variant={isMessagingMode ? "default" : "outline"}
+                className="whitespace-nowrap"
+              >
+                {isMessagingMode ? "← Back to Discover" : "💬 Messages"}
+              </Button>
             </div>
           </div>
         </Card>
 
-        <div className="grid grid-cols-1 md:grid-cols-[280px,1fr] gap-4">
-          {/* Conversations sidebar */}
-          <Card className="p-0 h-[480px] flex flex-col">
-            <div className="p-4 border-b border-slate-200">
-              <h2 className="section-title mb-3">Chats</h2>
-              <Input
-                placeholder="Search by name or email..."
-                value={conversationSearch}
-                onChange={(e) => setConversationSearch(e.target.value)}
-                className="w-full"
-              />
-            </div>
-            <div className="flex-1 overflow-y-auto p-2">
-              {filteredConversations.length === 0 ? (
-                <div className="p-4 text-center text-slate-600 text-sm">
-                  No conversations yet. Start by messaging someone.
-                </div>
-              ) : (
-                <div className="space-y-1">
-                  {filteredConversations.map((conv: any) => (
-                    <button
-                      key={conv.id}
-                      onClick={() => setSelectedConversation(conv.id)}
-                      className={`w-full text-left p-3 rounded-xl transition-all duration-150 ${
-                        selectedConversation === conv.id
-                          ? "bg-slate-100 border-l-4 border-indigo-500 shadow-sm"
-                          : "hover:bg-slate-50 border-l-4 border-transparent"
-                      }`}
-                    >
-                      <div className="flex items-center justify-between gap-2">
-                        <div className="flex-1 min-w-0">
-                          <p className="font-semibold text-sm truncate text-slate-900">
-                            {conv.participant?.name || conv.participant?.email || "Unknown"}
-                          </p>
-                          {conv.lastMessage && (
-                            <p className="text-xs text-slate-600 truncate mt-1">
-                              {conv.lastMessage.body.substring(0, 40)}
-                              {conv.lastMessage.body.length > 40 ? "..." : ""}
-                            </p>
-                          )}
-                        </div>
-                        {conv.unreadCount > 0 && (
-                          <span className="flex-shrink-0 rounded-full bg-indigo-500 px-2 py-0.5 text-xs font-semibold text-white">
-                            {conv.unreadCount}
-                          </span>
-                        )}
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          </Card>
-
-          {/* User grid + chat panel */}
-          <div className="space-y-4">
-            {/* Users Grid */}
+        {/* Discovery Mode: User Cards */}
+        {!isMessagingMode && (
+          <div>
             {users.length === 0 ? (
               <Card className="p-12 text-center">
                 <p className="text-gray-600">
@@ -357,8 +420,17 @@ export default function KonnectPage() {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {users.map((user) => (
-                  <Card key={user.id} className="p-6">
-                    <div className="flex items-start gap-4">
+                  <div
+                    key={user.id}
+                    onClick={() => {
+                      if (session.user?.id !== user.id) {
+                        handleStartConversation(user.id)
+                      }
+                    }}
+                    className="cursor-pointer"
+                  >
+                    <Card className="p-6 hover:shadow-md transition-shadow h-full">
+                      <div className="flex items-start gap-4">
                       {/* Avatar */}
                       {user.image ? (
                         <img
@@ -374,93 +446,183 @@ export default function KonnectPage() {
 
                       {/* User Info - Name & Email only */}
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-bold text-lg truncate">
-                          {user.name || "Unnamed"}
-                        </h3>
-                        <p className="text-sm text-gray-600 truncate">
-                          {user.email}
-                        </p>
-
-                        {/* Message button (always available for other users) */}
-                        <div className="flex flex-col gap-2 mt-3">
-                          {session.user?.id === user.id ? null : (
-                            <Button
-                              onClick={() => handleMessage(user.id)}
-                              disabled={messaging === user.id || !user.id}
-                              className="w-full"
-                              size="sm"
-                            >
-                              {messaging === user.id ? "Connecting..." : "Message"}
-                            </Button>
-                          )}
+                        <div className="flex items-start justify-between gap-2 mb-2">
+                          <div className="min-w-0">
+                            <h3 className="font-bold text-lg truncate">
+                              {user.name || "Unnamed"}
+                            </h3>
+                            <p className="text-sm text-gray-600 truncate">
+                              {user.email}
+                            </p>
+                          </div>
+                          <Pill>{getRoleLabel(user.role)}</Pill>
                         </div>
                       </div>
                     </div>
-                  </Card>
+                    </Card>
+                  </div>
                 ))}
               </div>
             )}
 
-            {/* Chat panel */}
-            <Card className="flex-1 flex flex-col p-0 overflow-hidden">
+            {/* Results Count */}
+            {users.length > 0 && (
+              <div className="text-center text-sm text-gray-600 mt-4">
+                Showing {users.length} member{users.length !== 1 ? "s" : ""}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Messaging Mode: Full-width Chat Layout */}
+        {isMessagingMode && (
+          <div className="flex flex-col md:flex-row h-[calc(100vh-300px)] gap-4">
+            {/* Left Panel: Conversation List */}
+            <Card className="w-full md:w-80 flex-shrink-0 h-full flex flex-col p-0 overflow-hidden">
+              <div className="p-4 border-b border-slate-200">
+                <h2 className="section-title mb-3">Chats</h2>
+                <Input
+                  placeholder="Search by name or email..."
+                  value={conversationSearch}
+                  onChange={(e) => setConversationSearch(e.target.value)}
+                  className="w-full"
+                />
+              </div>
+              <div className="flex-1 overflow-y-auto p-2">
+                {filteredConversations.length === 0 ? (
+                  <div className="p-4 text-center text-slate-600 text-sm">
+                    No conversations yet. Click on a user card to start messaging.
+                  </div>
+                ) : (
+                  <div className="space-y-1">
+                    {filteredConversations.map((conv) => (
+                      <button
+                        key={conv.id}
+                        onClick={() => setSelectedConversation(conv.id)}
+                        className={`w-full text-left p-3 rounded-xl transition-all duration-150 ${
+                          selectedConversation === conv.id
+                            ? "bg-slate-100 border-l-4 border-indigo-500 shadow-sm"
+                            : "hover:bg-slate-50 border-l-4 border-transparent"
+                        }`}
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex-1 min-w-0">
+                            <p className="font-semibold text-sm truncate text-slate-900">
+                              {conv.participant?.name || conv.participant?.email || "Unknown"}
+                            </p>
+                            <p className="text-xs text-slate-500 truncate mt-0.5">
+                              {conv.participant?.role || "USER"}
+                            </p>
+                            {conv.lastMessage && (
+                              <p className="text-xs text-slate-600 truncate mt-1">
+                                {conv.lastMessage.body.substring(0, 40)}
+                                {conv.lastMessage.body.length > 40 ? "..." : ""}
+                              </p>
+                            )}
+                            {conv.updatedAt && (
+                              <p className="text-xs text-slate-400 mt-1">
+                                {new Date(conv.updatedAt).toLocaleDateString([], {
+                                  month: "short",
+                                  day: "numeric",
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                })}
+                              </p>
+                            )}
+                          </div>
+                          {conv.unreadCount > 0 && (
+                            <span className="flex-shrink-0 rounded-full bg-indigo-500 px-2 py-0.5 text-xs font-semibold text-white">
+                              {conv.unreadCount}
+                            </span>
+                          )}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </Card>
+
+            {/* Right Panel: Active Chat Window */}
+            <Card className="flex-1 flex flex-col p-0 overflow-hidden h-full">
               {selectedConversation ? (
                 <>
+                  {/* Chat Header */}
                   <div className="p-4 border-b border-slate-200 bg-white">
-                    <h3 className="section-title">Conversation</h3>
+                    <h3 className="section-title">
+                      {currentConversation?.participant?.name ||
+                        currentConversation?.participant?.email ||
+                        "Conversation"}
+                    </h3>
+                    <p className="text-sm text-slate-600 mt-0.5">
+                      {currentConversation?.participant?.role || "USER"}
+                    </p>
                   </div>
-                  <div className="flex-1 overflow-y-auto p-4 space-y-3 min-h-[200px] bg-slate-50">
-                    {messages.length === 0 ? (
+
+                  {/* Messages Area - Scrollable */}
+                  <div className="flex-1 overflow-y-auto p-4 space-y-3 min-h-0 bg-slate-50">
+                    {loadingMessages ? (
+                      <div className="flex items-center justify-center h-full text-slate-500 text-sm">
+                        Loading messages...
+                      </div>
+                    ) : messages.length === 0 ? (
                       <div className="flex items-center justify-center h-full text-slate-500 text-sm">
                         No messages yet. Start the conversation!
                       </div>
                     ) : (
-                      messages.map((msg: any) => {
-                        const currentUserId = (session.user as any)?.id
-                        const isOwn = currentUserId && msg.senderId === currentUserId
-                        const text = msg.body?.trim() || ""
-                        if (!text) return null
-                        return (
-                          <div
-                            key={msg.id}
-                            className={`flex ${isOwn ? "justify-end" : "justify-start"}`}
-                          >
+                      <>
+                        {messages.map((msg) => {
+                          const currentUserId = (session.user as any)?.id
+                          const isOwn = currentUserId && msg.senderId === currentUserId
+                          const text = msg.body?.trim() || ""
+                          if (!text) return null
+
+                          return (
                             <div
-                              className={`max-w-[75%] md:max-w-[65%] rounded-2xl px-3 py-2 text-sm shadow-sm transition-all duration-150 ${
-                                isOwn
-                                  ? "bg-indigo-500 text-white rounded-br-sm"
-                                  : "bg-slate-100 text-slate-900 rounded-bl-sm"
-                              }`}
+                              key={msg.id}
+                              className={`flex ${isOwn ? "justify-end" : "justify-start"}`}
                             >
-                              {!isOwn && msg.sender && (
-                                <p className="text-xs font-semibold mb-1 text-slate-600">
-                                  {msg.sender.name || msg.sender.email || "Unknown"}
+                              <div
+                                className={`max-w-[75%] md:max-w-[65%] rounded-2xl px-3 py-2 text-sm shadow-sm transition-all duration-150 ${
+                                  isOwn
+                                    ? "bg-indigo-500 text-white rounded-br-sm"
+                                    : "bg-slate-100 text-slate-900 rounded-bl-sm"
+                                }`}
+                              >
+                                {!isOwn && msg.sender && (
+                                  <p className="text-xs font-semibold mb-1 text-slate-600">
+                                    {msg.sender.name || msg.sender.email || "Unknown"}
+                                  </p>
+                                )}
+                                <p
+                                  className={`text-sm whitespace-pre-wrap break-words leading-relaxed ${
+                                    isOwn ? "text-white" : "text-slate-900"
+                                  }`}
+                                >
+                                  {text}
                                 </p>
-                              )}
-                              <p
-                                className={`text-sm whitespace-pre-wrap break-words leading-relaxed ${
-                                  isOwn ? "text-white" : "text-slate-900"
-                                }`}
-                              >
-                                {text}
-                              </p>
-                              <p
-                                className={`text-xs mt-1.5 ${
-                                  isOwn ? "text-indigo-100" : "text-slate-500"
-                                }`}
-                              >
-                                {msg.createdAt
-                                  ? new Date(msg.createdAt).toLocaleTimeString([], {
-                                      hour: "2-digit",
-                                      minute: "2-digit",
-                                    })
-                                  : ""}
-                              </p>
+                                <p
+                                  className={`text-xs mt-1.5 ${
+                                    isOwn ? "text-indigo-100" : "text-slate-500"
+                                  }`}
+                                >
+                                  {msg.createdAt
+                                    ? new Date(msg.createdAt).toLocaleTimeString([], {
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                      })
+                                    : ""}
+                                </p>
+                              </div>
                             </div>
-                          </div>
-                        )
-                      })
+                          )
+                        })}
+                        <div ref={messagesEndRef} />
+                      </>
                     )}
                   </div>
+
+                  {/* Message Input Area - Fixed at Bottom */}
                   <div className="p-4 border-t border-slate-200 bg-white">
                     <div className="flex gap-2">
                       <Input
@@ -474,6 +636,7 @@ export default function KonnectPage() {
                         }}
                         placeholder="Type a message..."
                         className="flex-1"
+                        disabled={sending}
                       />
                       <Button
                         onClick={sendMessage}
@@ -486,20 +649,19 @@ export default function KonnectPage() {
                   </div>
                 </>
               ) : (
-                <div className="flex items-center justify-center h-48 text-slate-500">
+                <div className="flex items-center justify-center h-full text-slate-500">
                   <div className="text-center">
                     <p className="text-lg font-medium mb-2 text-slate-900">Select a conversation</p>
                     <p className="text-sm text-slate-600">
-                      Choose a chat from the left or message someone from the list above.
+                      Choose a chat from the list to start messaging
                     </p>
                   </div>
                 </div>
               )}
             </Card>
           </div>
-        </div>
+        )}
       </div>
     </PageShell>
   )
 }
-
