@@ -79,7 +79,7 @@ export const POST = asyncHandler(async (
     },
   })
 
-  // Create a conversation between the two users
+  // Create a conversation between the two users (open messaging; keep convenience)
   const existingConversation = await prisma.conversation.findFirst({
     where: {
       participants: {

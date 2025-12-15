@@ -507,9 +507,9 @@ export default function KonnectPage() {
                       <Pill>{getRoleLabel(user.role)}</Pill>
                     </div>
 
-                    {/* Connection Status Buttons */}
+                    {/* Message button (always available for other users) */}
                     <div className="flex flex-col gap-2 mt-3">
-                      {connections[user.id]?.status === "SELF" ? null : connections[user.id]?.status === "ACCEPTED" ? (
+                      {connections[user.id]?.status === "SELF" ? null : (
                         <Button
                           onClick={() => handleMessage(user.id)}
                           disabled={messaging === user.id || !user.id}
@@ -517,44 +517,6 @@ export default function KonnectPage() {
                           size="sm"
                         >
                           {messaging === user.id ? "Connecting..." : "Message"}
-                        </Button>
-                      ) : connections[user.id]?.status === "REQUESTED" ? (
-                        <Button
-                          disabled
-                          className="w-full"
-                          size="sm"
-                          variant="outline"
-                        >
-                          Pending
-                        </Button>
-                      ) : connections[user.id]?.status === "RECEIVED" ? (
-                        <div className="flex gap-2">
-                          <Button
-                            onClick={() => handleAcceptReject(user.id, "ACCEPTED")}
-                            disabled={connecting === user.id}
-                            className="flex-1"
-                            size="sm"
-                          >
-                            {connecting === user.id ? "Processing..." : "Accept"}
-                          </Button>
-                          <Button
-                            onClick={() => handleAcceptReject(user.id, "REJECTED")}
-                            disabled={connecting === user.id}
-                            className="flex-1"
-                            size="sm"
-                            variant="outline"
-                          >
-                            Reject
-                          </Button>
-                        </div>
-                      ) : (
-                        <Button
-                          onClick={() => handleKonnect(user.id)}
-                          disabled={connecting === user.id || !user.id}
-                          className="w-full"
-                          size="sm"
-                        >
-                          {connecting === user.id ? "Sending..." : "Konnect"}
                         </Button>
                       )}
                     </div>

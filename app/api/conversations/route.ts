@@ -58,35 +58,9 @@ export const GET = asyncHandler(async (req) => {
     orderBy: { updatedAt: "desc" },
   })
 
-  // Filter conversations to only show those with ACCEPTED connections
-  const conversationsWithConnections = await Promise.all(
-    allConversations.map(async (conv) => {
-      const otherParticipant = conv.participants.find(
-        (p) => p.userId !== session.user.id
-      )
-      
-      if (!otherParticipant) return null
-
-      // Check if there's an ACCEPTED connection
-      const connection = await prisma.connection.findFirst({
-        where: {
-          OR: [
-            { requesterId: session.user.id, receiverId: otherParticipant.userId, status: "ACCEPTED" },
-            { requesterId: otherParticipant.userId, receiverId: session.user.id, status: "ACCEPTED" },
-          ],
-        },
-      })
-
-      return connection ? conv : null
-    })
-  )
-
-  // Filter out nulls (conversations without accepted connections)
-  const validConversations = conversationsWithConnections.filter((conv) => conv !== null) as typeof allConversations
-
-  // Calculate unread counts - only for conversations with accepted connections
+  // Calculate unread counts - show all conversations
   const conversationsWithUnread = await Promise.all(
-    validConversations.map(async (conv) => {
+    allConversations.map(async (conv) => {
       const unreadCount = await prisma.message.count({
         where: {
           conversationId: conv.id,
