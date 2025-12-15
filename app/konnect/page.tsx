@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, useRef } from "react"
+import { useEffect, useState, useRef, useCallback } from "react"
 import { useSession } from "next-auth/react"
 import { PageShell } from "@/components/layouts/PageShell"
 import { Button } from "@/components/ui/Button"
@@ -67,11 +67,20 @@ export default function KonnectPage() {
   const [filteredConversations, setFilteredConversations] = useState<Conversation[]>([])
   const [conversationSearch, setConversationSearch] = useState("")
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null)
-  const [messages, setMessages] = useState<Message[]>([])
+  
+  // Message cache: store messages per conversation to prevent refetch
+  const [messagesCache, setMessagesCache] = useState<Record<string, Message[]>>({})
+  const [loadingMessages, setLoadingMessages] = useState(false)
+  const [initialLoad, setInitialLoad] = useState<Record<string, boolean>>({})
+  
   const [messageBody, setMessageBody] = useState("")
   const [sending, setSending] = useState(false)
-  const [loadingMessages, setLoadingMessages] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null)
+  const hasFetchedRef = useRef<Record<string, boolean>>({})
+
+  // Get messages for selected conversation from cache
+  const messages = selectedConversation ? (messagesCache[selectedConversation] || []) : []
 
   // Debounce search
   useEffect(() => {
@@ -88,17 +97,19 @@ export default function KonnectPage() {
     }
   }, [status, debouncedSearch, roleFilter, isMessagingMode])
 
-  // Fetch conversations (always, for sidebar)
+  // Fetch conversations once on mount and when authenticated
   useEffect(() => {
     if (status === "authenticated") {
       fetchConversations()
     }
   }, [status])
 
-  // Auto-scroll to bottom when new messages arrive
+  // Auto-scroll to bottom when new messages arrive (only if not at top)
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
-  }, [messages])
+    if (messages.length > 0 && messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" })
+    }
+  }, [messages.length])
 
   const fetchUsers = async () => {
     setLoading(true)
@@ -138,11 +149,6 @@ export default function KonnectPage() {
         const convs = data.conversations || []
         setConversations(convs)
         setFilteredConversations(convs)
-        
-        // Auto-select first conversation if in messaging mode and none selected
-        if (isMessagingMode && convs.length > 0 && !selectedConversation) {
-          setSelectedConversation(convs[0].id)
-        }
       } else {
         const errorData = await res.json().catch(() => ({}))
         console.error("[KONNECT] Failed to fetch conversations:", {
@@ -160,10 +166,15 @@ export default function KonnectPage() {
     }
   }
 
-  const fetchMessages = async (conversationId: string) => {
+  // Fetch messages for a conversation (only if not cached or needs refresh)
+  const fetchMessages = useCallback(async (conversationId: string, showLoading = false) => {
     if (!conversationId) return
-    
-    setLoadingMessages(true)
+
+    // Show loading only on first load
+    if (showLoading && !hasFetchedRef.current[conversationId]) {
+      setLoadingMessages(true)
+    }
+
     try {
       const res = await fetch(`/api/conversations/${conversationId}`)
       if (res.ok) {
@@ -176,8 +187,19 @@ export default function KonnectPage() {
                 return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
               })
           : []
-        setMessages(messagesArray)
-        await fetchConversations() // Refresh to update unread counts
+
+        // Update cache for this conversation
+        setMessagesCache((prev) => ({
+          ...prev,
+          [conversationId]: messagesArray,
+        }))
+
+        // Mark as fetched
+        hasFetchedRef.current[conversationId] = true
+        setInitialLoad((prev) => ({ ...prev, [conversationId]: true }))
+
+        // Refresh conversations to update unread counts (silently, no loading state)
+        fetchConversations()
       } else {
         const errorData = await res.json().catch(() => ({}))
         console.error("[KONNECT] Failed to fetch messages:", {
@@ -185,33 +207,64 @@ export default function KonnectPage() {
           statusText: res.statusText,
           error: errorData,
         })
-        showToast("Failed to load messages. Please try again.", "error")
-        setMessages([])
+        // Only show error on first load
+        if (showLoading) {
+          showToast("Failed to load messages. Please try again.", "error")
+        }
       }
     } catch (error: any) {
       console.error("[KONNECT] Error fetching messages:", {
         message: error?.message,
         stack: error?.stack,
       })
-      showToast("Network error. Please check your connection.", "error")
-      setMessages([])
+      // Only show error on first load
+      if (showLoading) {
+        showToast("Network error. Please check your connection.", "error")
+      }
     } finally {
-      setLoadingMessages(false)
+      if (showLoading) {
+        setLoadingMessages(false)
+      }
     }
-  }
+  }, [])
 
-  // Poll messages for selected conversation (fallback if WebSocket not available)
-  useEffect(() => {
-    if (selectedConversation && status === "authenticated" && isMessagingMode) {
-      fetchMessages(selectedConversation)
-      const interval = setInterval(() => {
-        fetchMessages(selectedConversation)
-      }, 3000) // Poll every 3 seconds
-      return () => clearInterval(interval)
-    } else {
-      setMessages([])
+  // Handle conversation selection - fetch messages only if not cached
+  const handleSelectConversation = useCallback((conversationId: string) => {
+    setSelectedConversation(conversationId)
+    
+    // Only fetch if not already cached
+    if (!hasFetchedRef.current[conversationId]) {
+      fetchMessages(conversationId, true)
     }
-  }, [selectedConversation, status, isMessagingMode])
+  }, [fetchMessages])
+
+  // Poll messages for selected conversation (silent updates, no loading state)
+  useEffect(() => {
+    // Clear any existing polling interval
+    if (pollingIntervalRef.current) {
+      clearInterval(pollingIntervalRef.current)
+      pollingIntervalRef.current = null
+    }
+
+    if (selectedConversation && status === "authenticated" && isMessagingMode) {
+      // Initial fetch if not cached
+      if (!hasFetchedRef.current[selectedConversation]) {
+        fetchMessages(selectedConversation, true)
+      }
+
+      // Set up polling for silent updates (no loading state)
+      pollingIntervalRef.current = setInterval(() => {
+        fetchMessages(selectedConversation, false)
+      }, 3000) // Poll every 3 seconds
+
+      return () => {
+        if (pollingIntervalRef.current) {
+          clearInterval(pollingIntervalRef.current)
+          pollingIntervalRef.current = null
+        }
+      }
+    }
+  }, [selectedConversation, status, isMessagingMode, fetchMessages])
 
   // Filter conversations based on sidebar search
   useEffect(() => {
@@ -245,7 +298,9 @@ export default function KonnectPage() {
         // Switch to messaging mode and select the conversation
         setIsMessagingMode(true)
         setSelectedConversation(conversationId)
-        await fetchMessages(conversationId)
+        
+        // Fetch messages for the new conversation
+        await fetchMessages(conversationId, true)
         await fetchConversations()
         showToast("Conversation started", "success")
       } else {
@@ -281,8 +336,22 @@ export default function KonnectPage() {
       })
 
       if (res.ok) {
+        const newMessage = await res.json()
         setMessageBody("")
-        await fetchMessages(selectedConversation)
+        
+        // Optimistically add message to cache
+        if (newMessage.message) {
+          setMessagesCache((prev) => {
+            const currentMessages = prev[selectedConversation] || []
+            return {
+              ...prev,
+              [selectedConversation]: [...currentMessages, newMessage.message],
+            }
+          })
+        }
+        
+        // Refresh to get updated conversation list and ensure message is saved
+        await fetchMessages(selectedConversation, false)
         await fetchConversations()
       } else {
         const errorData = await res.json().catch(() => ({}))
@@ -332,6 +401,11 @@ export default function KonnectPage() {
   const currentConversation = filteredConversations.find(
     (c) => c.id === selectedConversation
   )
+
+  // Check if messages are loading for the first time
+  const isLoadingFirstTime = selectedConversation 
+    ? loadingMessages && !initialLoad[selectedConversation]
+    : false
 
   if (status === "loading" || (loading && !isMessagingMode)) {
     return (
@@ -394,7 +468,7 @@ export default function KonnectPage() {
                 onClick={() => {
                   setIsMessagingMode(!isMessagingMode)
                   if (!isMessagingMode && conversations.length > 0 && !selectedConversation) {
-                    setSelectedConversation(conversations[0].id)
+                    handleSelectConversation(conversations[0].id)
                   }
                 }}
                 variant={isMessagingMode ? "default" : "outline"}
@@ -431,34 +505,34 @@ export default function KonnectPage() {
                   >
                     <Card className="p-6 hover:shadow-md transition-shadow h-full">
                       <div className="flex items-start gap-4">
-                      {/* Avatar */}
-                      {user.image ? (
-                        <img
-                          src={user.image}
-                          alt={user.name || user.email}
-                          className="w-16 h-16 rounded-full object-cover border-2 border-gray-200"
-                        />
-                      ) : (
-                        <div className="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center text-xl font-bold text-gray-600 flex-shrink-0">
-                          {getInitials(user.name, user.email)}
-                        </div>
-                      )}
-
-                      {/* User Info - Name & Email only */}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between gap-2 mb-2">
-                          <div className="min-w-0">
-                            <h3 className="font-bold text-lg truncate">
-                              {user.name || "Unnamed"}
-                            </h3>
-                            <p className="text-sm text-gray-600 truncate">
-                              {user.email}
-                            </p>
+                        {/* Avatar */}
+                        {user.image ? (
+                          <img
+                            src={user.image}
+                            alt={user.name || user.email}
+                            className="w-16 h-16 rounded-full object-cover border-2 border-gray-200"
+                          />
+                        ) : (
+                          <div className="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center text-xl font-bold text-gray-600 flex-shrink-0">
+                            {getInitials(user.name, user.email)}
                           </div>
-                          <Pill>{getRoleLabel(user.role)}</Pill>
+                        )}
+
+                        {/* User Info - Name & Email only */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start justify-between gap-2 mb-2">
+                            <div className="min-w-0">
+                              <h3 className="font-bold text-lg truncate">
+                                {user.name || "Unnamed"}
+                              </h3>
+                              <p className="text-sm text-gray-600 truncate">
+                                {user.email}
+                              </p>
+                            </div>
+                            <Pill>{getRoleLabel(user.role)}</Pill>
+                          </div>
                         </div>
                       </div>
-                    </div>
                     </Card>
                   </div>
                 ))}
@@ -477,7 +551,7 @@ export default function KonnectPage() {
         {/* Messaging Mode: Full-width Chat Layout */}
         {isMessagingMode && (
           <div className="flex flex-col md:flex-row h-[calc(100vh-300px)] gap-4">
-            {/* Left Panel: Conversation List */}
+            {/* Left Panel: Conversation List - Shows ONLY users with existing conversations */}
             <Card className="w-full md:w-80 flex-shrink-0 h-full flex flex-col p-0 overflow-hidden">
               <div className="p-4 border-b border-slate-200">
                 <h2 className="section-title mb-3">Chats</h2>
@@ -498,7 +572,7 @@ export default function KonnectPage() {
                     {filteredConversations.map((conv) => (
                       <button
                         key={conv.id}
-                        onClick={() => setSelectedConversation(conv.id)}
+                        onClick={() => handleSelectConversation(conv.id)}
                         className={`w-full text-left p-3 rounded-xl transition-all duration-150 ${
                           selectedConversation === conv.id
                             ? "bg-slate-100 border-l-4 border-indigo-500 shadow-sm"
@@ -561,7 +635,7 @@ export default function KonnectPage() {
 
                   {/* Messages Area - Scrollable */}
                   <div className="flex-1 overflow-y-auto p-4 space-y-3 min-h-0 bg-slate-50">
-                    {loadingMessages ? (
+                    {isLoadingFirstTime ? (
                       <div className="flex items-center justify-center h-full text-slate-500 text-sm">
                         Loading messages...
                       </div>
