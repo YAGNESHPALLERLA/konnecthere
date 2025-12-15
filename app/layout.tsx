@@ -8,8 +8,12 @@ export const metadata: Metadata = {
   title: "KonnectHere — Executive opportunities, distilled",
   description: "A minimalist job platform built for modern teams and ambitious talent.",
   icons: {
-    icon: "/favicon.png",
+    icon: [
+      { url: "/favicon.png", sizes: "any" },
+      { url: "/favicon.png", type: "image/png" },
+    ],
     apple: "/favicon.png",
+    shortcut: "/favicon.png",
   },
 }
 
