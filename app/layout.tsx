@@ -9,11 +9,11 @@ export const metadata: Metadata = {
   description: "A minimalist job platform built for modern teams and ambitious talent.",
   icons: {
     icon: [
-      { url: "/favicon.png", sizes: "any" },
-      { url: "/favicon.png", type: "image/png" },
+      { url: "/favicon.svg", sizes: "any", type: "image/svg+xml" },
+      { url: "/favicon.png", sizes: "any", type: "image/png" },
     ],
     apple: "/favicon.png",
-    shortcut: "/favicon.png",
+    shortcut: "/favicon.svg",
   },
 }
 
