@@ -7,6 +7,7 @@ import { useSession, signOut } from "next-auth/react"
 import { Button } from "@/components/ui/Button"
 import { ProfilePictureUpload } from "@/components/ui/ProfilePictureUpload"
 import { Logo } from "@/components/Logo"
+import { ConnectionBell } from "@/components/ConnectionBell"
 import { cn } from "@/lib/utils"
 
 export function Navbar() {
@@ -93,6 +94,7 @@ export function Navbar() {
             <span className="text-sm text-slate-600">Loading…</span>
           ) : session ? (
             <>
+              <ConnectionBell />
               <div className="flex items-center gap-2 rounded-full bg-slate-50 px-3 py-1 shadow-sm">
                 {/* Profile Picture with Upload */}
                 <ProfilePictureUpload

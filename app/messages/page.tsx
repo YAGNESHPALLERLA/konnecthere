@@ -57,6 +57,8 @@ function MessagesContent() {
   const applicationId = searchParams.get("applicationId")
 
   const [conversations, setConversations] = useState<Conversation[]>([])
+  const [filteredConversations, setFilteredConversations] = useState<Conversation[]>([])
+  const [searchQuery, setSearchQuery] = useState("")
   const [selectedConversation, setSelectedConversation] = useState<string | null>(
     conversationId || null
   )
@@ -98,9 +100,11 @@ function MessagesContent() {
       const res = await fetch("/api/conversations")
       if (res.ok) {
         const data = await res.json()
-        setConversations(data.conversations || [])
-        if (data.conversations.length > 0 && !selectedConversation) {
-          setSelectedConversation(data.conversations[0].id)
+        const convs = data.conversations || []
+        setConversations(convs)
+        setFilteredConversations(convs)
+        if (convs.length > 0 && !selectedConversation) {
+          setSelectedConversation(convs[0].id)
         }
       }
     } catch (error) {
@@ -109,6 +113,22 @@ function MessagesContent() {
       setLoading(false)
     }
   }
+
+  // Filter conversations based on search query
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setFilteredConversations(conversations)
+      return
+    }
+
+    const query = searchQuery.toLowerCase().trim()
+    const filtered = conversations.filter((conv) => {
+      const name = conv.participant?.name?.toLowerCase() || ""
+      const email = conv.participant?.email?.toLowerCase() || ""
+      return name.includes(query) || email.includes(query)
+    })
+    setFilteredConversations(filtered)
+  }, [searchQuery, conversations])
 
   const createOrGetConversation = async (userId: string) => {
     try {
@@ -217,9 +237,9 @@ function MessagesContent() {
     }
   }
 
-  const currentConversation = conversations.find(
+  const currentConversation = filteredConversations.find(
     (c) => c.id === selectedConversation
-  )
+  ) || conversations.find((c) => c.id === selectedConversation)
 
   if (!session) {
     return (
@@ -236,16 +256,24 @@ function MessagesContent() {
         <div className="w-full md:w-80 flex-shrink-0 border-r border-slate-200 md:border-r md:border-b-0 border-b">
           <Card className="h-full p-0 overflow-hidden flex flex-col">
             <div className="p-4 border-b border-slate-200">
-              <h2 className="section-title">Conversations</h2>
+              <h2 className="section-title mb-3">Conversations</h2>
+              <Input
+                placeholder="Search by name or email..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full"
+              />
             </div>
             <div className="flex-1 overflow-y-auto p-2">
               {loading ? (
                 <div className="p-4 text-center text-slate-600">Loading...</div>
-              ) : conversations.length === 0 ? (
-                <div className="p-4 text-center text-slate-600">No conversations yet.</div>
+              ) : filteredConversations.length === 0 ? (
+                <div className="p-4 text-center text-slate-600">
+                  {searchQuery ? "No conversations match your search." : "No conversations yet. Connect with users to start messaging."}
+                </div>
               ) : (
                 <div className="space-y-1">
-                  {conversations.map((conv) => (
+                  {filteredConversations.map((conv) => (
                     <button
                       key={conv.id}
                       onClick={() => {
@@ -272,12 +300,24 @@ function MessagesContent() {
                               {conv.lastMessage.body.length > 40 ? "..." : ""}
                             </p>
                           )}
+                          {conv.updatedAt && (
+                            <p className="text-xs text-slate-400 mt-1">
+                              {new Date(conv.updatedAt).toLocaleDateString([], {
+                                month: "short",
+                                day: "numeric",
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })}
+                            </p>
+                          )}
                         </div>
-                        {conv.unreadCount > 0 && (
-                          <span className="flex-shrink-0 rounded-full bg-indigo-500 px-2 py-0.5 text-xs font-semibold text-white">
-                            {conv.unreadCount}
-                          </span>
-                        )}
+                        <div className="flex flex-col items-end gap-1">
+                          {conv.unreadCount > 0 && (
+                            <span className="flex-shrink-0 rounded-full bg-indigo-500 px-2 py-0.5 text-xs font-semibold text-white">
+                              {conv.unreadCount}
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </button>
                   ))}
