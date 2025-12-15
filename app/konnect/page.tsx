@@ -75,7 +75,7 @@ export default function KonnectPage() {
   
   const [messageBody, setMessageBody] = useState("")
   const [sending, setSending] = useState(false)
-  const messagesEndRef = useRef<HTMLDivElement>(null)
+  const messagesContainerRef = useRef<HTMLDivElement | null>(null)
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null)
   const hasFetchedRef = useRef<Record<string, boolean>>({})
 
@@ -104,10 +104,13 @@ export default function KonnectPage() {
     }
   }, [status])
 
-  // Auto-scroll to bottom when new messages arrive (only if not at top)
+  // Auto-scroll to bottom when new messages arrive (scroll only inside the chat panel)
   useEffect(() => {
-    if (messages.length > 0 && messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: "smooth" })
+    if (messages.length > 0 && messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTo({
+        top: messagesContainerRef.current.scrollHeight,
+        behavior: "smooth",
+      })
     }
   }, [messages.length])
 
@@ -634,7 +637,10 @@ export default function KonnectPage() {
                   </div>
 
                   {/* Messages Area - Scrollable */}
-                  <div className="flex-1 overflow-y-auto p-4 space-y-3 min-h-0 bg-slate-50">
+                  <div
+                    ref={messagesContainerRef}
+                    className="flex-1 overflow-y-auto p-4 space-y-3 min-h-0 bg-slate-50"
+                  >
                     {isLoadingFirstTime ? (
                       <div className="flex items-center justify-center h-full text-slate-500 text-sm">
                         Loading messages...
@@ -691,7 +697,6 @@ export default function KonnectPage() {
                             </div>
                           )
                         })}
-                        <div ref={messagesEndRef} />
                       </>
                     )}
                   </div>
