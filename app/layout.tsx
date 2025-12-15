@@ -7,6 +7,10 @@ import { Footer } from "@/components/Footer"
 export const metadata: Metadata = {
   title: "KonnectHere — Executive opportunities, distilled",
   description: "A minimalist job platform built for modern teams and ambitious talent.",
+  icons: {
+    icon: "/favicon.svg",
+    apple: "/favicon.svg",
+  },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

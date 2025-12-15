@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation"
 import { useSession, signOut } from "next-auth/react"
 import { Button } from "@/components/ui/Button"
 import { ProfilePictureUpload } from "@/components/ui/ProfilePictureUpload"
+import { Logo } from "@/components/Logo"
 import { cn } from "@/lib/utils"
 
 export function Navbar() {
@@ -58,12 +59,10 @@ export function Navbar() {
   return (
     <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/80 backdrop-blur-md shadow-sm">
       <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-6 py-4 sm:px-8">
-        <Link 
-          href="/" 
-          className="text-xl font-bold tracking-tight text-slate-900 transition-opacity duration-200 hover:opacity-80"
-        >
-          KonnectHere
-        </Link>
+        <Logo 
+          variant="horizontal"
+          className="h-10 w-auto transition-opacity duration-200 hover:opacity-80"
+        />
 
         <nav className="hidden items-center gap-1 md:flex">
           {links.map((link) => {
