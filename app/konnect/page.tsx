@@ -6,7 +6,6 @@ import { PageShell } from "@/components/layouts/PageShell"
 import { Button } from "@/components/ui/Button"
 import { Card } from "@/components/ui/Card"
 import { Input } from "@/components/ui/Input"
-import { Pill } from "@/components/ui/Pill"
 import { showToast } from "@/lib/toast"
 
 type User = {
@@ -55,12 +54,10 @@ interface Message {
 
 export default function KonnectPage() {
   const { data: session, status } = useSession()
-  const [isMessagingMode, setIsMessagingMode] = useState(false)
   const [users, setUsers] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
   const [debouncedSearch, setDebouncedSearch] = useState("")
-  const [roleFilter, setRoleFilter] = useState<string>("ALL")
   
   // Conversations & chat state
   const [conversations, setConversations] = useState<Conversation[]>([])
@@ -92,10 +89,10 @@ export default function KonnectPage() {
 
   // Fetch users (only in discovery mode)
   useEffect(() => {
-    if (status === "authenticated" && !isMessagingMode) {
+    if (status === "authenticated") {
       fetchUsers()
     }
-  }, [status, debouncedSearch, roleFilter, isMessagingMode])
+  }, [status, debouncedSearch])
 
   // Fetch conversations once on mount and when authenticated
   useEffect(() => {
@@ -119,7 +116,6 @@ export default function KonnectPage() {
     try {
       const params = new URLSearchParams()
       if (debouncedSearch) params.append("search", debouncedSearch)
-      if (roleFilter !== "ALL") params.append("role", roleFilter)
 
       const res = await fetch(`/api/users?${params.toString()}`)
       if (res.ok) {
@@ -149,7 +145,10 @@ export default function KonnectPage() {
       const res = await fetch("/api/conversations")
       if (res.ok) {
         const data = await res.json()
-        const convs = data.conversations || []
+        // Only keep conversations that have at least one message
+        const convs = (data.conversations || []).filter(
+          (conv: Conversation) => !!conv.lastMessage
+        )
         setConversations(convs)
         setFilteredConversations(convs)
       } else {
@@ -249,7 +248,7 @@ export default function KonnectPage() {
       pollingIntervalRef.current = null
     }
 
-    if (selectedConversation && status === "authenticated" && isMessagingMode) {
+    if (selectedConversation && status === "authenticated") {
       // Initial fetch if not cached
       if (!hasFetchedRef.current[selectedConversation]) {
         fetchMessages(selectedConversation, true)
@@ -410,7 +409,7 @@ export default function KonnectPage() {
     ? loadingMessages && !initialLoad[selectedConversation]
     : false
 
-  if (status === "loading" || (loading && !isMessagingMode)) {
+  if (status === "loading" || loading) {
     return (
       <PageShell title="Konnect" description="Connect with members">
         <div className="text-center py-12">
@@ -430,130 +429,73 @@ export default function KonnectPage() {
       description="Browse and connect with members of the KonnectHere community"
     >
       <div className="space-y-6">
-        {/* Header with Search, Filters, and Message Toggle */}
+        {/* Discover Users - Search */}
         <Card className="p-6">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div className="flex-1 space-y-4">
-              <Input
-                label="Search"
-                placeholder="Search by name or email..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                disabled={isMessagingMode}
-              />
-
-              <div className="flex flex-wrap gap-4 items-center">
-                <label className="text-sm font-medium text-black">
-                  Filter by Role:
-                </label>
-                <div className="flex gap-2">
-                  {["ALL", "USER", "HR", "ADMIN"].map((role) => (
-                    <button
-                      key={role}
-                      onClick={() => setRoleFilter(role)}
-                      disabled={isMessagingMode}
-                      className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                        roleFilter === role
-                          ? "bg-black text-white"
-                          : "bg-gray-100 text-black hover:bg-gray-200"
-                      } ${isMessagingMode ? "opacity-50 cursor-not-allowed" : ""}`}
-                    >
-                      {role === "ALL" ? "All" : getRoleLabel(role)}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Message Toggle Button */}
-            <div className="flex items-center gap-2">
-              <Button
-                onClick={() => {
-                  setIsMessagingMode(!isMessagingMode)
-                  if (!isMessagingMode && conversations.length > 0 && !selectedConversation) {
-                    handleSelectConversation(conversations[0].id)
-                  }
-                }}
-                variant={isMessagingMode ? "default" : "outline"}
-                className="whitespace-nowrap"
-              >
-                {isMessagingMode ? "← Back to Discover" : "💬 Messages"}
-              </Button>
-            </div>
-          </div>
+          <Input
+            label="Search"
+            placeholder="Search by name or email..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
         </Card>
 
-        {/* Discovery Mode: User Cards */}
-        {!isMessagingMode && (
-          <div>
-            {users.length === 0 ? (
-              <Card className="p-12 text-center">
-                <p className="text-gray-600">
-                  {debouncedSearch || roleFilter !== "ALL"
-                    ? "No users match your filters."
-                    : "No users found."}
-                </p>
-              </Card>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {users.map((user) => (
-                  <div
-                    key={user.id}
-                    onClick={() => {
-                      if (session.user?.id !== user.id) {
-                        handleStartConversation(user.id)
-                      }
-                    }}
-                    className="cursor-pointer"
-                  >
-                    <Card className="p-6 hover:shadow-md transition-shadow h-full">
-                      <div className="flex items-start gap-4">
-                        {/* Avatar */}
-                        {user.image ? (
-                          <img
-                            src={user.image}
-                            alt={user.name || user.email}
-                            className="w-16 h-16 rounded-full object-cover border-2 border-gray-200"
-                          />
-                        ) : (
-                          <div className="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center text-xl font-bold text-gray-600 flex-shrink-0">
-                            {getInitials(user.name, user.email)}
-                          </div>
-                        )}
-
-                        {/* User Info - Name & Email only */}
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-start justify-between gap-2 mb-2">
-                            <div className="min-w-0">
-                              <h3 className="font-bold text-lg truncate">
-                                {user.name || "Unnamed"}
-                              </h3>
-                              <p className="text-sm text-gray-600 truncate">
-                                {user.email}
-                              </p>
-                            </div>
-                            <Pill>{getRoleLabel(user.role)}</Pill>
-                          </div>
-                        </div>
+        {/* Discover Users - Minimal cards with Message button */}
+        <div>
+          {users.length === 0 ? (
+            <Card className="p-12 text-center">
+              <p className="text-gray-600">
+                {debouncedSearch ? "No users match your search." : "No users found."}
+              </p>
+            </Card>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {users.map((user) => (
+                <Card key={user.id} className="p-6">
+                  <div className="flex items-start gap-4">
+                    {/* Avatar */}
+                    {user.image ? (
+                      <img
+                        src={user.image}
+                        alt={user.name || user.email}
+                        className="w-16 h-16 rounded-full object-cover border-2 border-gray-200"
+                      />
+                    ) : (
+                      <div className="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center text-xl font-bold text-gray-600 flex-shrink-0">
+                        {getInitials(user.name, user.email)}
                       </div>
-                    </Card>
+                    )}
+
+                    {/* User Info - Name & Email only */}
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-bold text-lg truncate">
+                        {user.name || "Unnamed"}
+                      </h3>
+                      <p className="text-sm text-gray-600 truncate">
+                        {user.email}
+                      </p>
+
+                      {/* Single Message button */}
+                      {session.user?.id !== user.id && (
+                        <div className="mt-3">
+                          <Button
+                            size="sm"
+                            className="w-full"
+                            onClick={() => handleStartConversation(user.id)}
+                          >
+                            Message
+                          </Button>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                ))}
-              </div>
-            )}
+                </Card>
+              ))}
+            </div>
+          )}
+        </div>
 
-            {/* Results Count */}
-            {users.length > 0 && (
-              <div className="text-center text-sm text-gray-600 mt-4">
-                Showing {users.length} member{users.length !== 1 ? "s" : ""}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Messaging Mode: Full-width Chat Layout */}
-        {isMessagingMode && (
-          <div className="flex flex-col md:flex-row h-[calc(100vh-300px)] gap-4">
+        {/* Chats Panel: list + active conversation */}
+        <div className="flex flex-col md:flex-row h-[calc(100vh-320px)] gap-4">
             {/* Left Panel: Conversation List - Shows ONLY users with existing conversations */}
             <Card className="w-full md:w-80 flex-shrink-0 h-full flex flex-col p-0 overflow-hidden">
               <div className="p-4 border-b border-slate-200">
@@ -586,9 +528,6 @@ export default function KonnectPage() {
                           <div className="flex-1 min-w-0">
                             <p className="font-semibold text-sm truncate text-slate-900">
                               {conv.participant?.name || conv.participant?.email || "Unknown"}
-                            </p>
-                            <p className="text-xs text-slate-500 truncate mt-0.5">
-                              {conv.participant?.role || "USER"}
                             </p>
                             {conv.lastMessage && (
                               <p className="text-xs text-slate-600 truncate mt-1">
