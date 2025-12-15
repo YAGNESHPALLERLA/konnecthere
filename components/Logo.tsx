@@ -20,16 +20,17 @@ export function Logo({
 }: LogoProps) {
   const logoContent = variant === "horizontal" ? (
     <Image
-      src="/logo.svg"
+      src="/logo.png"
       alt="KonnectHere"
       width={width || 240}
-      height={height || 48}
+      height={height || 64}
       className={className}
       priority
+      style={{ height: 'auto', width: 'auto' }}
     />
   ) : (
     <Image
-      src="/favicon.svg"
+      src="/favicon.png"
       alt="KonnectHere"
       width={width || 48}
       height={height || 48}
