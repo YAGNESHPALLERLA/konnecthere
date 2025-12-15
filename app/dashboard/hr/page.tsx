@@ -193,8 +193,13 @@ export default async function HRDashboard() {
               <Link href="/dashboard/profile">
                 <Button variant="outline">Edit Profile</Button>
               </Link>
-              <Link href="/hr/jobs/new">
-                <Button>Post New Job</Button>
+              {/* When a user is promoted to HR, they can define their own company name
+                  by creating a company record. This keeps the company name fully
+                  user-defined instead of auto-generated. */}
+              <Link href={companies.length === 0 ? "/employer/companies/new" : "/hr/jobs/new"}>
+                <Button>
+                  {companies.length === 0 ? "Create Company" : "Post New Job"}
+                </Button>
               </Link>
             </div>
           </div>
