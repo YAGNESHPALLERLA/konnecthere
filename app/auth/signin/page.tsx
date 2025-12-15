@@ -50,24 +50,12 @@ function SignInContent() {
           const session = await sessionRes.json()
           const userRole = session?.user?.role
 
-          // Determine redirect URL based on role
-          let redirectUrl = "/"
+          // Determine redirect URL - use /dashboard which auto-routes based on role
+          let redirectUrl = "/dashboard"
           
           // Use callbackUrl if provided and valid
           if (callbackUrl && callbackUrl !== "/" && !callbackUrl.startsWith("/auth")) {
             redirectUrl = callbackUrl
-          } else {
-            // Role-based redirect
-            if (userRole === "ADMIN") {
-              redirectUrl = "/dashboard/admin"
-            } else if (userRole === "HR") {
-              redirectUrl = "/dashboard/hr"
-            } else if (userRole === "USER") {
-              redirectUrl = "/dashboard/user"
-            } else {
-              // Fallback to home
-              redirectUrl = "/"
-            }
           }
           
           // Use window.location for a full page reload to ensure session is loaded

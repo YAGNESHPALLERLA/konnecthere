@@ -15,7 +15,6 @@ export default function SignUpPage() {
     email: "",
     password: "",
     confirmPassword: "",
-    role: "CANDIDATE" as "CANDIDATE" | "EMPLOYER",
   })
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
@@ -46,7 +45,6 @@ export default function SignUpPage() {
           name: formData.name,
           email: formData.email,
           password: formData.password,
-          role: formData.role,
         }),
       })
 
@@ -65,11 +63,8 @@ export default function SignUpPage() {
       })
 
       if (result?.ok) {
-        if (formData.role === "EMPLOYER") {
-          router.push("/employer/onboarding")
-        } else {
-          router.push("/candidate/dashboard")
-        }
+        // Redirect to dashboard - will auto-route based on role (defaults to USER)
+        router.push("/dashboard")
       }
     } catch (err) {
       setError("An error occurred. Please try again.")
@@ -81,7 +76,7 @@ export default function SignUpPage() {
   const handleOAuthSignUp = async (provider: string) => {
     setLoading(true)
     await signIn(provider, {
-      callbackUrl: formData.role === "EMPLOYER" ? "/employer/onboarding" : "/candidate/dashboard",
+      callbackUrl: "/dashboard",
     })
   }
 
@@ -108,21 +103,6 @@ export default function SignUpPage() {
             )}
 
             <div className="space-y-4">
-              <div>
-                <label htmlFor="role" className="block text-sm font-medium text-slate-900 mb-2">
-                  I am a
-                </label>
-                <select
-                  id="role"
-                  value={formData.role}
-                  onChange={(e) => setFormData({ ...formData, role: e.target.value as any })}
-                  className="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 transition-all duration-200 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 hover:border-slate-400"
-                >
-                  <option value="CANDIDATE">Job Seeker</option>
-                  <option value="EMPLOYER">Employer</option>
-                </select>
-              </div>
-
               <Input
                 id="name"
                 name="name"

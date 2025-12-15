@@ -9,7 +9,7 @@ const signupSchema = z.object({
   name: z.string().min(1).max(255),
   email: z.string().email(),
   password: z.string().min(8),
-  role: z.enum(["CANDIDATE", "EMPLOYER", "USER", "HR"]).default("CANDIDATE"),
+  // Role is NOT accepted from client - all new users default to USER
 })
 
 export const runtime = "nodejs"
@@ -20,7 +20,10 @@ export const POST = asyncHandler(async (req: NextRequest) => {
   if (rateLimitResponse) return rateLimitResponse
 
   const body = await req.json()
-  const { name, email, password, role } = signupSchema.parse(body)
+  const { name, email, password } = signupSchema.parse(body)
+  
+  // Ignore any role sent from client - all new users default to USER
+  // Only ADMIN can change roles via admin API
 
   // Check if user already exists
   const existing = await prisma.user.findUnique({
@@ -34,21 +37,14 @@ export const POST = asyncHandler(async (req: NextRequest) => {
   // Hash password
   const hashedPassword = await bcrypt.hash(password, 10)
 
-  // Map legacy roles to new roles for consistency
-  let finalRole = role
-  if (role === "EMPLOYER") {
-    finalRole = "HR"
-  } else if (role === "CANDIDATE") {
-    finalRole = "USER"
-  }
-
-  // Create user
+  // All new users are created with USER role by default
+  // Only ADMIN can promote users to HR or ADMIN via admin API
   const user = await prisma.user.create({
     data: {
       name,
       email,
       password: hashedPassword,
-      role: finalRole as any,
+      role: "USER", // Always USER for new signups
     },
   })
 
