@@ -151,35 +151,7 @@ function SignInContent() {
             </Button>
           </form>
 
-          <div className="mt-8">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-slate-200" />
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-3 bg-white text-slate-700">Or continue with</span>
-              </div>
-            </div>
-
-            <div className="mt-6 grid grid-cols-2 gap-3">
-              <Button
-                onClick={() => handleOAuthSignIn("linkedin")}
-                disabled={loading}
-                variant="outline"
-                className="w-full"
-              >
-                LinkedIn
-              </Button>
-              <Button
-                onClick={() => handleOAuthSignIn("google")}
-                disabled={loading}
-                variant="outline"
-                className="w-full"
-              >
-                Google
-              </Button>
-            </div>
-          </div>
+          {/* OAuth buttons (LinkedIn / Google) temporarily removed as requested */}
         </Card>
       </div>
     </div>
